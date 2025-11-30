@@ -1,0 +1,14 @@
+## Interface: 30305
+## Title: ProgressiveSystems
+## Notes: Complete client addon for Progressive Systems - Paragon, Custom Stats, and more!
+## Author: AI Assistant
+## Version: 2.0
+## SavedVariables: ProgressiveSystemsDB
+## SavedVariablesPerCharacter: ProgressiveSystemsPerCharDB
+
+ProgressiveSystems.lua
+ProgressiveSystemsUI.lua
+ProgressiveSystemsData.lua
+InstanceResetUI.lua
+ProgressiveSystemsParagon.lua
+ProgressiveSystemsStats.lua

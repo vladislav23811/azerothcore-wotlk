@@ -1,0 +1,12 @@
+## Interface: 30305
+## Title: ParagonSystem
+## Notes: Client addon for Paragon System - Diablo 3 style progression
+## Author: AI Assistant
+## Version: 1.0
+## SavedVariables: ParagonSystemDB
+## SavedVariablesPerCharacter: ParagonSystemPerCharDB
+
+ParagonSystem.lua
+ParagonSystemUI.lua
+ParagonSystemData.lua
+

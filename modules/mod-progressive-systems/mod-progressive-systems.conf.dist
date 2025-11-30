@@ -1,0 +1,147 @@
+###############################################################
+# Progressive Systems Module Configuration
+# Infinite Progression System for AzerothCore
+###############################################################
+
+[ProgressiveSystems]
+
+# Enable/Disable the module
+# Default: 1 (enabled)
+ProgressiveSystems.Enable = 1
+
+# Current Season ID
+# Used for seasonal resets and tracking
+# Default: 1
+ProgressiveSystems.SeasonID = 1
+
+# Enable creature scaling in instances
+# Default: 1 (enabled)
+ProgressiveSystems.ScaleCreatures = 1
+
+# Enable progression points on kill
+# Default: 1 (enabled)
+ProgressiveSystems.AwardPointsOnKill = 1
+
+# Enable milestone rewards
+# Default: 1 (enabled)
+ProgressiveSystems.MilestoneRewards = 1
+
+# Enable power level calculation
+# Default: 1 (enabled)
+ProgressiveSystems.CalculatePowerLevel = 1
+
+# Debug mode (extra logging)
+# Default: 0 (disabled)
+ProgressiveSystems.Debug = 0
+
+###############################################################
+# Point System Configuration
+###############################################################
+
+# Base points per kill (normal creature)
+ProgressiveSystems.Points.Normal = 5
+
+# Points per kill (elite creature)
+ProgressiveSystems.Points.Elite = 10
+
+# Points per kill (dungeon boss)
+ProgressiveSystems.Points.Boss = 25
+
+# Points per kill (world boss)
+ProgressiveSystems.Points.WorldBoss = 75
+
+# Points for completing a dungeon
+ProgressiveSystems.Points.DungeonComplete = 500
+
+# Points for completing a raid
+ProgressiveSystems.Points.RaidComplete = 2000
+
+###############################################################
+# Item Upgrade Configuration
+###############################################################
+
+# Base upgrade cost
+ProgressiveSystems.Upgrade.BaseCost = 100
+
+# Upgrade cost multiplier per level (1.15 = 15% increase per level)
+ProgressiveSystems.Upgrade.CostMultiplier = 1.15
+
+# Maximum upgrade level
+ProgressiveSystems.Upgrade.MaxLevel = 1000
+
+# Stat bonus per upgrade level (0.05 = 5% per level)
+ProgressiveSystems.Upgrade.StatBonusPerLevel = 0.05
+
+###############################################################
+# Prestige System Configuration
+###############################################################
+
+# Maximum prestige level
+ProgressiveSystems.Prestige.MaxLevel = 1000
+
+# Stat bonus per prestige level (0.01 = 1% per level)
+ProgressiveSystems.Prestige.StatBonusPerLevel = 0.01
+
+# Loot quality bonus per prestige level (0.005 = 0.5% per level)
+ProgressiveSystems.Prestige.LootBonusPerLevel = 0.005
+
+# Minimum level required to prestige
+ProgressiveSystems.Prestige.MinLevel = 80
+
+###############################################################
+# Difficulty Scaling Configuration
+###############################################################
+
+# Enable difficulty scaling
+ProgressiveSystems.Difficulty.Enable = 1
+
+# Default health multiplier per tier (if not in database)
+ProgressiveSystems.Difficulty.DefaultHealthMultiplier = 0.15
+
+# Default damage multiplier per tier (if not in database)
+ProgressiveSystems.Difficulty.DefaultDamageMultiplier = 0.12
+
+# Maximum difficulty tier
+ProgressiveSystems.Difficulty.MaxTier = 1000
+
+###############################################################
+# NPC Configuration
+###############################################################
+
+# Main Menu NPC Entry
+ProgressiveSystems.NPC.MainMenu = 190000
+
+# Item Upgrade NPC Entry
+ProgressiveSystems.NPC.ItemUpgrade = 190001
+
+# Prestige NPC Entry
+ProgressiveSystems.NPC.Prestige = 190002
+
+# Difficulty Selector NPC Entry
+ProgressiveSystems.NPC.Difficulty = 190003
+
+# Reward Shop NPC Entry
+ProgressiveSystems.NPC.RewardShop = 190004
+
+# Infinite Dungeon NPC Entry
+ProgressiveSystems.NPC.InfiniteDungeon = 190005
+
+# Progressive Items NPC Entry
+ProgressiveSystems.NPC.ProgressiveItems = 190006
+
+###############################################################
+# Currency Item IDs
+###############################################################
+
+# Emblem of Frost
+ProgressiveSystems.Currency.EmblemFrost = 49426
+
+# Bloody Token (custom)
+ProgressiveSystems.Currency.BloodyToken = 99999
+
+# Celestial Token (custom)
+ProgressiveSystems.Currency.CelestialToken = 99998
+
+# Progression Token (custom)
+ProgressiveSystems.Currency.ProgressionToken = 99997
+
