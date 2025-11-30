@@ -1,0 +1,16 @@
+[worldserver]
+###################################################################################################
+#     SOLOCRAFT - DISABLED
+###################################################################################################
+# This module is DISABLED because it conflicts with mod-autobalance and our Progressive Systems.
+# We use mod-autobalance instead, which is more flexible and integrates better with our
+# difficulty scaling system.
+#
+# If you want to enable this, set Solocraft.Enable = 1, but be aware it will conflict with
+# mod-autobalance and may cause double-scaling issues.
+
+# Enable the module? (1: true | 0: false)
+Solocraft.Enable = 0
+
+# Announce the module when the player logs in?
+Solocraft.Announce = 0

@@ -1,0 +1,19 @@
+[worldserver]
+###################################################################################################
+# INSTANCE RESET MODULE - DISABLED
+###################################################################################################
+# This module is DISABLED because we use the Progressive Systems instance reset instead.
+# Progressive Systems instance reset has more features:
+# - Integration with progression points
+# - Per-instance tracking
+# - Addon support
+# - Better UI
+#
+# If you want to use this module instead, set InstanceReset.Enable = 1
+# But be aware it may conflict with Progressive Systems instance reset.
+
+# Enable the module? (1: true | 0: false)
+InstanceReset.Enable = 0
+
+# Announce the module when the player logs in?
+InstanceReset.Announce = 0
