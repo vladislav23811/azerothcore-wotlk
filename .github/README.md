@@ -238,3 +238,6 @@ This fork maintains AzerothCore's core philosophy while adding specialized featu
 ---
 
 **Branch**: `playerbotwithall` | **Focus**: Playerbots & Progressive Systems | **Status**: Active Development
+
+---
+*Last updated: Workflows configured for automatic builds*
