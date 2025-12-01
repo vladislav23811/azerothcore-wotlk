@@ -7,6 +7,10 @@
 #include "DatabaseEnv.h"
 #include "Log.h"
 #include "Chat.h"
+#include "Item.h"
+#include "ItemTemplate.h"
+#include "Config.h"
+#include "SharedDefines.h"
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
@@ -369,5 +373,262 @@ void UnifiedStatSystem::RegisterStatDisplay(StatType statType, const std::string
     info.displayName = displayName;
     info.icon = icon;
     m_statDisplayInfo[statType] = info;
+}
+
+void UnifiedStatSystem::LoadPlayerStatBonuses(Player* player)
+{
+    if (!player)
+        return;
+    
+    uint32 guid = player->GetGUID().GetCounter();
+    
+    // Clear existing modifiers from our sources
+    for (uint8 i = 0; i < static_cast<uint8>(StatType::MAX_STAT_TYPES); ++i)
+    {
+        StatType statType = static_cast<StatType>(i);
+        RemoveStatModifier(player, statType, StatSource::ENHANCEMENT); // Item upgrades
+        RemoveStatModifier(player, statType, StatSource::PARAGON);
+        RemoveStatModifier(player, statType, StatSource::PRESTIGE);
+    }
+    
+    // Load all bonuses
+    LoadItemUpgradeBonuses(player);
+    LoadParagonStatBonuses(player);
+    LoadPrestigeBonuses(player);
+    
+    // Mark as loaded
+    m_loadedBonuses[guid] = true;
+    
+    // Update all stats
+    UpdateAllStats(player);
+}
+
+void UnifiedStatSystem::InvalidatePlayerCache(uint32 guid)
+{
+    m_loadedBonuses.erase(guid);
+    // Stat modifiers are already per-player, so clearing loaded flag is enough
+}
+
+void UnifiedStatSystem::LoadItemUpgradeBonuses(Player* player)
+{
+    if (!player)
+        return;
+    
+    uint32 guid = player->GetGUID().GetCounter();
+    
+    // Get upgrade stat bonus percentage from config
+    float statBonusPerLevel = sConfigMgr->GetOption<float>("ProgressiveSystems.Upgrade.StatBonusPerLevel", 5.0f);
+    
+    // Check all equipped items
+    for (uint8 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+    {
+        Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        if (!item)
+            continue;
+        
+        uint64 itemGuid = item->GetGUID().GetCounter();
+        
+        // Get upgrade level from database
+        QueryResult result = CharacterDatabase.Query(
+            "SELECT upgrade_level, stat_bonus_percent FROM item_upgrades WHERE item_guid = {}",
+            itemGuid
+        );
+        
+        if (!result)
+            continue;
+        
+        Field* fields = result->Fetch();
+        uint32 upgradeLevel = fields[0].Get<uint32>();
+        float statBonusPercent = fields[1].Get<float>();
+        
+        if (upgradeLevel == 0)
+            continue;
+        
+        // Get item template
+        ItemTemplate const* proto = item->GetTemplate();
+        if (!proto)
+            continue;
+        
+        // Apply bonus to all stats on the item
+        for (uint8 j = 0; j < MAX_ITEM_PROTO_STATS; ++j)
+        {
+            uint32 statType = proto->ItemStat[j].ItemStatType;
+            int32 statValue = proto->ItemStat[j].ItemStatValue;
+            
+            if (statType == ITEM_MOD_NONE || statValue == 0)
+                continue;
+            
+            // Convert item stat type to our StatType
+            StatType ourStatType = ConvertItemStatToStatType(statType);
+            if (ourStatType == StatType::MAX_STAT_TYPES)
+                continue;
+            
+            // Calculate bonus: base stat value * (stat_bonus_percent / 100)
+            float bonus = static_cast<float>(statValue) * (statBonusPercent / 100.0f);
+            
+            // Apply as enhancement modifier
+            StatModifier modifier(StatSource::ENHANCEMENT, bonus, 0.0f, 100);
+            ApplyStatModifier(player, ourStatType, modifier);
+        }
+    }
+}
+
+void UnifiedStatSystem::LoadParagonStatBonuses(Player* player)
+{
+    if (!player)
+        return;
+    
+    uint32 guid = player->GetGUID().GetCounter();
+    
+    // Get paragon stat allocations
+    QueryResult result = CharacterDatabase.Query(
+        "SELECT ps.stat_type, ps.stat_id, ps.points_allocated, pd.points_per_level "
+        "FROM character_paragon_stats ps "
+        "JOIN paragon_stat_definitions pd ON ps.stat_id = pd.stat_id "
+        "WHERE ps.guid = {} AND pd.active = 1",
+        guid
+    );
+    
+    if (!result)
+        return;
+    
+    do
+    {
+        Field* fields = result->Fetch();
+        uint8 paragonStatType = fields[0].Get<uint8>(); // 0=Core, 1=Offense, 2=Defense, 3=Utility
+        uint32 statId = fields[1].Get<uint32>();
+        uint32 pointsAllocated = fields[2].Get<uint32>();
+        float pointsPerLevel = fields[3].Get<float>();
+        
+        if (pointsAllocated == 0)
+            continue;
+        
+        // Calculate bonus value
+        float bonus = static_cast<float>(pointsAllocated) * pointsPerLevel;
+        
+        // Map paragon stat type to our StatType
+        // For now, we'll need to query the stat definition to get the actual stat
+        QueryResult statDefResult = WorldDatabase.Query(
+            "SELECT stat_name FROM paragon_stat_definitions WHERE stat_id = {}",
+            statId
+        );
+        
+        if (!statDefResult)
+            continue;
+        
+        std::string statName = statDefResult->Fetch()[0].Get<std::string>();
+        StatType statType = ConvertParagonStatNameToStatType(statName);
+        
+        if (statType == StatType::MAX_STAT_TYPES)
+            continue;
+        
+        // Apply paragon modifier
+        StatModifier modifier(StatSource::PARAGON, bonus, 0.0f, 200);
+        ApplyStatModifier(player, statType, modifier);
+        
+    } while (result->NextRow());
+}
+
+void UnifiedStatSystem::LoadPrestigeBonuses(Player* player)
+{
+    if (!player)
+        return;
+    
+    uint32 guid = player->GetGUID().GetCounter();
+    
+    // Get prestige level
+    QueryResult result = CharacterDatabase.Query(
+        "SELECT prestige_level FROM character_progression_unified WHERE guid = {}",
+        guid
+    );
+    
+    if (!result)
+        return;
+    
+    uint8 prestigeLevel = result->Fetch()[0].Get<uint8>();
+    if (prestigeLevel == 0)
+        return;
+    
+    // Prestige gives percentage bonus to all stats
+    float prestigePercent = static_cast<float>(prestigeLevel) * 1.0f; // 1% per prestige level
+    
+    // Apply to all base stats
+    StatType baseStats[] = {
+        StatType::STRENGTH,
+        StatType::AGILITY,
+        StatType::STAMINA,
+        StatType::INTELLECT,
+        StatType::SPIRIT
+    };
+    
+    for (StatType statType : baseStats)
+    {
+        StatModifier modifier(StatSource::PRESTIGE, 0.0f, prestigePercent, 300);
+        ApplyStatModifier(player, statType, modifier);
+    }
+}
+
+UnifiedStatSystem::StatType UnifiedStatSystem::ConvertWoWStatToStatType(Stats stat)
+{
+    switch (stat)
+    {
+        case STAT_STRENGTH: return StatType::STRENGTH;
+        case STAT_AGILITY: return StatType::AGILITY;
+        case STAT_STAMINA: return StatType::STAMINA;
+        case STAT_INTELLECT: return StatType::INTELLECT;
+        case STAT_SPIRIT: return StatType::SPIRIT;
+        default: return StatType::MAX_STAT_TYPES;
+    }
+}
+
+UnifiedStatSystem::StatType UnifiedStatSystem::ConvertItemStatToStatType(uint32 itemStatType)
+{
+    switch (itemStatType)
+    {
+        case ITEM_MOD_MANA:
+        case ITEM_MOD_HEALTH:
+            return StatType::HEALTH; // Close enough
+        case ITEM_MOD_AGILITY:
+            return StatType::AGILITY;
+        case ITEM_MOD_STRENGTH:
+            return StatType::STRENGTH;
+        case ITEM_MOD_INTELLECT:
+            return StatType::INTELLECT;
+        case ITEM_MOD_SPIRIT:
+            return StatType::SPIRIT;
+        case ITEM_MOD_STAMINA:
+            return StatType::STAMINA;
+        case ITEM_MOD_ATTACK_POWER:
+            return StatType::ATTACK_POWER;
+        case ITEM_MOD_SPELL_POWER:
+            return StatType::SPELL_POWER;
+        default:
+            return StatType::MAX_STAT_TYPES;
+    }
+}
+
+UnifiedStatSystem::StatType UnifiedStatSystem::ConvertParagonStatNameToStatType(const std::string& statName)
+{
+    // Convert paragon stat name to StatType
+    if (statName == "Strength" || statName == "strength")
+        return StatType::STRENGTH;
+    else if (statName == "Agility" || statName == "agility")
+        return StatType::AGILITY;
+    else if (statName == "Stamina" || statName == "stamina")
+        return StatType::STAMINA;
+    else if (statName == "Intellect" || statName == "intellect")
+        return StatType::INTELLECT;
+    else if (statName == "Spirit" || statName == "spirit")
+        return StatType::SPIRIT;
+    else if (statName == "Attack Power" || statName == "attack power")
+        return StatType::ATTACK_POWER;
+    else if (statName == "Spell Power" || statName == "spell power")
+        return StatType::SPELL_POWER;
+    else if (statName == "Health" || statName == "health")
+        return StatType::HEALTH;
+    else if (statName == "Armor" || statName == "armor")
+        return StatType::ARMOR;
+    
+    return StatType::MAX_STAT_TYPES;
 }
 

@@ -5,6 +5,7 @@
 
 #include "ProgressiveSystemsAddonScript.h"
 #include "ProgressiveSystemsAddon.h"
+#include "UnifiedStatSystem.h"
 #include "World.h"
 #include "Log.h"
 #include <algorithm>
@@ -35,10 +36,14 @@ void ProgressiveSystemsAddonScript::OnPlayerLogin(Player* player)
     if (!player)
         return;
     
-    // Send initial data immediately (player should be fully loaded by now)
-    // If needed, can use WorldScript hooks for delayed sending
-    if (player && player->IsInWorld())
+    // Load and apply stat bonuses from item upgrades, paragon, prestige
+    // This must be called after player is fully loaded
+    if (player->IsInWorld())
     {
+        // Load stat bonuses from database
+        sUnifiedStatSystem->LoadPlayerStatBonuses(player);
+        
+        // Send initial data to addon
         sProgressiveSystemsAddon->SendProgressionData(player);
         sProgressiveSystemsAddon->SendInstanceData(player);
     }

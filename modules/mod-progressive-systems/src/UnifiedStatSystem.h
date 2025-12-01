@@ -127,6 +127,10 @@ public:
     // Register stat display (for addon)
     void RegisterStatDisplay(StatType statType, const std::string& displayName, const std::string& icon);
     
+    // Load and apply stat bonuses from database (call on login, item upgrade, paragon allocation)
+    void LoadPlayerStatBonuses(Player* player);
+    void InvalidatePlayerCache(uint32 guid);
+    
 private:
     UnifiedStatSystem() = default;
     ~UnifiedStatSystem() = default;
@@ -139,8 +143,29 @@ private:
     // Apply stat to player
     void ApplyStatToPlayer(Player* player, StatType statType, float value);
     
+    // Load item upgrade bonuses
+    void LoadItemUpgradeBonuses(Player* player);
+    
+    // Load paragon stat bonuses
+    void LoadParagonStatBonuses(Player* player);
+    
+    // Load prestige bonuses
+    void LoadPrestigeBonuses(Player* player);
+    
+    // Convert WoW stat enum to StatType
+    StatType ConvertWoWStatToStatType(Stats stat);
+    
+    // Convert item stat type to StatType
+    StatType ConvertItemStatToStatType(uint32 itemStatType);
+    
+    // Convert paragon stat name to StatType
+    StatType ConvertParagonStatNameToStatType(const std::string& statName);
+    
     // Stat modifiers storage (per player, per stat)
     std::map<uint32, std::map<StatType, std::vector<StatModifier>>> m_statModifiers;
+    
+    // Cache for loaded bonuses (to avoid repeated DB queries)
+    std::map<uint32, bool> m_loadedBonuses;
     
     // Stat display info
     struct StatDisplayInfo

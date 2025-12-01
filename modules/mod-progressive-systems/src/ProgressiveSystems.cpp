@@ -6,6 +6,7 @@
 #include "ProgressiveSystems.h"
 #include "ProgressiveSystemsAddon.h"
 #include "ProgressiveSystemsCache.h"
+#include "UnifiedStatSystem.h"
 #include "DatabaseEnv.h"
 #include "ObjectMgr.h"
 #include "ScriptMgr.h"
@@ -361,12 +362,8 @@ bool ProgressiveSystems::UpgradeItem(Player* player, Item* item)
         item->SetState(ITEM_CHANGED, player);
         player->SetVisibleItemSlot(item->GetSlot(), item);
         
-        // Update player stats
-        player->UpdateStats(STAT_STRENGTH);
-        player->UpdateStats(STAT_AGILITY);
-        player->UpdateStats(STAT_STAMINA);
-        player->UpdateStats(STAT_INTELLECT);
-        player->UpdateStats(STAT_SPIRIT);
+        // Reload stat bonuses from database (includes item upgrades)
+        sUnifiedStatSystem->LoadPlayerStatBonuses(player);
         
         // Update power level
         UpdatePowerLevel(player);
