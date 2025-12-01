@@ -1,0 +1,1 @@
+Read AI_PROMPT_20251201_020918.txt and fix the compilation errors. Add automatic fix logic to the Fix-CommonErrors function in improve_loop_enhanced.ps1.

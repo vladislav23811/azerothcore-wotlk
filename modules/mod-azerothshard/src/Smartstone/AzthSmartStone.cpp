@@ -455,7 +455,7 @@ public:
     : PlayerScript("azth_smartstone_player_commands") {
     }
 
-    void OnLogin(Player *player) override {
+    void OnLogin(Player *player) {
         QueryResult ssCommandsResult = CharacterDatabase.Query(
                 "SELECT command, dateExpired, charges FROM "
                 "character_smartstone_commands WHERE playerGuid = %d ;",
@@ -473,11 +473,11 @@ public:
         sAZTH->GetAZTHPlayer(player)->getLastPositionInfoFromDB();
     }
 
-    void OnLogout(Player* player) override {
+    void OnLogout(Player* player) {
         sAZTH->GetAZTHPlayer(player)->saveLastPositionInfoToDB(player);
     }
 
-    void OnBeforeBuyItemFromVendor(Player* player, ObjectGuid vendorguid, uint32 vendorslot, uint32 &item, uint8 count, uint8  /*bag*/, uint8 /*slot*/) override {
+    void OnBeforeBuyItemFromVendor(Player* player, ObjectGuid vendorguid, uint32 vendorslot, uint32 &item, uint8 count, uint8  /*bag*/, uint8 /*slot*/) {
         if (!sSmartStone->isNullCommand(sSmartStone->getCommandByItem(item))) {
             sAZTH->GetAZTHPlayer(player)->BuySmartStoneCommand(vendorguid, vendorslot, item, count, NULL_BAG, NULL_SLOT);
             item = 0;
@@ -545,9 +545,9 @@ void SmartStone::SmartStoneSendListInventory(WorldSession *session, uint64 vendo
                 // Only display items in vendor lists for the team the
                 // player is on. If GM on, display all items.
                 if (!session->GetPlayer()->IsGameMaster() &&
-                        ((itemTemplate->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY &&
+                        ((itemTemplate->Flags2 & ITEM_FLAG2_FACTION_HORDE &&
                         session->GetPlayer()->GetTeamId() == TEAM_ALLIANCE) ||
-                        (itemTemplate->Flags2 == ITEM_FLAGS_EXTRA_ALLIANCE_ONLY &&
+                        (itemTemplate->Flags2 & ITEM_FLAG2_FACTION_ALLIANCE &&
                         session->GetPlayer()->GetTeamId() == TEAM_HORDE)))
                     continue;
 

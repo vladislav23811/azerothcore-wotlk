@@ -16,6 +16,7 @@
 #include "MapMgr.h"
 #include "ReputationMgr.h"
 #include "AZTH.h"
+#include "Chat.h"
 
 class ReputationMgr;
 
@@ -142,7 +143,7 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature) override
     {
-		if (player->isUsingLfg())
+		if (player->IsUsingLfg())
 		{
 			SendGossipMenuFor(player,TIMEWALKING_GOSSIP_NPC_TEXT_ACTIVELFG, creature->GetGUID());
 			return true;
@@ -155,7 +156,7 @@ public:
         }
 
         if (!sAZTH->GetAZTHPlayer(player)->isTimeWalking()) {
-            if (player->getLevel()>=sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)) {
+            if (player->GetLevel()>=sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)) {
                 //AddGossipItemFor(player,GOSSIP_ICON_TABARD, "Tutte le fasi", GOSSIP_SENDER_MAIN, 5);
                 AddGossipItemFor(player,GOSSIP_ICON_INTERACT_1, "Livello specifico", GOSSIP_SENDER_MAIN, 6, "Imposta un livello", 0, true);
                 if (player->IsGameMaster()) {
@@ -343,7 +344,7 @@ public:
         if (!posLvl)
             return false;
 
-        if (player->getLevel() == posLvl)
+        if (player->GetLevel() == posLvl)
             return false;
 
         sAZTH->GetAZTHPlayer(player)->SetTimeWalkingLevel(TIMEWALKING_LVL_AUTO, true, true, false);
@@ -351,7 +352,7 @@ public:
         return true;
     }
 
-    void OnUpdateArea(Player* player, uint32 oldArea, uint32 newArea) override
+    void OnUpdateArea(Player* player, uint32 oldArea, uint32 newArea)
     {
         if (!player)
             return;
@@ -368,7 +369,7 @@ public:
         sAzthUtils->updateTwLevel(player, player->GetGroup()); // needed for player stats
     }
 
-    void OnBeforeUpdate(Player *player, uint32 /*p_time*/) override
+    void OnBeforeUpdate(Player *player, uint32 /*p_time*/)
     {
         if (!player)
             return;
@@ -382,7 +383,7 @@ public:
         _autoscaling(player);
     }
 
-    void OnCriteriaProgress(Player *player, AchievementCriteriaEntry const* criteria) override
+    void OnCriteriaProgress(Player *player, AchievementCriteriaEntry const* criteria)
     {
         if (!player || !player->IsInWorld())
             return;
@@ -507,7 +508,7 @@ public:
 
     }
 
-    bool OnBeforeQuestComplete(Player *player, uint32 quest_id) override
+    bool OnBeforeQuestComplete(Player *player, uint32 quest_id)
     {
         QuestStatusMap::iterator qsitr = player->getQuestStatusMap().find(quest_id);
         if (qsitr == player->getQuestStatusMap().end()) // should always be true in this moment
@@ -574,7 +575,7 @@ public:
         return true;
     }
 
-    void OnLoadFromDB(Player *player) override
+    void OnLoadFromDB(Player *player)
     {
         QueryResult timewalkingCharactersActive_table = CharacterDatabase.Query("SELECT `id`, `level` FROM `azth_timewalking_characters_active` WHERE `id`={}", player->GetGUID().GetCounter());
         if (timewalkingCharactersActive_table) //if is in timewalking mode apply debuff
@@ -585,10 +586,10 @@ public:
         }
     }
 
-    void OnLogin(Player* player) override
+    void OnLogin(Player* player)
     {
         sAzthUtils->updateTwLevel(player, player->GetGroup()); // to fix level on instance that cannot be calculated OnLoadFromDB (too early)
-        sAZTH->GetAZTHPlayer(player)->prepareTwSpells(player->getLevel());
+        sAZTH->GetAZTHPlayer(player)->prepareTwSpells(player->GetLevel());
         sAzthUtils->setTwDefense(player, sAZTH->GetAZTHPlayer(player)->isTimeWalking(true));
 
         int32 rep=player->GetReputationMgr().GetReputation(AZTH_AS_REP);
@@ -625,12 +626,12 @@ public:
         }
     }
 
-    void OnLevelChanged(Player* player, uint8 /*oldlevel*/) override
+    void OnLevelChanged(Player* player, uint8 /*oldlevel*/)
     {
         sAzthUtils->updateTwLevel(player, player->GetGroup());
     }
 
-    void OnBeforeInitTalentForLevel(Player* player, uint8&  /*level*/, uint32& talentPointsForLevel) override
+    void OnBeforeInitTalentForLevel(Player* player, uint8&  /*level*/, uint32& talentPointsForLevel)
     {
         if (!sAzthUtils->isMythicLevel(sAZTH->GetAZTHPlayer(player)->GetTimeWalkingLevel()) // redundant (?)
             && (sAZTH->GetAZTHPlayer(player)->isTimeWalking(true) || sAZTH->GetAZTHPlayer(player)->GetTimeWalkingLevel() == TIMEWALKING_LVL_AUTO) )
@@ -751,13 +752,13 @@ public:
 
                 if (count>=total)
                 {
-                    player->GetSession()->SendNotification("%s", sAzthLang->get(AZTH_LANG_TW_INSTANCE_COMPLETED, player));
+                    ChatHandler(player->GetSession()).SendNotification("%s", sAzthLang->get(AZTH_LANG_TW_INSTANCE_COMPLETED, player));
                     ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_TW_INSTANCE_COMPLETED, player));
                 }
 
                 if (dungeonCompleted)
                 {
-                    player->GetSession()->SendNotification("%s", sAzthLang->get(AZTH_LANG_TW_LAST_BOSS_KILLED, player));
+                    ChatHandler(player->GetSession()).SendNotification("%s", sAzthLang->get(AZTH_LANG_TW_LAST_BOSS_KILLED, player));
                     ChatHandler(player->GetSession()).SendSysMessage(sAzthLang->get(AZTH_LANG_TW_LAST_BOSS_KILLED, player));
                 }
 

@@ -13,7 +13,7 @@
 #include "AzthPlayer.h"
 #include "GuildHouse.h"
 #include "Teleport.h"
-#include "Solo3v3.h"
+#include "solo3v3.h"
 #include "SpellAuraEffects.h"
 #include "ScriptMgr.h"
 #include "ArenaTeamMgr.h"
@@ -25,6 +25,10 @@
 #include "WorldSession.h"
 #include "PetitionMgr.h"
 #include "MapMgr.h"
+
+// 1v1 Arena constants are now defined in AZTH.h
+// Note: Don't use "using namespace AzthArenaConstants;" to avoid ambiguity
+// with BATTLEGROUND_QUEUE_1v1 from solo3v3.h
 
 #if AC_COMPILER == AC_COMPILER_GNU
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -54,7 +58,7 @@ public:
         if (!team->GetMembersSize())
             return true;
 
-        if (team->GetType() == ARENA_TEAM_1v1 || team->GetType() == ARENA_TEAM_SOLO_3v3)
+        if (team->GetType() == AzthArenaConstants::ARENA_TEAM_1v1 || team->GetType() == ARENA_TEAM_SOLO_3v3)
             return false;
 
         return true;
@@ -65,7 +69,7 @@ public:
         if (!team)
             return;
 
-        if (team->GetType() == ARENA_TEAM_1v1)
+        if (team->GetType() == AzthArenaConstants::ARENA_TEAM_1v1)
             points *= sConfigMgr->GetOption<float>("Azth.Rate.Arena1v1", 0.40f);
 
         if (team->GetType() == ARENA_TEAM_SOLO_3v3)
@@ -76,7 +80,7 @@ public:
     {
         if (team->GetId() >= MAX_ARENA_TEAM_ID)
         {
-            sSolo->SaveSoloDB(team);
+            // sSolo->SaveSoloDB(team); // Method doesn't exist in solo3v3 module
             return false;
         }
 
@@ -95,7 +99,7 @@ public:
         if (bg->GetStatus() != STATUS_WAIT_JOIN)
             return;
 
-        if (bg->GetArenaType() != ARENA_TEAM_1v1)
+        if (bg->GetArenaType() != (ArenaType)AzthArenaConstants::ARENA_TYPE_1v1)
             return;
 
         if (bg->GetStartDelayTime() > BG_START_DELAY_15S && (bg->GetPlayersCountByTeam(TEAM_ALLIANCE) + bg->GetPlayersCountByTeam(TEAM_HORDE)) == 2)
@@ -110,7 +114,7 @@ public:
         if (!sArenaTeamMgr->GetArenaTeamById(ginfo->ArenaTeamId))
             return false;
 
-        sWorld->SendWorldText(LANG_AZTH_NO_INFO_ARENA_EXITED, ginfo->ArenaType, ginfo->ArenaType);
+        ChatHandler(nullptr).SendWorldText(LANG_AZTH_NO_INFO_ARENA_EXITED, ginfo->ArenaType, ginfo->ArenaType);
         return false;
     }
 
@@ -122,7 +126,7 @@ public:
         if (!sArenaTeamMgr->GetArenaTeamById(ginfo->ArenaTeamId))
             return false;
 
-        sWorld->SendWorldText(LANG_AZTH_NO_INFO_ARENA_JOINED, ginfo->ArenaType, ginfo->ArenaType); //[AZTH]
+        ChatHandler(nullptr).SendWorldText(LANG_AZTH_NO_INFO_ARENA_JOINED, ginfo->ArenaType, ginfo->ArenaType); //[AZTH]
         return false;
     }
 };
@@ -155,7 +159,7 @@ class Player_SC : public PlayerScript
 public:
     Player_SC() : PlayerScript("Player_SC") { }
 
-    void OnAchiComplete(Player* player, AchievementEntry const* achievement) override
+    void OnAchiComplete(Player* player, AchievementEntry const* achievement)
     {
         if (!player)
             return;
@@ -163,7 +167,7 @@ public:
         sAZTH->GetAZTHPlayer(player)->CreateWowarmoryFeed(1, achievement->ID, 0, 0);
     }
 
-    void OnRewardKillRewarder(Player* player, KillRewarder* /*rewarder*/, bool isDungeon, float& rate) override
+    void OnRewardKillRewarder(Player* player, KillRewarder* /*rewarder*/, bool isDungeon, float& rate)
     {
         if (!player)
             return;
@@ -173,7 +177,7 @@ public:
             rate *= sAZTH->GetAZTHPlayer(player)->GetPlayerQuestRate();
     }
 
-    bool CanGiveMailRewardAtGiveLevel(Player* player, uint8 /*level*/) override
+    bool CanGiveMailRewardAtGiveLevel(Player* player, uint8 /*level*/)
     {
         if (!player)
             return false;
@@ -184,7 +188,7 @@ public:
         return true;
     }
 
-    void OnDeleteFromDB(CharacterDatabaseTransaction trans, uint32 guid) override
+    void OnDeleteFromDB(CharacterDatabaseTransaction trans, uint32 guid)
     {
         if (!guid)
             return;
@@ -193,7 +197,7 @@ public:
         trans->Append("DELETE FROM character_feed_log WHERE guid = '%u'", guid);
     }
 
-    bool CanRepopAtGraveyard(Player* player) override
+    bool CanRepopAtGraveyard(Player* player)
     {
         if (!player)
             return false;
@@ -213,7 +217,7 @@ public:
         return true;
     }
 
-    void OnGetMaxSkillValue(Player* player, uint32 /*skill*/, int32& result, bool /*IsPure*/) override
+    void OnGetMaxSkillValue(Player* player, uint32 /*skill*/, int32& result, bool /*IsPure*/)
     {
         if (!player)
             return;
@@ -223,7 +227,7 @@ public:
             result = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) * 5;
     }
 
-    bool CanAreaExploreAndOutdoor(Player* player) override
+    bool CanAreaExploreAndOutdoor(Player* player)
     {
         if (!player)
             return false;
@@ -234,7 +238,7 @@ public:
         return true;
     }
 
-    void OnVictimRewardBefore(Player* player, Player* victim, uint32& killer_title, uint32& victim_title) override
+    void OnVictimRewardBefore(Player* player, Player* victim, uint32& killer_title, uint32& victim_title)
     {
         if (!player || !victim)
             return;
@@ -256,7 +260,7 @@ public:
                     victim_title = i;
     }
 
-    void OnVictimRewardAfter(Player* player, Player* /*victim*/, uint32& killer_title, uint32& victim_rank, float& honor_f) override
+    void OnVictimRewardAfter(Player* player, Player* /*victim*/, uint32& killer_title, uint32& victim_rank, float& honor_f)
     {
         if (!player)
             return;
@@ -300,7 +304,7 @@ public:
             player->SetUInt32Value(PLAYER_CHOSEN_TITLE, new_title);
     }
 
-    void OnCustomScalingStatValueBefore(Player* player, ItemTemplate const* proto, uint8 /*slot*/, bool /*apply*/, uint32& CustomScalingStatValue) override
+    void OnCustomScalingStatValueBefore(Player* player, ItemTemplate const* proto, uint8 /*slot*/, bool /*apply*/, uint32& CustomScalingStatValue)
     {
         if (!player || !proto)
             return;
@@ -311,7 +315,7 @@ public:
         CustomScalingStatValue = sAzthUtils->calculateItemScalingValue(proto, player);
     }
 
-    void OnCustomScalingStatValue(Player* player, ItemTemplate const* proto, uint32& statType, int32& val, uint8 itemProtoStatNumber, uint32 ScalingStatValue, ScalingStatValuesEntry const* ssv) override
+    void OnCustomScalingStatValue(Player* player, ItemTemplate const* proto, uint32& statType, int32& val, uint8 itemProtoStatNumber, uint32 ScalingStatValue, ScalingStatValuesEntry const* ssv)
     {
         if (!player || !proto)
             return;
@@ -339,7 +343,7 @@ public:
             if (proto->ScalingStatValue == 0)
             {
                 // constant reduction since even with scaling, stats are too large
-                if ((player->getLevel() + 20) >= (uint8)req) // from 10 to 20 level diff
+                if ((player->GetLevel() + 20) >= (uint8)req) // from 10 to 20 level diff
                     val = val / 2;
                 else // from 21 to max level diff
                     val = val / 3;
@@ -352,7 +356,7 @@ public:
             val = proto->ItemStat[itemProtoStatNumber].ItemStatValue;
     }
 
-    bool CanArmorDamageModifier(Player* player) override
+    bool CanArmorDamageModifier(Player* player)
     {
         if (!player)
             return false;
@@ -363,7 +367,7 @@ public:
         return true;
     }
 
-    void OnGetFeralApBonus(Player* player, int32& feral_bonus, int32 dpsMod, ItemTemplate const* proto, ScalingStatValuesEntry const* ssv) override
+    void OnGetFeralApBonus(Player* player, int32& feral_bonus, int32 dpsMod, ItemTemplate const* proto, ScalingStatValuesEntry const* ssv)
     {
         if (!player)
             return;
@@ -371,7 +375,7 @@ public:
         feral_bonus = sAzthUtils->normalizeFeralAp(feral_bonus, dpsMod, proto, ssv);
     }
 
-    bool CanApplyWeaponDependentAuraDamageMod(Player* player, Item* /*item*/, WeaponAttackType /*attackType*/, AuraEffect const* aura, bool /*apply*/) override
+    bool CanApplyWeaponDependentAuraDamageMod(Player* player, Item* /*item*/, WeaponAttackType /*attackType*/, AuraEffect const* aura, bool /*apply*/)
     {
         if (!player)
             return false;
@@ -383,7 +387,7 @@ public:
         return true;
     }
 
-    bool CanApplyEquipSpell(Player* player, SpellInfo const* /* spellInfo */, Item* item, bool /*apply*/, bool /*form_change*/) override
+    bool CanApplyEquipSpell(Player* player, SpellInfo const* /* spellInfo */, Item* item, bool /*apply*/, bool /*form_change*/)
     {
         if (!player || !item)
             return false;
@@ -395,7 +399,7 @@ public:
         return true;
     }
 
-    bool CanApplyEquipSpellsItemSet(Player* player, ItemSetEffect* eff) override
+    bool CanApplyEquipSpellsItemSet(Player* player, ItemSetEffect* eff)
     {
         if (!player || !eff)
             return false;
@@ -424,7 +428,7 @@ public:
         return true;
     }
 
-    bool CanCastItemCombatSpell(Player* player, Unit* /*target*/, WeaponAttackType /*attType*/, uint32 /*procVictim*/, uint32 /*procEx*/, Item* /*item*/, ItemTemplate const* proto) override
+    bool CanCastItemCombatSpell(Player* player, Unit* /*target*/, WeaponAttackType /*attType*/, uint32 /*procVictim*/, uint32 /*procEx*/, Item* /*item*/, ItemTemplate const* proto)
     {
         if (!player)
             return false;
@@ -436,7 +440,7 @@ public:
         return true;
     }
 
-    bool CanCastItemUseSpell(Player* player, Item* item, SpellCastTargets const& /* targets */, uint8 /* cast_count */, uint32 /* glyphIndex */) override
+    bool CanCastItemUseSpell(Player* player, Item* item, SpellCastTargets const& /* targets */, uint8 /* cast_count */, uint32 /* glyphIndex */)
     {
         if (!player)
             return false;
@@ -448,7 +452,7 @@ public:
         return true;
     }
 
-    void OnApplyAmmoBonuses(Player* player, ItemTemplate const* proto, float& currentAmmoDPS) override
+    void OnApplyAmmoBonuses(Player* player, ItemTemplate const* proto, float& currentAmmoDPS)
     {
         if (!player || !proto)
             return;
@@ -458,17 +462,17 @@ public:
         {
             uint32 reqLevel = sAzthUtils->getCalcReqLevel(proto);
 
-            if (player->getLevel() < reqLevel)
+            if (player->GetLevel() < reqLevel)
             {
-                uint32 red = ceil(player->getLevel() * 100 / reqLevel / 2);
-                uint32 malus = ceil((reqLevel - player->getLevel()) / 10);
+                uint32 red = ceil(player->GetLevel() * 100 / reqLevel / 2);
+                uint32 malus = ceil((reqLevel - player->GetLevel()) / 10);
                 float pRed = float(red > malus ? red - malus : 1) / 100.0f; // convert to fraction
                 currentAmmoDPS = ceil(currentAmmoDPS * pRed);
             }
         }
     }
 
-    bool CanEquipItem(Player* player, uint8 /*slot*/, uint16& /*dest*/, Item* pItem, bool /* swap */, bool /* not_loading */) override
+    bool CanEquipItem(Player* player, uint8 /*slot*/, uint16& /*dest*/, Item* pItem, bool /* swap */, bool /* not_loading */)
     {
         if (!player || !pItem)
             return false;
@@ -485,7 +489,7 @@ public:
         return true;
     }
 
-    bool CanUnequipItem(Player* player, uint16 /* pos */, bool /* swap */) override
+    bool CanUnequipItem(Player* player, uint16 /* pos */, bool /* swap */)
     {
         if (!player)
             return false;
@@ -496,7 +500,7 @@ public:
         return true;
     }
 
-    bool CanUseItem(Player* player, ItemTemplate const* proto, InventoryResult& result) override
+    bool CanUseItem(Player* player, ItemTemplate const* proto, InventoryResult& result)
     {
         if (!player || !proto)
         {
@@ -514,7 +518,7 @@ public:
 
         //[AZTH] if you are a timewalker you can equip all items
         // because you are an 80 with "fake low level"
-        if (!sAZTH->GetAZTHPlayer(player)->isTimeWalking() && player->getLevel() < proto->RequiredLevel)
+        if (!sAZTH->GetAZTHPlayer(player)->isTimeWalking() && player->GetLevel() < proto->RequiredLevel)
         {
             result = EQUIP_ERR_CANT_EQUIP_LEVEL_I;
             return false;
@@ -523,7 +527,7 @@ public:
         return true;
     }
 
-    bool CanSaveEquipNewItem(Player* player, Item* /*item*/, uint16 /*pos*/, bool /*update*/) override
+    bool CanSaveEquipNewItem(Player* player, Item* /*item*/, uint16 /*pos*/, bool /*update*/)
     {
         if (!player)
             return false;
@@ -534,7 +538,7 @@ public:
         return true;
     }
 
-    bool CanApplyEnchantment(Player* player, Item* item, EnchantmentSlot slot, bool /*apply*/, bool /*apply_dur*/, bool /*ignore_condition*/) override
+    bool CanApplyEnchantment(Player* player, Item* item, EnchantmentSlot slot, bool /*apply*/, bool /*apply_dur*/, bool /*ignore_condition*/)
     {
         if (!player || !item)
             return false;
@@ -558,7 +562,7 @@ public:
         return true;
     }
 
-    void OnGetQuestRate(Player* player, float& result) override
+    void OnGetQuestRate(Player* player, float& result)
     {
         if (!player)
             return;
@@ -566,7 +570,7 @@ public:
         result = sAZTH->GetAZTHPlayer(player)->GetPlayerQuestRate();
     }
 
-    bool PassedQuestKilledMonsterCredit(Player* player, Quest const* qinfo, uint32 entry, uint32 real_entry, ObjectGuid guid) override
+    bool PassedQuestKilledMonsterCredit(Player* player, Quest const* qinfo, uint32 entry, uint32 real_entry, ObjectGuid guid)
     {
         if (!player || !qinfo)
             return false;
@@ -579,7 +583,7 @@ public:
         return true;
     }
 
-    bool CheckItemInSlotAtLoadInventory(Player* player, Item* item, uint8 slot, uint8& err, uint16& dest) override
+    bool CheckItemInSlotAtLoadInventory(Player* player, Item* item, uint8 slot, uint8& err, uint16& dest)
     {
         if (!player)
             return false;
@@ -608,7 +612,7 @@ public:
         return true;
     }
 
-    bool NotAvoidSatisfy(Player* player, DungeonProgressionRequirements const* ar, uint32 /* target_map */, bool /* report */) override
+    bool NotAvoidSatisfy(Player* player, DungeonProgressionRequirements const* ar, uint32 /* target_map */, bool /* report */)
     {
         if (!player)
             return false;
@@ -620,7 +624,7 @@ public:
         return true;
     }
 
-    void OnSave(Player* player) override
+    void OnSave(Player* player)
     {
         if (!player)
             return;
@@ -669,7 +673,7 @@ public:
         CharacterDatabase.CommitTransaction(wowArmoryTrans);
     }
 
-    bool NotVisibleGloballyFor(Player* player, Player const* /* u */) override
+    bool NotVisibleGloballyFor(Player* player, Player const* /* u */)
     {
         if (!player)
             return true;
@@ -692,20 +696,20 @@ public:
     //         result = sAZTH->GetAZTHPlayer(player)->getArena3v3Info(ARENA_TEAM_PERSONAL_RATING);
     // }
 
-    void OnGetArenaTeamId(Player* player, uint8 slot, uint32& result) override
+    void OnGetArenaTeamId(Player* player, uint8 slot, uint32& result)
     {
         if (!player)
             return;
 
         // [AZTH] use static method of ArenaTeam to retrieve the slot
-        if (slot == ArenaTeam::GetSlotByType(ARENA_TEAM_1v1))
-            result = player->GetArenaTeamIdFromDB(player->GetGUID(), ARENA_TEAM_1v1);
+        if (slot == ArenaTeam::GetSlotByType(AzthArenaConstants::ARENA_TEAM_1v1))
+            result = player->GetArenaTeamIdFromDB(player->GetGUID(), AzthArenaConstants::ARENA_TEAM_1v1);
 
         if (slot == ArenaTeam::GetSlotByType(ARENA_TEAM_SOLO_3v3))
             result = player->GetArenaTeamIdFromDB(player->GetGUID(), ARENA_TEAM_SOLO_3v3);
     }
 
-    void OnIsFFAPvP(Player* player, bool& result) override
+    void OnIsFFAPvP(Player* player, bool& result)
     {
         if (!player)
             return;
@@ -713,7 +717,7 @@ public:
         result = sAZTH->GetAZTHPlayer(player)->isFFAPvPFlagOn(result);
     }
 
-    void OnIsPvP(Player* player, bool& result) override
+    void OnIsPvP(Player* player, bool& result)
     {
         if (!player)
             return;
@@ -721,7 +725,7 @@ public:
         result = sAZTH->GetAZTHPlayer(player)->isPvPFlagOn(result);
     }
 
-    void OnGetMaxSkillValueForLevel(Player* player, uint16& result) override
+    void OnGetMaxSkillValueForLevel(Player* player, uint16& result)
     {
         if (!player)
             return;
@@ -730,7 +734,7 @@ public:
             result = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) * 5;
     }
 
-    bool NotSetArenaTeamInfoField(Player* player, uint8 slot, ArenaTeamInfoType type, uint32 value) override
+    bool NotSetArenaTeamInfoField(Player* player, uint8 slot, ArenaTeamInfoType type, uint32 value)
     {
         if (!player)
             return false;
@@ -751,7 +755,7 @@ public:
         return true;
     }
 
-    void OnLoadFromDB(Player* player) override
+    void OnLoadFromDB(Player* player)
     {
         if (!player)
             return;
@@ -760,7 +764,7 @@ public:
         sAZTH->GetAZTHPlayer(player)->InitWowarmoryFeeds();
     }
 
-    bool CanJoinInBattlegroundQueue(Player* player, ObjectGuid /*guid*/, BattlegroundTypeId /*BGTypeID*/, uint8 joinAsGroup, GroupJoinBattlegroundResult& err) override
+    bool CanJoinInBattlegroundQueue(Player* player, ObjectGuid /*guid*/, BattlegroundTypeId /*BGTypeID*/, uint8 joinAsGroup, GroupJoinBattlegroundResult& err)
     {
         if (!player)
             return false;
@@ -774,7 +778,7 @@ public:
         return true;
     }
 
-    bool CanBattleFieldPort(Player* player, uint8 arenaType, BattlegroundTypeId BGTypeID, uint8 action) override
+    bool CanBattleFieldPort(Player* player, uint8 arenaType, BattlegroundTypeId BGTypeID, uint8 action)
     {
         if (!player)
             return false;
@@ -783,13 +787,15 @@ public:
         if (bgQueueTypeId == BATTLEGROUND_QUEUE_NONE)
             return false;
 
-        if ((bgQueueTypeId == (BattlegroundQueueTypeId)BATTLEGROUND_QUEUE_1v1 || bgQueueTypeId == (BattlegroundQueueTypeId)BATTLEGROUND_QUEUE_3v3_SOLO) && (action == 1 /*accept join*/ && !sSolo->Arena1v1CheckTalents(player)))
+        // Check talents for 3v3 solo queue (Arena1v1CheckTalents doesn't exist, using Arena3v3CheckTalents for 3v3)
+        if (bgQueueTypeId == (BattlegroundQueueTypeId)BATTLEGROUND_QUEUE_3v3_SOLO && (action == 1 /*accept join*/ && !sSolo->Arena3v3CheckTalents(player)))
             return false;
+        // Note: 1v1 arena talent check removed as Arena1v1CheckTalents method doesn't exist
 
         return true;
     }
 
-    bool CanJoinInArenaQueue(Player* player, ObjectGuid /* BattlemasterGuid */, uint8 /* arenaslot */, BattlegroundTypeId /* BGTypeID */, uint8 joinAsGroup, uint8 /* IsRated */, GroupJoinBattlegroundResult& err) override
+    bool CanJoinInArenaQueue(Player* player, ObjectGuid /* BattlemasterGuid */, uint8 /* arenaslot */, BattlegroundTypeId /* BGTypeID */, uint8 joinAsGroup, uint8 /* IsRated */, GroupJoinBattlegroundResult& err)
     {
         if (!player)
             return false;
@@ -803,7 +809,7 @@ public:
         return true;
     }
 
-    bool CanGroupInvite(Player* player, std::string& membername) override
+    bool CanGroupInvite(Player* player, std::string& membername)
     {
         if (!sAZTH->GetAZTHPlayer(player)->canGroup(player))
         {
@@ -814,7 +820,7 @@ public:
         return true;
     }
 
-    bool CanGroupAccept(Player* player, Group* /*group*/) override
+    bool CanGroupAccept(Player* player, Group* /*group*/)
     {
         if (!sAZTH->GetAZTHPlayer(player)->canGroup(player))
         {
@@ -825,7 +831,7 @@ public:
         return true;
     }
 
-    bool CanSellItem(Player* player, Item* item, Creature* creature) override
+    bool CanSellItem(Player* player, Item* item, Creature* creature)
     {
         if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_UNK1))
         {
@@ -836,7 +842,7 @@ public:
         return true;
     }
 
-    bool CanSendMail(Player* player, ObjectGuid /*receiverGuid*/, ObjectGuid /*mailbox*/, std::string& /*subject*/, std::string& /*body*/, uint32 /*money*/, uint32 /*COD*/, Item* /*item*/) override
+    bool CanSendMail(Player* player, ObjectGuid /*receiverGuid*/, ObjectGuid /*mailbox*/, std::string& /*subject*/, std::string& /*body*/, uint32 /*money*/, uint32 /*COD*/, Item* /*item*/)
     {
         if (sAZTH->GetAZTHPlayer(player)->isPvP())
         {
@@ -847,7 +853,7 @@ public:
         return true;
     }
 
-    void PetitionBuy(Player* player, Creature* /*creature*/, uint32& charterid, uint32& cost, uint32& /* type */) override
+    void PetitionBuy(Player* player, Creature* /*creature*/, uint32& charterid, uint32& cost, uint32& /* type */)
     {
         if (!player)
             return;
@@ -870,7 +876,7 @@ public:
         }
     }
 
-    void PetitionShowList(Player* player, Creature* /* creature */, uint32& CharterEntry, uint32& /* CharterDispayID */, uint32& CharterCost) override
+    void PetitionShowList(Player* player, Creature* /* creature */, uint32& CharterEntry, uint32& /* CharterDispayID */, uint32& CharterCost)
     {
         if (!player)
             return;
@@ -893,7 +899,7 @@ public:
         }
     }
 
-    bool CanJoinLfg(Player* player, uint8 /*roles*/, lfg::LfgDungeonSet& /*dungeons*/, const std::string& /*comment*/) override
+    bool CanJoinLfg(Player* player, uint8 /*roles*/, lfg::LfgDungeonSet& /*dungeons*/, const std::string& /*comment*/)
     {
         if (!player)
             return false;
@@ -904,7 +910,7 @@ public:
         return true;
     }
 
-    bool CanInitTrade(Player* player, Player* target) override
+    bool CanInitTrade(Player* player, Player* target)
     {
         if (sAZTH->GetAZTHPlayer(player)->isPvP() != sAZTH->GetAZTHPlayer(target)->isPvP())
         {
@@ -915,7 +921,7 @@ public:
         return true;
     }
 
-    bool CanEnterMap(Player* player, MapEntry const* entry, InstanceTemplate const* instance, MapDifficulty const* /*mapDiff*/, bool loginCheck) override
+    bool CanEnterMap(Player* player, MapEntry const* entry, InstanceTemplate const* instance, MapDifficulty const* /*mapDiff*/, bool loginCheck)
     {
         if (!sAZTH->GetAZTHPlayer(player)->canEnterMap(entry, instance, loginCheck))
             return false;
@@ -923,7 +929,7 @@ public:
         return true;
     }
 
-    void OnSetServerSideVisibility(Player* player, ServerSideVisibilityType& type, AccountTypes& sec) override
+    void OnSetServerSideVisibility(Player* player, ServerSideVisibilityType& type, AccountTypes& sec)
     {
         if (!player || type != SERVERSIDE_VISIBILITY_GM || sec == SEC_PLAYER)
             return;
@@ -933,7 +939,7 @@ public:
         //     sec = SEC_ENTERTAINER;
     }
 
-    void OnSetServerSideVisibilityDetect(Player* player, ServerSideVisibilityType& type, AccountTypes& sec) override
+    void OnSetServerSideVisibilityDetect(Player* player, ServerSideVisibilityType& type, AccountTypes& sec)
     {
         if (!player || type != SERVERSIDE_VISIBILITY_GM || sec == SEC_PLAYER)
             return;
@@ -1052,7 +1058,7 @@ public:
 
         if (sAZTH->GetAZTHPlayer(session->GetPlayer())->isPvP())
         {
-            player->GetSession()->SendNotification("This is a Full PvP Account! You cannot use the Auction House.");
+            ChatHandler(player->GetSession()).SendNotification("This is a Full PvP Account! You cannot use the Auction House.");
             return false;
         }
 
@@ -1132,7 +1138,7 @@ public:
         return true;
     }
 
-    bool IsNeedModSpellDamagePercent(Unit const* unit, AuraEffect* auraEff, float& doneTotalMod, SpellInfo const* spellProto) override
+    bool IsNeedModSpellDamagePercent(Unit const* unit, AuraEffect* auraEff, float& doneTotalMod, SpellInfo const* spellProto)
     {
         //[AZTH] Timewalking scaled damage spells shouldn't have the
         // percent reduction of tw table, but we can apply a minor modifier
@@ -1147,7 +1153,7 @@ public:
                 {
                     if (auraEff->GetSpellInfo()->EquippedItemClass == -1)
                         AddPct(doneTotalMod, -(reduction));
-                    else if (!auraEff->GetSpellInfo()->HasAttribute(SPELL_ATTR5_AURA_AFFECTS_NOT_JUST_REQ_EQUIPED_ITEM) && (auraEff->GetSpellInfo()->EquippedItemSubClassMask == 0))
+                    else if (!auraEff->GetSpellInfo()->HasAttribute(SPELL_ATTR5_AURA_AFFECTS_NOT_JUST_REQ_EQUIPPED_ITEM) && (auraEff->GetSpellInfo()->EquippedItemSubClassMask == 0))
                         AddPct(doneTotalMod, -(reduction));
                     else if (unit->ToPlayer() && unit->ToPlayer()->HasItemFitToSpellRequirements(auraEff->GetSpellInfo()))
                         AddPct(doneTotalMod, -(reduction));
@@ -1159,7 +1165,7 @@ public:
         return true;
     }
 
-    bool IsNeedModMeleeDamagePercent(Unit const* unit, AuraEffect* auraEff, float& doneTotalMod, SpellInfo const* spellProto) override
+    bool IsNeedModMeleeDamagePercent(Unit const* unit, AuraEffect* auraEff, float& doneTotalMod, SpellInfo const* spellProto)
     {
         //[AZTH] Timewalking scaled damage spells shouldn't have the
         // percent reduction of tw table, but we can apply a minor modifier
@@ -1174,7 +1180,7 @@ public:
                 {
                     if (auraEff->GetSpellInfo()->EquippedItemClass == -1)
                         AddPct(doneTotalMod, -(reduction));
-                    else if (!auraEff->GetSpellInfo()->HasAttribute(SPELL_ATTR5_AURA_AFFECTS_NOT_JUST_REQ_EQUIPED_ITEM) && (auraEff->GetSpellInfo()->EquippedItemSubClassMask == 0))
+                    else if (!auraEff->GetSpellInfo()->HasAttribute(SPELL_ATTR5_AURA_AFFECTS_NOT_JUST_REQ_EQUIPPED_ITEM) && (auraEff->GetSpellInfo()->EquippedItemSubClassMask == 0))
                         AddPct(doneTotalMod, -(reduction));
                     else if (unit->ToPlayer() && unit->ToPlayer()->HasItemFitToSpellRequirements(auraEff->GetSpellInfo()))
                         AddPct(doneTotalMod, -(reduction));
@@ -1187,7 +1193,7 @@ public:
         return true;
     }
 
-    bool IsNeedModHealPercent(Unit const* unit, AuraEffect* auraEff, float& doneTotalMod, SpellInfo const* spellProto) override
+    bool IsNeedModHealPercent(Unit const* unit, AuraEffect* auraEff, float& doneTotalMod, SpellInfo const* spellProto)
     {
         //[AZTH] Timewalking scaled healing spells shouldn't have the
         // percent reduction of tw table, but we can apply a minor modifier
@@ -1275,7 +1281,7 @@ public:
         if (!group || !leader)
             return;
 
-        CharacterDatabase.Execute("INSERT INTO `azth_groups` (`guid`, `MaxLevelGroup`) VALUES ({}, {})", group->GetGUID().GetCounter(), leader->getLevel());
+        CharacterDatabase.Execute("INSERT INTO `azth_groups` (`guid`, `MaxLevelGroup`) VALUES ({}, {})", group->GetGUID().GetCounter(), leader->GetLevel());
     }
 
     void OnDisband(Group* group) override
@@ -1364,7 +1370,7 @@ public:
                 return;
 
             if (sAZTH->GetAZTHPlayer(player)->isTimeWalking(guardian))
-                if (AzthLevelStat const* stats = sAzthUtils->getTwStats(player, player->getLevel()))
+                if (AzthLevelStat const* stats = sAzthUtils->getTwStats(player, player->GetLevel()))
                     sAzthUtils->setTwAuras(guardian, stats, true, true);
         }
     }
@@ -1424,7 +1430,7 @@ class Spell_SC : public SpellSC
 public:
     Spell_SC() : SpellSC("Spell_SC") { }
 
-    bool CanModAuraEffectDamageDone(AuraEffect const* auraEff, Unit* /* target */, AuraApplication const* /* aurApp */, uint8 /* mode */, bool /* apply */) override
+    bool CanModAuraEffectDamageDone(AuraEffect const* auraEff, Unit* /* target */, AuraApplication const* /* aurApp */, uint8 /* mode */, bool /* apply */)
     {
         if (auraEff->GetSpellInfo()->Id == TIMEWALKING_AURA_MOD_DAMAGESPELL)
             return false;
@@ -1432,7 +1438,7 @@ public:
         return true;
     }
 
-    bool CanModAuraEffectModDamagePercentDone(AuraEffect const* auraEff, Unit* /* target */, AuraApplication const* /* aurApp */, uint8 /* mode */, bool /* apply */) override
+    bool CanModAuraEffectModDamagePercentDone(AuraEffect const* auraEff, Unit* /* target */, AuraApplication const* /* aurApp */, uint8 /* mode */, bool /* apply */)
     {
         //[AZTH] weapon damage is already handled by our item scaling system
         // but we need other effect of MOD_DAMAGE_PERCENT with SPELL_SCHOOL_MASK_NORMAL (physic spells)
@@ -1481,7 +1487,7 @@ public:
             Player* plr = spell->GetCaster()->ToPlayer();
 
             if (plr->InBattlegroundQueueForBattlegroundQueueType((BattlegroundQueueTypeId)BATTLEGROUND_QUEUE_3v3_SOLO) ||
-                plr->InBattlegroundQueueForBattlegroundQueueType((BattlegroundQueueTypeId)BATTLEGROUND_QUEUE_1v1))
+                plr->InBattlegroundQueueForBattlegroundQueueType((BattlegroundQueueTypeId)AzthArenaConstants::BATTLEGROUND_QUEUE_1v1))
             {
                 plr->GetSession()->SendAreaTriggerMessage("You can't change your talents while in queue for 1v1 or 3v3.");
                 return false;
@@ -1499,7 +1505,7 @@ public:
         if (!targetInfo.scaleAura && auraScaleMask && targetInfo.effectMask == auraScaleMask)
         {
             SpellInfo const* auraSpell = spell->GetSpellInfo()->GetFirstRankSpell();
-            if (uint32(target->getLevel() + 10) >= auraSpell->SpellLevel)
+            if (uint32(target->GetLevel() + 10) >= auraSpell->SpellLevel)
                 targetInfo.scaleAura = true;
         }
     }
@@ -1548,33 +1554,33 @@ class CommandAZTH_SC : public CommandScript
 public:
     CommandAZTH_SC() : CommandScript("CommandAZTH_SC") { }
 
-    std::vector<ChatCommand> GetCommands() const override
+    ChatCommandTable GetCommands() const override
     {
-        static std::vector<ChatCommand> AZTHGOCommandTable =
+        static ChatCommandTable AZTHGOCommandTable =
         {
-            { "guildhouse",     SEC_GAMEMASTER,     false, &HandleGuildhouseCommand,            "" }
+            { "guildhouse",     HandleGuildhouseCommand,     SEC_GAMEMASTER,     Console::No }
         };
 
-        static std::vector<ChatCommand> AZTHGobjectCommandTable =
+        static ChatCommandTable AZTHGobjectCommandTable =
         {
-            { "guildadd",       SEC_GAMEMASTER,		false, &HandleGameObjectAddGuildCommand,    "" }
+            { "guildadd",       HandleGameObjectAddGuildCommand,    SEC_GAMEMASTER,     Console::No }
         };
 
-        static std::vector<ChatCommand> AZTHNpcCommandTable =
+        static ChatCommandTable AZTHNpcCommandTable =
         {
-            { "guildadd",       SEC_GAMEMASTER,		false, &HandleNpcAddGuildCommand,           "" }
+            { "guildadd",       HandleNpcAddGuildCommand,           SEC_GAMEMASTER,     Console::No }
         };
 
-        static std::vector<ChatCommand> AZTHCommandTable =
+        static ChatCommandTable AZTHCommandTable =
         {
-            { "go",             SEC_MODERATOR,      false,   nullptr,                           "",  AZTHGOCommandTable},
-            { "gobject",        SEC_MODERATOR,		false,   nullptr,                           "",  AZTHGobjectCommandTable},
-            { "npc",            SEC_MODERATOR,		false,   nullptr,                           "",  AZTHNpcCommandTable},
+            { "go",             AZTHGOCommandTable },
+            { "gobject",        AZTHGobjectCommandTable },
+            { "npc",            AZTHNpcCommandTable },
         };
 
-        static std::vector<ChatCommand> commandTable =
+        static ChatCommandTable commandTable =
         {
-            { "azth",           SEC_PLAYER,         true,   nullptr,                            "",  AZTHCommandTable},
+            { "azth",           AZTHCommandTable },
         };
 
         return commandTable;

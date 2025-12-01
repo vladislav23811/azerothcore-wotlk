@@ -44,8 +44,20 @@
 #include "SpellScript.h"
 #include "Unit.h"
 
+#include <vector>
+#include <unordered_map>
+#include <map>
+#include <string>
+#include <memory>
+
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+#include <vector>
+#include <unordered_map>
+#include <map>
+#include <string>
+#include <memory>
 
 #endif

@@ -6,6 +6,7 @@
 
 #include "ProgressiveSystemsDatabase.h"
 #include "DatabaseEnv.h"
+#include "QueryResult.h"
 #include "DatabaseWorkerPool.h"
 #include "Log.h"
 #include "World.h"
@@ -188,7 +189,7 @@ void ProgressiveSystemsDatabase::ExecuteCharacterSQL()
     // Add reward_points column if not exists (safe check)
     QueryResult colCheck = CharacterDatabase.Query(
         "SELECT COUNT(*) as cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'characters' AND COLUMN_NAME = 'reward_points'");
-    if (colCheck)
+    if (colCheck && colCheck->NextRow())
     {
         Field* fields = colCheck->Fetch();
         if (fields[0].Get<uint64>() == 0)

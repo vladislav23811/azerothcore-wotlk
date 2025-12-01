@@ -1,0 +1,186 @@
+========================================
+Timestamp: 2025-12-01 02:00:36
+Error Type: Unknown Pattern
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:00:36
+Error Type: Unknown Pattern
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:00:36
+Error Type: Unknown Pattern
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(34): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:00:36
+Error Type: Unknown Pattern
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(34): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:03:38
+Error Type: Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:03:38
+Error Type: Redefinition: BATTLEGROUND_QUEUE_1v1 (already static)
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(35): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:03:38
+Error Type: Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(35): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:04:52
+Error Type: Redefinition: BATTLEGROUND_QUEUE_1v1 (already static)
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(35): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:04:52
+Error Type: Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(35): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:04:52
+Error Type: Redefinition: BATTLEGROUND_QUEUE_1v1 (already static)
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:04:52
+Error Type: Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:06:01
+Error Type: Redefinition: BATTLEGROUND_QUEUE_1v1 (already static)
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:06:01
+Error Type: Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:06:01
+Error Type: Redefinition: BATTLEGROUND_QUEUE_1v1 (already static)
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(35): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:06:01
+Error Type: Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(35): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:07:11
+Error Type: Redefinition: BATTLEGROUND_QUEUE_1v1 (already static)
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(35): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:07:11
+Error Type: Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(35): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:07:11
+Error Type: Redefinition: BATTLEGROUND_QUEUE_1v1 (already static)
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:07:11
+Error Type: Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:08:14
+Error Type: Redefinition: BATTLEGROUND_QUEUE_1v1 (already static)
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(35): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:08:14
+Error Type: Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(35): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:08:14
+Error Type: Redefinition: BATTLEGROUND_QUEUE_1v1 (already static)
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:08:14
+Error Type: Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:09:18
+Error Type: Redefinition: BATTLEGROUND_QUEUE_1v1 (already static)
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(35): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:09:18
+Error Type: Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(35): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:09:18
+Error Type: Redefinition: BATTLEGROUND_QUEUE_1v1 (already static)
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:09:18
+Error Type: Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:10:20
+Error Type: Redefinition: BATTLEGROUND_QUEUE_1v1 (already static)
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:10:20
+Error Type: Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:10:20
+Error Type: Redefinition: BATTLEGROUND_QUEUE_1v1 (already static)
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(35): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:10:20
+Error Type: Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(35): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+

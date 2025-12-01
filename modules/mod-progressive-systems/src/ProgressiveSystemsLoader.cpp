@@ -88,7 +88,7 @@ static bool ValidateProgressiveSystemsConfig()
     return true; // Don't prevent module from loading, just warn
 }
 
-void AddProgressiveSystemsScripts()
+void Addmod_progressive_systemsScripts()
 {
     // Validate configuration first
     ValidateProgressiveSystemsConfig();

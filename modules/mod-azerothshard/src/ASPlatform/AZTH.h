@@ -12,6 +12,16 @@
 #include "Spell.h"
 #include <unordered_map>
 
+// 1v1 Arena constants (compatibility with mod-1v1-arena)
+// These match the values from mod-1v1-arena/src/npc_arena1v1.cpp
+namespace AzthArenaConstants
+{
+    inline constexpr uint32 ARENA_TEAM_1v1 = 1;
+    inline constexpr uint32 ARENA_TYPE_1v1 = 1;
+    inline constexpr uint32 ARENA_SLOT_1v1 = 3;
+    inline constexpr uint32 BATTLEGROUND_QUEUE_1v1 = 11;
+}
+
 class AZTH
 {
 public:

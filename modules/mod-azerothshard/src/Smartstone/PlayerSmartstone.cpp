@@ -112,9 +112,9 @@ bool AzthPlayer::BuySmartStoneCommand(ObjectGuid vendorguid, uint32 vendorslot,
     }
 
     if (!player->IsGameMaster() &&
-            ((pProto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY &&
+            ((pProto->Flags2 & ITEM_FLAG2_FACTION_HORDE &&
             player->GetTeamId(true) == TEAM_ALLIANCE) ||
-            (pProto->Flags2 == ITEM_FLAGS_EXTRA_ALLIANCE_ONLY &&
+            (pProto->Flags2 & ITEM_FLAG2_FACTION_ALLIANCE &&
             player->GetTeamId(true) == TEAM_HORDE)))
         return false;
 
@@ -311,7 +311,7 @@ bool AzthPlayer::BuySmartStoneCommand(ObjectGuid vendorguid, uint32 vendorslot,
         ChatHandler(player->GetSession())
                 .SendSysMessage(sAzthLang->get(AZTH_LANG_SS_NEWAPP, player));
 
-        sScriptMgr->OnBeforeStoreOrEquipNewItem(player, vendorslot, item, count, bag, slot, pProto, creature, crItem, false);
+        sScriptMgr->OnPlayerBeforeStoreOrEquipNewItem(player, vendorslot, item, count, bag, slot, pProto, creature, crItem, false);
     }
 
     // return crItem->maxcount != 0;

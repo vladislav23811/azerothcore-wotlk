@@ -26,11 +26,18 @@ set(PROGRESSIVE_SYSTEMS_SOURCES
 # Create library
 add_library(${MODULE_NAME} STATIC ${PROGRESSIVE_SYSTEMS_SOURCES})
 
+# Set C++ standard (required for std::optional)
+set_target_properties(${MODULE_NAME} PROPERTIES
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED ON
+)
+
 # Include directories
 target_include_directories(${MODULE_NAME}
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src/server/game
         ${CMAKE_SOURCE_DIR}/src/server/game/Scripting
+        ${CMAKE_SOURCE_DIR}/src/server/game/Scripting/ScriptDefines
         ${CMAKE_SOURCE_DIR}/src/server/game/Entities
         ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Player
         ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Item
@@ -38,9 +45,11 @@ target_include_directories(${MODULE_NAME}
         ${CMAKE_SOURCE_DIR}/src/server/game/Spells
         ${CMAKE_SOURCE_DIR}/src/server/game/World
         ${CMAKE_SOURCE_DIR}/src/server/game/Arena
+        ${CMAKE_SOURCE_DIR}/src/server/game/Battlegrounds
         ${CMAKE_SOURCE_DIR}/src/server/game/Achievements
         ${CMAKE_SOURCE_DIR}/src/server/game/Chat
         ${CMAKE_SOURCE_DIR}/src/server/game/Chat/ChatCommands
+        ${CMAKE_SOURCE_DIR}/src/server/game/DataStores
         ${CMAKE_SOURCE_DIR}/src/server/scripts
         ${CMAKE_SOURCE_DIR}/src/server/shared
         ${CMAKE_SOURCE_DIR}/src/server/shared/DataStores
@@ -48,13 +57,15 @@ target_include_directories(${MODULE_NAME}
         ${CMAKE_SOURCE_DIR}/src/server/database/Database
         ${CMAKE_SOURCE_DIR}/src/common
         ${CMAKE_SOURCE_DIR}/src/common/Utilities
+        ${CMAKE_SOURCE_DIR}/deps/fmt/include
 )
 
-# Link libraries
+# Link libraries - use interface targets to get all includes
 target_link_libraries(${MODULE_NAME}
     PRIVATE
-        acore-worldserver
-        acore-shared
+        acore-core-interface
+    PUBLIC
+        game-interface
 )
 
 # Module is automatically registered by the modules system

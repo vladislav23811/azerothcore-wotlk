@@ -1,0 +1,22 @@
+Please analyze and fix the compilation errors in the AzerothCore WotLK project.
+
+The errors are documented in: AI_FIX_REQUEST_20251201_020338.txt
+Full error log: unfixable_errors.log
+
+ERROR SUMMARY:
+- Total unfixable errors: 14
+- Error types: Unknown Pattern, Redefinition: const uint32 BATTLEGROUND_QUEUE_1v1, Redefinition: BATTLEGROUND_QUEUE_1v1 (already static)
+- Missing headers: 
+- C++ error codes: C2374, C2086
+
+ACTION REQUIRED:
+Add automatic fix logic to the Fix-CommonErrors function in improve_loop_enhanced.ps1 (starts around line 153).
+
+For each error pattern found:
+1. Identify the error pattern
+2. Add appropriate fix logic to handle it automatically
+3. Ensure the fix is added to the switch statement or error handling section
+
+The script should automatically fix these errors in future iterations.
+
+Please read the full error details from: AI_FIX_REQUEST_20251201_020338.txt

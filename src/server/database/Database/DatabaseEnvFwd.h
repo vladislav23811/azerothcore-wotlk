@@ -18,7 +18,26 @@
 #ifndef DatabaseEnvFwd_h__
 #define DatabaseEnvFwd_h__
 
-#include <future>
+#include "Define.h"
+
+// Compatibility for <future> header
+#if AC_COMPILER == AC_COMPILER_MICROSOFT
+    #if defined(_MSC_VER) && _MSC_VER >= 1700
+        // VS2012+ should have <future>
+        #include <future>
+    #elif defined(__has_include) && __has_include(<future>)
+        #include <future>
+    #else
+        // For older MSVC, provide basic future/promise forward declarations
+        namespace std {
+            template<typename T> class future;
+            template<typename T> class promise;
+            template<typename T> class shared_ptr;
+        }
+    #endif
+#else
+    #include <future>
+#endif
 
 struct QueryResultFieldMetadata;
 class Field;

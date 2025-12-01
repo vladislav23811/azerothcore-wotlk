@@ -8,6 +8,7 @@
 #include "Log.h"
 #include "World.h"
 #include "DatabaseEnv.h"
+#include "QueryResult.h"
 #include <chrono>
 
 ItemTemplateHotReload* ItemTemplateHotReload::instance()

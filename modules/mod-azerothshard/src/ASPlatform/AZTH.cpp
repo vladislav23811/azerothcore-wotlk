@@ -9,8 +9,12 @@
 #include "DatabaseEnv.h"
 #include "ObjectMgr.h"
 #include "Config.h"
-#include "Solo3v3.h"
+#include "solo3v3.h"
 #include "Tokenize.h"
+
+// 1v1 Arena constants are now defined in AZTH.h
+// Note: Don't use "using namespace AzthArenaConstants;" to avoid ambiguity
+// with BATTLEGROUND_QUEUE_1v1 from solo3v3.h
 
 AZTH* AZTH::instance()
 {
@@ -44,36 +48,36 @@ void AZTH::LoadConfig(bool reload)
 void AZTH::LoadContainers()
 {
     // ArenaSlotByType
-    if (!ArenaTeam::ArenaSlotByType.count(ARENA_TEAM_1v1))
-        ArenaTeam::ArenaSlotByType[ARENA_TEAM_1v1] = ARENA_SLOT_1v1;
+    if (!ArenaTeam::ArenaSlotByType.count(AzthArenaConstants::ARENA_TEAM_1v1))
+        ArenaTeam::ArenaSlotByType[AzthArenaConstants::ARENA_TEAM_1v1] = AzthArenaConstants::ARENA_SLOT_1v1;
 
     if (!ArenaTeam::ArenaSlotByType.count(ARENA_TEAM_SOLO_3v3))
         ArenaTeam::ArenaSlotByType[ARENA_TEAM_SOLO_3v3] = ARENA_SLOT_SOLO_3v3;
 
     // ArenaReqPlayersForType
-    if (!ArenaTeam::ArenaReqPlayersForType.count(ARENA_TYPE_1v1))
-        ArenaTeam::ArenaReqPlayersForType[ARENA_TYPE_1v1] = 2;
+    if (!ArenaTeam::ArenaReqPlayersForType.count(AzthArenaConstants::ARENA_TYPE_1v1))
+        ArenaTeam::ArenaReqPlayersForType[AzthArenaConstants::ARENA_TYPE_1v1] = 2;
 
     if (!ArenaTeam::ArenaReqPlayersForType.count(ARENA_TYPE_3v3_SOLO))
         ArenaTeam::ArenaReqPlayersForType[ARENA_TYPE_3v3_SOLO] = 6;
 
     // queueToBg
-    if (!BattlegroundMgr::queueToBg.count(BATTLEGROUND_QUEUE_1v1))
-        BattlegroundMgr::queueToBg[BATTLEGROUND_QUEUE_1v1] = BATTLEGROUND_AA;
+    if (!BattlegroundMgr::queueToBg.count(AzthArenaConstants::BATTLEGROUND_QUEUE_1v1))
+        BattlegroundMgr::queueToBg[AzthArenaConstants::BATTLEGROUND_QUEUE_1v1] = BATTLEGROUND_AA;
 
     if (!BattlegroundMgr::queueToBg.count(BATTLEGROUND_QUEUE_3v3_SOLO))
         BattlegroundMgr::queueToBg[BATTLEGROUND_QUEUE_3v3_SOLO] = BATTLEGROUND_AA;
 
     // ArenaTypeToQueue
-    if (!BattlegroundMgr::ArenaTypeToQueue.count(ARENA_TYPE_1v1))
-        BattlegroundMgr::ArenaTypeToQueue[ARENA_TYPE_1v1] = (BattlegroundQueueTypeId)BATTLEGROUND_QUEUE_1v1;
+    if (!BattlegroundMgr::ArenaTypeToQueue.count(AzthArenaConstants::ARENA_TYPE_1v1))
+        BattlegroundMgr::ArenaTypeToQueue[AzthArenaConstants::ARENA_TYPE_1v1] = (BattlegroundQueueTypeId)AzthArenaConstants::BATTLEGROUND_QUEUE_1v1;
 
     if (!BattlegroundMgr::ArenaTypeToQueue.count(ARENA_TYPE_3v3_SOLO))
         BattlegroundMgr::ArenaTypeToQueue[ARENA_TYPE_3v3_SOLO] = (BattlegroundQueueTypeId)BATTLEGROUND_QUEUE_3v3_SOLO;
 
     // QueueToArenaType
-    if (!BattlegroundMgr::QueueToArenaType.count(BATTLEGROUND_QUEUE_1v1))
-        BattlegroundMgr::QueueToArenaType[BATTLEGROUND_QUEUE_1v1] = (ArenaType)ARENA_TYPE_1v1;
+    if (!BattlegroundMgr::QueueToArenaType.count(AzthArenaConstants::BATTLEGROUND_QUEUE_1v1))
+        BattlegroundMgr::QueueToArenaType[AzthArenaConstants::BATTLEGROUND_QUEUE_1v1] = (ArenaType)AzthArenaConstants::ARENA_TYPE_1v1;
 
     if (!BattlegroundMgr::QueueToArenaType.count(BATTLEGROUND_QUEUE_3v3_SOLO))
         BattlegroundMgr::QueueToArenaType[BATTLEGROUND_QUEUE_3v3_SOLO] = (ArenaType)ARENA_TYPE_3v3_SOLO;

@@ -35,7 +35,7 @@ class PvPModeFirstLogin : public PlayerScript
 public:
     PvPModeFirstLogin() : PlayerScript("PvPModeFirstLogin") {}
 
-    void OnCreate(Player* player) override
+    void OnCreate(Player* player)
     {
         sAZTH->GetAZTHPlayer(player)->loadPvPInfo();
 
@@ -60,7 +60,7 @@ public:
         }
     }
 
-    void OnFirstLogin(Player* player) override
+    void OnFirstLogin(Player* player)
     {
         if (sAZTH->GetAZTHPlayer(player)->isPvP())
         {
@@ -69,7 +69,7 @@ public:
         }
     }
 
-    void OnLogin(Player* player) override
+    void OnLogin(Player* player)
     {
         sAZTH->GetAZTHPlayer(player)->loadPvPInfo();
 
@@ -161,7 +161,7 @@ public:
         }
     }
 
-    void OnMapChanged(Player* player) override {
+    void OnMapChanged(Player* player) {
         if (!player)
             return;
 
@@ -180,7 +180,7 @@ public:
     }
 
     // logger for custom extended costs
-    void OnAfterStoreOrEquipNewItem(Player* player, uint32  /*vendorslot*/, Item* item, uint8  /*count*/, uint8  /*bag*/, uint8  /*slot*/, ItemTemplate const*  /*pProto*/, Creature* /*pVendor*/, VendorItem const*  /*crItem*/, bool  /*bStore*/) override
+    void OnAfterStoreOrEquipNewItem(Player* player, uint32  /*vendorslot*/, Item* item, uint8  /*count*/, uint8  /*bag*/, uint8  /*slot*/, ItemTemplate const*  /*pProto*/, Creature* /*pVendor*/, VendorItem const*  /*crItem*/, bool  /*bStore*/)
     {
         if (!sAZTH->GetAZTHPlayer(player)->isPvP())
             return;
@@ -214,7 +214,7 @@ public:
         }*/
     }
 
-    void OnBeforeDurabilityRepair(Player * player, ObjectGuid  /*npcGUID*/, ObjectGuid  /*itemGUID*/, float & discountMod, uint8  /*guildbank*/) override {
+    void OnBeforeDurabilityRepair(Player * player, ObjectGuid  /*npcGUID*/, ObjectGuid  /*itemGUID*/, float & discountMod, uint8  /*guildbank*/) {
         if (!sAZTH->GetAZTHPlayer(player)->isPvP())
             return;
 

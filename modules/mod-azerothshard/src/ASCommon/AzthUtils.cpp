@@ -9,6 +9,8 @@
 #include "BattlefieldWG.h"
 #include "InstanceScript.h"
 #include "AZTH.h"
+#include "AreaDefines.h"
+#include "Chat.h"
 #include <ctime>
 
 class InstanceScript;
@@ -332,7 +334,7 @@ uint32 AzthUtils::calculateItemScalingValue(ItemTemplate const * pProto, Player 
         return 0;
 
     uint32 req=getCalcReqLevel(pProto);
-    if (req <= pl->getLevel()) // remove / apply
+    if (req <= pl->GetLevel()) // remove / apply
         return 0;
 
     uint8 lowLevel = 0; // Default stats progression by item type
@@ -724,7 +726,7 @@ bool AzthUtils::isSharedArea(Player* /*player*/, MapEntry const *mEntry, uint32 
     mEntry->IsBattlegroundOrArena() // all bg and arena
     || mEntry->IsDungeon()          // is dungeon
     || mEntry->IsRaid()             // is raid
-    || zone == BATTLEFIELD_WG_ZONEID; // WG must be shared mainly because it's an open world BG, then because it apply phase 1 + horde/ally phase...so can collide
+    || zone == AREA_WINTERGRASP; // WG must be shared mainly because it's an open world BG, then because it apply phase 1 + horde/ally phase...so can collide
 }
 
 PhaseDimensionsEnum AzthUtils::getCurrentDimensionByPhase(uint32 phase) {
@@ -828,7 +830,7 @@ SpellCastResult AzthUtils::checkSpellCast(Player* player, SpellInfo const* spell
     // Great feast and Fish Feast must be blocked for level < 70
     // they have been fixed in cataclysm but on wotlk it can be used
     // as exploit with low level players
-    if (player->getLevel() < 70 && (
+    if (player->GetLevel() < 70 && (
         spell->Id == 57399 // Well Fed - Fish Feast
         || spell->Id == 57294 // Well Fed - Great Feast
     )) {
@@ -837,7 +839,7 @@ SpellCastResult AzthUtils::checkSpellCast(Player* player, SpellInfo const* spell
 
     if (sAZTH->GetAZTHPlayer(player)->isTimeWalking(true) && sAzthUtils->isNotAllowedSpellForTw(spell)) {
         if (notify)
-            player->GetSession()->SendNotification("This spell is not allowed in Timewalking");
+            ChatHandler(player->GetSession()).SendNotification("This spell is not allowed in Timewalking");
         return SPELL_FAILED_DONT_REPORT;
     }
 

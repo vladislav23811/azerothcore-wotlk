@@ -381,13 +381,13 @@ class ParagonPlayerScript : public PlayerScript
 public:
     ParagonPlayerScript() : PlayerScript("ParagonPlayerScript") { }
 
-    void OnLogin(Player* player) override
+    void OnPlayerLogin(Player* player) override
     {
         // Apply all paragon stats
         sParagonSystem->ApplyAllParagonStats(player);
     }
 
-    void OnGiveXP(Player* player, uint32& amount, Unit* victim) override
+    void OnPlayerGiveXP(Player* player, uint32& amount, Unit* victim, uint8 xpSource) override
     {
         // If player is max level, convert XP to paragon experience
         if (player->GetLevel() >= player->GetUInt32Value(PLAYER_FIELD_MAX_LEVEL))

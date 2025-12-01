@@ -77,8 +77,8 @@ foreach(SOURCE_MODULE ${MODULES_MODULE_LIST})
     set(${MODULE_MODULE_VARIABLE} "static")
   endif()
 
-  # Use only static for mod-ALE
-  if (SOURCE_MODULE MATCHES "mod-ale")
+  # Use only static for mod-eluna (formerly mod-ale)
+  if (SOURCE_MODULE MATCHES "mod-eluna" OR SOURCE_MODULE MATCHES "mod-ale")
     ConfigureALEModule(${SOURCE_MODULE})
   endif()
 
@@ -241,6 +241,20 @@ foreach(SOURCE_MODULE ${MODULES_MODULE_LIST})
       PUBLIC
         game)
 
+    # Link lualib if mod-eluna is found
+    if (MOD_ALE_FOUND)
+      target_link_libraries(${MODULE_SOURCE_PROJECT_NAME}
+        PUBLIC
+          lualib)
+      # Get lualib include directories and add them
+      get_target_property(LUALIB_INCLUDE_DIRS lualib INTERFACE_INCLUDE_DIRECTORIES)
+      if(LUALIB_INCLUDE_DIRS)
+        target_include_directories(${MODULE_SOURCE_PROJECT_NAME}
+          PUBLIC
+            ${LUALIB_INCLUDE_DIRS})
+      endif()
+    endif()
+
     target_include_directories(${MODULE_SOURCE_PROJECT_NAME}
       PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -277,6 +291,9 @@ set(WORLDSERVER_DYNAMIC_SCRIPT_MODULES_DEPENDENCIES ${DYNAMIC_SCRIPT_MODULE_PROJ
 ConfigureScriptLoader("static" SCRIPT_MODULE_PRIVATE_SCRIPTLOADER OFF ${STATIC_SCRIPT_MODULES})
 
 list(REMOVE_DUPLICATES SCRIPT_MODULE_PRIVATE_SCRIPTLOADER)
+
+# Remove duplicate source files to prevent multiple definition errors
+list(REMOVE_DUPLICATES PRIVATE_SOURCES_MODULES)
 
 if (MOD_ALE_FOUND)
   list(REMOVE_ITEM PRIVATE_SOURCES_MODULES ${MOD_ALE_PATH}/lualib/lua.c)
@@ -393,14 +410,11 @@ if (MOD_ALE_FOUND)
   endif()
 
   if (WIN32)
-    if (MSVC)
-      set(MSVC_CONFIGURATION_NAME $(ConfigurationName)/)
-    endif()
-
+    # Use generator expression that works for both Visual Studio and Ninja
     add_custom_command(TARGET modules
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/${MSVC_CONFIGURATION_NAME}lua_scripts/extensions/"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${MOD_ALE_PATH}/LuaEngine/extensions" "${CMAKE_BINARY_DIR}/bin/${MSVC_CONFIGURATION_NAME}lua_scripts/extensions/")
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/lua_scripts/extensions/"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${MOD_ALE_PATH}/LuaEngine/extensions" "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/lua_scripts/extensions/")
   endif()
 
   install(DIRECTORY "${MOD_ALE_PATH}/LuaEngine/extensions" DESTINATION "${CMAKE_INSTALL_PREFIX}/bin/lua_scripts/")

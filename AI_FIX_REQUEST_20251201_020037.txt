@@ -1,0 +1,119 @@
+========================================
+AUTOMATED ERROR FIX REQUEST FOR AI
+========================================
+Generated: 2025-12-01 02:00:37
+Project: AzerothCore WotLK
+Total Unfixable Errors: 8
+
+ERROR SUMMARY:
+=============
+Unique Error Types: 1
+    - Unknown Pattern
+
+
+Missing Headers Detected: 0
+  
+
+C++ Error Codes: 2
+    - C2374
+  - C2086
+
+
+FULL ERROR LOG:
+===============
+========================================
+Timestamp: 2025-12-01 02:00:36
+Error Type: Unknown Pattern
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:00:36
+Error Type: Unknown Pattern
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH.cpp(20): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:00:36
+Error Type: Unknown Pattern
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(34): error C2374: 'BATTLEGROUND_QUEUE_1v1': redefinition; multiple initialization
+========================================
+
+========================================
+Timestamp: 2025-12-01 02:00:36
+Error Type: Unknown Pattern
+Error: C:\servers\azerothcore-wotlk\modules\mod-azerothshard\src\ASPlatform\AZTH_SC.cpp(34): error C2086: 'const uint32 BATTLEGROUND_QUEUE_1v1': redefinition
+========================================
+
+
+
+RECENT BUILD OUTPUT (Last 50 lines):
+=====================================
+C:\servers\azerothcore-wotlk\src\common\Define.h(58): note: see previous definition of 'PRIx64'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(212): warning C4005: 'PRIX64': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(59): note: see previous definition of 'PRIX64'
+[23/627] Building CXX object modules\CMakeFiles\modules.dir\mod-eluna\src\LuaEngine\hooks\PacketHooks.cpp.obj
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\limits.h(21): warning C4005: 'UCHAR_MAX': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(85): note: see previous definition of 'UCHAR_MAX'
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\limits.h(34): warning C4005: 'USHRT_MAX': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(94): note: see previous definition of 'USHRT_MAX'
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\limits.h(37): warning C4005: 'UINT_MAX': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(103): note: see previous definition of 'UINT_MAX'
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\limits.h(41): warning C4005: 'LLONG_MAX': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(118): note: see previous definition of 'LLONG_MAX'
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\limits.h(42): warning C4005: 'LLONG_MIN': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(115): note: see previous definition of 'LLONG_MIN'
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\include\limits.h(43): warning C4005: 'ULLONG_MAX': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(121): note: see previous definition of 'ULLONG_MAX'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(114): warning C4005: 'PRId8': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(65): note: see previous definition of 'PRId8'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(115): warning C4005: 'PRId16': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(63): note: see previous definition of 'PRId16'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(117): warning C4005: 'PRId64': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(56): note: see previous definition of 'PRId64'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(171): warning C4005: 'PRIu8': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(66): note: see previous definition of 'PRIu8'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(172): warning C4005: 'PRIu16': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(64): note: see previous definition of 'PRIu16'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(174): warning C4005: 'PRIu64': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(57): note: see previous definition of 'PRIu64'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(193): warning C4005: 'PRIx64': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(58): note: see previous definition of 'PRIx64'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(212): warning C4005: 'PRIX64': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(59): note: see previous definition of 'PRIX64'
+[24/627] Building CXX object modules\CMakeFiles\modules.dir\mod-playerbots\src\ChatFilter.cpp.obj
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(114): warning C4005: 'PRId8': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(65): note: see previous definition of 'PRId8'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(115): warning C4005: 'PRId16': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(63): note: see previous definition of 'PRId16'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(117): warning C4005: 'PRId64': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(56): note: see previous definition of 'PRId64'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(171): warning C4005: 'PRIu8': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(66): note: see previous definition of 'PRIu8'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(172): warning C4005: 'PRIu16': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(64): note: see previous definition of 'PRIu16'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(174): warning C4005: 'PRIu64': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(57): note: see previous definition of 'PRIu64'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(193): warning C4005: 'PRIx64': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(58): note: see previous definition of 'PRIx64'
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt\inttypes.h(212): warning C4005: 'PRIX64': macro redefinition
+C:\servers\azerothcore-wotlk\src\common\Define.h(59): note: see previous definition of 'PRIX64'
+ninja: build stopped: subcommand failed.
+
+
+REQUEST FOR AI:
+===============
+Please analyze the errors above and add automatic fix logic to the 
+Fix-CommonErrors function in improve_loop_enhanced.ps1.
+
+For each error type:
+1. Identify the pattern
+2. Add appropriate fix logic to the switch statement or error handling
+3. Test the fix logic if possible
+
+The script is located at: improve_loop_enhanced.ps1
+The Fix-CommonErrors function starts around line 153.
+
+Please provide the updated function code that handles these errors automatically.
+
+========================================

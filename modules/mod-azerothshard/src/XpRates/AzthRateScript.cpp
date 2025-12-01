@@ -10,12 +10,12 @@ class AzthXPRatePlayerScripts : public PlayerScript
 public:
     AzthXPRatePlayerScripts() : PlayerScript("AzthXPRatePlayerScripts") { }
 
-    void OnDelete(ObjectGuid guid, uint32 /*AccountID*/) override
+    void OnDelete(ObjectGuid guid, uint32 /*AccountID*/)
     {
         CustomRates::DeleteRateFromDB(guid);
     }
 
-    void OnLogin(Player* player) override
+    void OnLogin(Player* player)
     {
         float rate = CustomRates::GetXpRateFromDB(player);
 

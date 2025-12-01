@@ -12,7 +12,6 @@
 #include "ScriptMgr.h"
 #include "ChatCommands/ChatCommand.h"
 #include "DatabaseEnv.h"
-#include "Optional.h"
 
 bool ProgressiveSystemsCommands::HandleProgressiveSystemsInfoCommand(ChatHandler* handler)
 {
@@ -170,12 +169,12 @@ public:
         
         static ChatCommandTable progressiveSystemsCommandTable =
         {
-            { "info",     HandleProgressiveSystemsInfoCommand,     SEC_PLAYER,     Console::No },
-            { "points",   HandleProgressiveSystemsPointsCommand,   SEC_ADMINISTRATOR, Console::No },
-            { "tier",     HandleProgressiveSystemsTierCommand,     SEC_ADMINISTRATOR, Console::No },
-            { "reset",    HandleProgressiveSystemsResetCommand,    SEC_ADMINISTRATOR, Console::No },
-            { "debug",    HandleProgressiveSystemsDebugCommand,    SEC_PLAYER,     Console::No },
-            { "cache",    HandleProgressiveSystemsCacheCommand,    SEC_ADMINISTRATOR, Console::No },
+            { "info",     ProgressiveSystemsCommands::HandleProgressiveSystemsInfoCommand,     SEC_PLAYER,     Console::No },
+            { "points",   ProgressiveSystemsCommands::HandleProgressiveSystemsPointsCommand,   SEC_ADMINISTRATOR, Console::No },
+            { "tier",     ProgressiveSystemsCommands::HandleProgressiveSystemsTierCommand,     SEC_ADMINISTRATOR, Console::No },
+            { "reset",    ProgressiveSystemsCommands::HandleProgressiveSystemsResetCommand,    SEC_ADMINISTRATOR, Console::No },
+            { "debug",    ProgressiveSystemsCommands::HandleProgressiveSystemsDebugCommand,    SEC_PLAYER,     Console::No },
+            { "cache",    ProgressiveSystemsCommands::HandleProgressiveSystemsCacheCommand,    SEC_ADMINISTRATOR, Console::No },
         };
         
         static ChatCommandTable commandTable =

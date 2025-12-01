@@ -32,6 +32,10 @@ else()
 endif()
 
 # Boost.System is header-only since 1.69; do not require it explicitly.
+# Suppress CMP0167 warning about FindBoost module removal
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 OLD)
+endif()
 find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED COMPONENTS filesystem program_options iostreams regex thread)
 
 if(NOT Boost_FOUND)

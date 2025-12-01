@@ -15,6 +15,7 @@
 #include "ObjectMgr.h"
 #include "ItemTemplate.h"
 #include "WorldPacket.h"
+#include "SharedDefines.h"
 #include <random>
 
 PersonalLootSystem* PersonalLootSystem::instance()
@@ -202,11 +203,10 @@ std::vector<LootItem> PersonalLootSystem::GenerateLootItemsForPlayer(Player* pla
     
     uint8 currentTier = 1;
     uint8 difficultyTier = 1;
-    if (result)
+    if (result && result->NextRow())
     {
-        Field* fields = result->Fetch();
-        currentTier = fields[0].Get<uint8>();
-        difficultyTier = fields[1].Get<uint8>();
+        currentTier = (*result)[0].Get<uint8>();
+        difficultyTier = (*result)[1].Get<uint8>();
     }
     
     // Get creature's loot template
@@ -214,32 +214,28 @@ std::vector<LootItem> PersonalLootSystem::GenerateLootItemsForPlayer(Player* pla
     if (!lootId)
         return personalLoot;
     
-    // Generate loot using loot template
-    LootTemplate const* lootTemplate = LootTemplates_Creature.GetLootFor(lootId);
-    if (!lootTemplate)
+    // Create a temporary Loot object to generate loot
+    Loot tempLoot;
+    if (!tempLoot.FillLoot(lootId, LootTemplates_Creature, player, true, true, LOOT_MODE_DEFAULT, creature))
         return personalLoot;
-    
-    // Roll for each item in the loot template
-    std::vector<LootStoreItem> items;
-    lootTemplate->Process(items, LootStoreItem::LOOT_MODE_DEFAULT, 0, 0, 0, 0, 0, LOOT_MODE_DEFAULT);
     
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(0.0f, 100.0f);
     
-    for (const LootStoreItem& storeItem : items)
+    // Process items from the generated loot
+    for (LootItem& lootItem : tempLoot.items)
     {
         // Calculate drop chance for this player
-        float dropChance = CalculateDropChance(player, creature, storeItem.item.ItemID);
+        ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(lootItem.itemid);
+        if (!itemTemplate)
+            continue;
+        
+        float dropChance = CalculateDropChance(player, creature, itemTemplate->Quality);
         
         // Roll for item
         float roll = dis(gen);
         if (roll > dropChance)
-            continue;
-        
-        // Get item template
-        ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(storeItem.item.ItemID);
-        if (!itemTemplate)
             continue;
         
         // Check item level restrictions
@@ -248,24 +244,10 @@ std::vector<LootItem> PersonalLootSystem::GenerateLootItemsForPlayer(Player* pla
         if (m_config.maxItemLevel > 0 && itemTemplate->ItemLevel > m_config.maxItemLevel)
             continue;
         
-        // Create loot item
-        LootItem lootItem;
-        lootItem.itemid = storeItem.item.ItemID;
-        lootItem.item.ItemID = storeItem.item.ItemID;
-        lootItem.item.ItemBonus = {};
-        lootItem.item.ItemBonusListID = {};
-        lootItem.follow_loot_rules = false;
+        // Set player-specific properties
+        lootItem.rollWinnerGUID = player->GetGUID();
         lootItem.freeforall = false;
         lootItem.is_blocked = false;
-        lootItem.is_counted = false;
-        lootItem.is_looted = false;
-        lootItem.is_underthreshold = false;
-        lootItem.needs_quest = storeItem.needs_quest;
-        lootItem.rollWinnerGUID = player->GetGUID();
-        lootItem.count = 1;
-        lootItem.randomBonusListId = 0;
-        lootItem.randomPropertyId = 0;
-        lootItem.randomSuffix = 0;
         
         // Apply progression bonuses
         ApplyProgressionBonuses(player, lootItem);
@@ -284,9 +266,10 @@ std::vector<LootItem> PersonalLootSystem::GenerateLootItemsForPlayer(Player* pla
             {
                 LootItem lootItem;
                 lootItem.itemid = generatedItem->GetEntry();
-                lootItem.item.ItemID = generatedItem->GetEntry();
-                lootItem.item.ItemBonus = {};
-                lootItem.item.ItemBonusListID = {};
+                lootItem.itemIndex = 0;
+                lootItem.count = 1;
+                lootItem.randomPropertyId = 0;
+                lootItem.randomSuffix = 0;
                 lootItem.follow_loot_rules = false;
                 lootItem.freeforall = false;
                 lootItem.is_blocked = false;
@@ -295,10 +278,7 @@ std::vector<LootItem> PersonalLootSystem::GenerateLootItemsForPlayer(Player* pla
                 lootItem.is_underthreshold = false;
                 lootItem.needs_quest = false;
                 lootItem.rollWinnerGUID = player->GetGUID();
-                lootItem.count = 1;
-                lootItem.randomBonusListId = 0;
-                lootItem.randomPropertyId = 0;
-                lootItem.randomSuffix = 0;
+                lootItem.groupid = 0;
                 
                 personalLoot.push_back(lootItem);
                 
@@ -322,9 +302,9 @@ float PersonalLootSystem::CalculateDropChance(Player* player, Creature* creature
         QueryResult result = CharacterDatabase.Query(
             "SELECT current_tier FROM character_progression_unified WHERE guid = {}", guid);
         
-        if (result)
+        if (result && result->NextRow())
         {
-            uint8 tier = result->Fetch()[0].Get<uint8>();
+            uint8 tier = (*result)[0].Get<uint8>();
             baseChance += (tier * 0.05f); // 5% bonus per tier
         }
     }
@@ -358,11 +338,10 @@ void PersonalLootSystem::ApplyProgressionBonuses(Player* player, LootItem& lootI
     
     uint8 currentTier = 1;
     uint32 prestigeLevel = 0;
-    if (result)
+    if (result && result->NextRow())
     {
-        Field* fields = result->Fetch();
-        currentTier = fields[0].Get<uint8>();
-        prestigeLevel = fields[1].Get<uint32>();
+        currentTier = (*result)[0].Get<uint8>();
+        prestigeLevel = (*result)[1].Get<uint32>();
     }
     
     // Apply item level bonus based on tier
@@ -401,13 +380,13 @@ void PersonalLootSystem::SendPersonalLootToPlayer(Player* player, Creature* crea
     data << uint32(lootItems.size());
     for (const LootItem& item : lootItems)
     {
-        data << uint8(item.item.ItemID ? 0 : 1); // Item or currency
-        if (item.item.ItemID)
+        data << uint8(item.itemid ? 0 : 1); // Item or currency
+        if (item.itemid)
         {
-            data << uint32(item.item.ItemID);
+            data << uint32(item.itemid);
             data << uint32(item.count);
-            data << uint32(0); // RandomSuffix
-            data << uint32(0); // RandomPropertyId
+            data << uint32(item.randomSuffix);
+            data << uint32(item.randomPropertyId);
             data << uint8(0);  // Slot
         }
     }
@@ -420,13 +399,13 @@ void PersonalLootSystem::SendPersonalLootToPlayer(Player* player, Creature* crea
     // Actually give items to player
     for (const LootItem& item : lootItems)
     {
-        if (item.item.ItemID)
+        if (item.itemid)
         {
             ItemPosCountVec dest;
-            InventoryResult msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item.item.ItemID, item.count);
+            InventoryResult msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item.itemid, item.count);
             if (msg == EQUIP_ERR_OK)
             {
-                Item* newItem = player->StoreNewItem(dest, item.item.ItemID, true);
+                Item* newItem = player->StoreNewItem(dest, item.itemid, true, item.randomPropertyId);
                 if (newItem)
                 {
                     player->SendNewItem(newItem, item.count, true, false);
@@ -435,7 +414,7 @@ void PersonalLootSystem::SendPersonalLootToPlayer(Player* player, Creature* crea
             else
             {
                 // Send to mail if inventory full
-                player->SendItemRetrievalMail(item.item.ItemID, item.count);
+                player->SendItemRetrievalMail(item.itemid, item.count);
             }
         }
     }
