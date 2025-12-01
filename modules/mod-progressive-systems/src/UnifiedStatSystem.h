@@ -131,6 +131,15 @@ public:
     void LoadPlayerStatBonuses(Player* player);
     void InvalidatePlayerCache(uint32 guid);
     
+    // Load item upgrade bonuses (public for commands)
+    void LoadItemUpgradeBonuses(Player* player);
+    
+    // Load paragon stat bonuses (public for commands)
+    void LoadParagonStatBonuses(Player* player);
+    
+    // Load prestige bonuses (public for commands)
+    void LoadPrestigeBonuses(Player* player);
+    
 private:
     UnifiedStatSystem() = default;
     ~UnifiedStatSystem() = default;
@@ -142,15 +151,6 @@ private:
     
     // Apply stat to player
     void ApplyStatToPlayer(Player* player, StatType statType, float value);
-    
-    // Load item upgrade bonuses
-    void LoadItemUpgradeBonuses(Player* player);
-    
-    // Load paragon stat bonuses
-    void LoadParagonStatBonuses(Player* player);
-    
-    // Load prestige bonuses
-    void LoadPrestigeBonuses(Player* player);
     
     // Convert WoW stat enum to StatType
     StatType ConvertWoWStatToStatType(Stats stat);

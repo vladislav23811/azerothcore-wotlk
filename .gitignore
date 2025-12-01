@@ -23,6 +23,15 @@
 /data/sql/custom/*
 /src/server/scripts/Custom/*
 !/src/server/scripts/Custom/README.md
+!/src/server/scripts/Custom/custom_script_loader.cpp
+!/src/server/scripts/Custom/progressive_bosses.cpp
+!/src/server/scripts/Custom/progressive_items.cpp
+!/src/server/scripts/Custom/progressive_spells.cpp
+!/src/server/scripts/Custom/progressive_npcs.cpp
+!/src/server/scripts/Custom/progressive_commands.cpp
+!/src/server/scripts/Custom/progressive_dungeons.cpp
+!/src/server/scripts/Custom/custom_stats_system.cpp
+!/src/server/scripts/Custom/paragon_system.cpp
 
 /*.override.yml
 /*.override.yaml

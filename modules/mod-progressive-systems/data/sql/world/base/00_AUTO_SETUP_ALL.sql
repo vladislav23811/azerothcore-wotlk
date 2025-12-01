@@ -231,6 +231,104 @@ CREATE TABLE IF NOT EXISTS `enhanced_gems` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Enhanced gem definitions - NOTE: item_entry MUST be existing item with DisplayInfoID!';
 
 -- ============================================================
+-- 7. INFINITE DUNGEON WAVES
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `infinite_dungeon_waves` (
+    `wave_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `floor_range_start` INT UNSIGNED NOT NULL COMMENT 'Starting floor for this wave',
+    `floor_range_end` INT UNSIGNED NOT NULL COMMENT 'Ending floor for this wave',
+    `wave_number` TINYINT UNSIGNED NOT NULL COMMENT 'Wave number within floor (1-5)',
+    `creature_entry` INT UNSIGNED NOT NULL COMMENT 'Creature template entry',
+    `creature_count` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'Number of creatures to spawn',
+    `spawn_delay` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Delay in milliseconds before spawning',
+    `spawn_radius` FLOAT NOT NULL DEFAULT 10.0 COMMENT 'Spawn radius around player',
+    `scaling_multiplier` FLOAT NOT NULL DEFAULT 1.0 COMMENT 'Additional scaling multiplier',
+    PRIMARY KEY (`wave_id`),
+    INDEX `idx_floor_range` (`floor_range_start`, `floor_range_end`),
+    INDEX `idx_creature_entry` (`creature_entry`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Infinite dungeon wave definitions';
+
+-- Insert example waves for floors 1-20
+INSERT IGNORE INTO `infinite_dungeon_waves` (`floor_range_start`, `floor_range_end`, `wave_number`, `creature_entry`, `creature_count`, `spawn_delay`, `spawn_radius`) VALUES
+-- Floor 1-5: Easy mobs
+(1, 5, 1, 26529, 3, 0, 10.0),      -- Skeletal Construct
+(1, 5, 2, 26530, 2, 5000, 10.0),   -- Skeletal Construct (delayed)
+(1, 5, 3, 26528, 1, 10000, 10.0),  -- Bone Giant (boss wave)
+-- Floor 6-10: Medium mobs
+(6, 10, 1, 26529, 5, 0, 12.0),
+(6, 10, 2, 26530, 3, 5000, 12.0),
+(6, 10, 3, 26528, 2, 10000, 12.0),
+(6, 10, 4, 26527, 1, 15000, 12.0), -- Abomination (boss wave)
+-- Floor 11-20: Hard mobs
+(11, 20, 1, 26529, 7, 0, 15.0),
+(11, 20, 2, 26530, 5, 5000, 15.0),
+(11, 20, 3, 26528, 3, 10000, 15.0),
+(11, 20, 4, 26527, 2, 15000, 15.0),
+(11, 20, 5, 26532, 1, 20000, 15.0); -- Lich (boss wave)
+
+-- ============================================================
+-- 8. PARAGON STAT DEFINITIONS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `paragon_stat_definitions` (
+  `stat_id` INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  `stat_type` TINYINT UNSIGNED NOT NULL COMMENT '0=Core, 1=Offense, 2=Defense, 3=Utility',
+  `stat_name` VARCHAR(255) NOT NULL,
+  `stat_description` TEXT,
+  `class_mask` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Bitmask for allowed classes (0=all)',
+  `max_points` INT UNSIGNED NOT NULL DEFAULT 50 COMMENT 'Maximum points that can be allocated',
+  `points_per_level` FLOAT NOT NULL DEFAULT 1.0 COMMENT 'Stat value per point allocated',
+  `icon_display_id` INT UNSIGNED NOT NULL DEFAULT 0,
+  `sort_order` INT UNSIGNED NOT NULL DEFAULT 0,
+  `active` TINYINT UNSIGNED NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Paragon stat definitions';
+
+-- Insert default paragon stats
+INSERT IGNORE INTO `paragon_stat_definitions` (`stat_type`, `stat_name`, `stat_description`, `class_mask`, `max_points`, `points_per_level`, `sort_order`) VALUES
+-- Core Stats (Type 0)
+(0, 'Strength', 'Increases Attack Power', 0, 50, 1.0, 1),
+(0, 'Agility', 'Increases Critical Strike and Dodge', 0, 50, 1.0, 2),
+(0, 'Intellect', 'Increases Spell Power and Mana', 0, 50, 1.0, 3),
+(0, 'Stamina', 'Increases Health', 0, 50, 1.0, 4),
+(0, 'Spirit', 'Increases Mana Regeneration', 0, 50, 1.0, 5),
+-- Offense Stats (Type 1)
+(1, 'Attack Speed', 'Increases attack speed by percentage', 0, 50, 0.5, 1),
+(1, 'Critical Strike', 'Increases critical strike chance', 0, 50, 0.1, 2),
+(1, 'Spell Power', 'Increases spell damage and healing', 0, 50, 1.0, 3),
+(1, 'Attack Power', 'Increases physical damage', 0, 50, 1.0, 4),
+(1, 'Haste', 'Increases casting and attack speed', 0, 50, 0.1, 5),
+-- Defense Stats (Type 2)
+(2, 'Armor', 'Increases physical damage reduction', 0, 50, 1.0, 1),
+(2, 'Resistance', 'Increases magical damage reduction', 0, 50, 1.0, 2),
+(2, 'Health', 'Increases maximum health', 0, 50, 10.0, 3),
+(2, 'Dodge', 'Increases dodge chance', 0, 50, 0.1, 4),
+(2, 'Block', 'Increases block chance and value', 0, 50, 0.1, 5),
+-- Utility Stats (Type 3)
+(3, 'Movement Speed', 'Increases movement speed', 0, 50, 0.5, 1),
+(3, 'Experience', 'Increases experience gain', 0, 50, 0.5, 2),
+(3, 'Gold Find', 'Increases gold dropped', 0, 50, 0.5, 3),
+(3, 'Loot Quality', 'Increases chance for better loot', 0, 50, 0.1, 4),
+(3, 'Resource Regeneration', 'Increases mana/energy/rage regeneration', 0, 50, 0.5, 5);
+
+-- ============================================================
+-- 9. NPC CREATURE TEMPLATES
+-- ============================================================
+-- Note: These NPCs need to be created in creature_template
+-- They are included here for reference, but should be added manually
+-- or via a separate SQL file that runs after base setup
+
+-- Main Menu NPC (190000)
+INSERT IGNORE INTO `creature_template` (`entry`, `name`, `subname`, `IconName`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, `dmgschool`, `BaseAttackTime`, `RangeAttackTime`, `BaseVariance`, `RangeVariance`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `HoverHeight`, `HealthModifier`, `ManaModifier`, `ArmorModifier`, `ExperienceModifier`, `RacialLeader`, `movementId`, `RegenHealth`, `mechanic_immune_mask`, `spell_school_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`) VALUES
+(190000, 'Progression Master', 'Progressive Systems', 'Speak', 0, 80, 80, 0, 35, 1, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
+(190001, 'Item Upgrader', 'Upgrade Your Items', 'Speak', 0, 80, 80, 0, 35, 128, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
+(190002, 'Prestige Master', 'Reset for Power', 'Speak', 0, 80, 80, 0, 35, 1, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
+(190003, 'Difficulty Selector', 'Choose Your Challenge', 'Speak', 0, 80, 80, 0, 35, 1, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
+(190004, 'Reward Shop', 'Spend Your Points', 'Speak', 0, 80, 80, 0, 35, 128, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
+(190005, 'Infinite Dungeon', 'Endless Challenge', 'Speak', 0, 80, 80, 0, 35, 1, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
+(190006, 'Progressive Items', 'Tiered Gear Vendor', 'Speak', 0, 80, 80, 0, 35, 128, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
+(190007, 'Daily Challenges', 'Daily & Weekly Tasks', 'Speak', 0, 80, 80, 0, 35, 1, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
+(190020, 'Paragon Master', 'Unlimited Progression', 'Speak', 0, 80, 80, 0, 35, 1, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0);
+
+-- ============================================================
 -- COMPLETE!
 -- ============================================================
 

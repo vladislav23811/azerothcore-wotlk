@@ -129,6 +129,12 @@ ProgressiveSystems.NPC.InfiniteDungeon = 190005
 # Progressive Items NPC Entry
 ProgressiveSystems.NPC.ProgressiveItems = 190006
 
+# Daily Challenges NPC Entry
+ProgressiveSystems.NPC.DailyChallenges = 190007
+
+# Paragon Master NPC Entry
+ProgressiveSystems.NPC.ParagonMaster = 190020
+
 ###############################################################
 # Currency Item IDs
 ###############################################################

@@ -455,7 +455,7 @@ void UnifiedStatSystem::LoadItemUpgradeBonuses(Player* player)
             uint32 statType = proto->ItemStat[j].ItemStatType;
             int32 statValue = proto->ItemStat[j].ItemStatValue;
             
-            if (statType == ITEM_MOD_NONE || statValue == 0)
+            if (statValue == 0)
                 continue;
             
             // Convert item stat type to our StatType
@@ -568,7 +568,7 @@ void UnifiedStatSystem::LoadPrestigeBonuses(Player* player)
     }
 }
 
-UnifiedStatSystem::StatType UnifiedStatSystem::ConvertWoWStatToStatType(Stats stat)
+StatType UnifiedStatSystem::ConvertWoWStatToStatType(Stats stat)
 {
     switch (stat)
     {
@@ -581,7 +581,7 @@ UnifiedStatSystem::StatType UnifiedStatSystem::ConvertWoWStatToStatType(Stats st
     }
 }
 
-UnifiedStatSystem::StatType UnifiedStatSystem::ConvertItemStatToStatType(uint32 itemStatType)
+StatType UnifiedStatSystem::ConvertItemStatToStatType(uint32 itemStatType)
 {
     switch (itemStatType)
     {
@@ -607,7 +607,7 @@ UnifiedStatSystem::StatType UnifiedStatSystem::ConvertItemStatToStatType(uint32 
     }
 }
 
-UnifiedStatSystem::StatType UnifiedStatSystem::ConvertParagonStatNameToStatType(const std::string& statName)
+StatType UnifiedStatSystem::ConvertParagonStatNameToStatType(const std::string& statName)
 {
     // Convert paragon stat name to StatType
     if (statName == "Strength" || statName == "strength")

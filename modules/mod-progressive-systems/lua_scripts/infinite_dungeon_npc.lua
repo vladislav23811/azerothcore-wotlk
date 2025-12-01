@@ -91,18 +91,18 @@ local function OnGossipSelect(event, player, creature, sender, intid, code)
             "|cFF00FF00Starting Infinite Dungeon - Floor %d|r\n" ..
             "|cFFAAAAFFGood luck!|r", floor))
         
-        -- Set current floor
-        sProgressiveSystems:SetCurrentFloor(player, floor)
+        -- Load wave system
+        dofile("infinite_dungeon_waves.lua")
         
-        -- Teleport to dungeon (using ICC as example - can be configured)
-        local mapId = 631  -- ICC
-        local x, y, z, o = 529.302, -2124.49, 840.857, 3.14159  -- ICC entrance
-        
-        -- Try to teleport player
-        if player:Teleport(mapId, x, y, z, o) then
-            player:SendBroadcastMessage("|cFF00FF00Teleported to Infinite Dungeon!|r")
+        -- Start floor waves
+        if InfiniteDungeonWaves.StartFloor(player, floor) then
+            player:SendBroadcastMessage(string.format(
+                "|cFF00FF00Infinite Dungeon - Floor %d|r\n" ..
+                "|cFFAAAAFFWaves will spawn around you!|r",
+                floor
+            ))
         else
-            player:SendBroadcastMessage("|cFFFF0000Failed to teleport. Please try again.|r")
+            player:SendBroadcastMessage("|cFFFF0000Failed to start floor. Please try again.|r")
         end
         
         player:GossipComplete()

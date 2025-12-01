@@ -5,6 +5,7 @@
 #include "ProgressiveSystemsCommands.h"
 #include "ProgressiveSystems.h"
 #include "ProgressiveSystemsCache.h"
+#include "UnifiedStatSystem.h"
 #include "Chat.h"
 #include "Player.h"
 #include "Config.h"
@@ -157,6 +158,30 @@ bool ProgressiveSystemsCommands::HandleProgressiveSystemsCacheCommand(ChatHandle
     return true;
 }
 
+bool ProgressiveSystemsCommands::HandleProgressiveSystemsReloadStatsCommand(ChatHandler* handler)
+{
+    if (!handler->GetSession() || !handler->GetSession()->GetPlayer())
+    {
+        handler->PSendSysMessage("This command can only be used by a player.");
+        return false;
+    }
+    
+    Player* player = handler->GetSession()->GetPlayer();
+    
+    // Reload all stat bonuses
+    sUnifiedStatSystem->LoadPlayerStatBonuses(player);
+    sUnifiedStatSystem->LoadParagonStatBonuses(player);
+    sUnifiedStatSystem->LoadItemUpgradeBonuses(player);
+    sUnifiedStatSystem->LoadPrestigeBonuses(player);
+    
+    // Update all stats
+    sUnifiedStatSystem->UpdateAllStats(player);
+    
+    handler->PSendSysMessage("Stats reloaded for %s.", player->GetName().c_str());
+    
+    return true;
+}
+
 // Command script registration
 class ProgressiveSystemsCommandScript : public CommandScript
 {
@@ -175,6 +200,7 @@ public:
             { "reset",    ProgressiveSystemsCommands::HandleProgressiveSystemsResetCommand,    SEC_ADMINISTRATOR, Console::No },
             { "debug",    ProgressiveSystemsCommands::HandleProgressiveSystemsDebugCommand,    SEC_PLAYER,     Console::No },
             { "cache",    ProgressiveSystemsCommands::HandleProgressiveSystemsCacheCommand,    SEC_ADMINISTRATOR, Console::No },
+            { "reloadstats", ProgressiveSystemsCommands::HandleProgressiveSystemsReloadStatsCommand, SEC_PLAYER, Console::No },
         };
         
         static ChatCommandTable commandTable =

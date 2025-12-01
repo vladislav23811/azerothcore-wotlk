@@ -265,8 +265,10 @@ local function OnGossipSelect(event, player, creature, sender, intid, code)
                 player:SendBroadcastMessage("|cFF00FF00Paragon point allocated!|r")
                 player:PlayDirectSound(6448)
                 
-                -- Reapply stats (would need C++ hook)
-                -- sParagonSystem->ApplyAllParagonStats(player)
+                -- Reload stats immediately
+                -- Note: Stats will be reloaded on next login automatically
+                -- For immediate effect, player can use .ps reloadstats command
+                player:SendBroadcastMessage("|cFFAAAAFFStats updated! Use .ps reloadstats to see changes immediately.|r")
             else
                 player:SendBroadcastMessage("|cFFFF0000This stat is at maximum!|r")
             end

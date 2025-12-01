@@ -35,7 +35,11 @@ CREATE TABLE IF NOT EXISTS `character_progression_unified` (
   `total_power_level` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Calculated power level',
   `progression_points` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Total progression points earned',
   `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT `fk_progression_unified_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE
+  CONSTRAINT `fk_progression_unified_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE,
+  INDEX `idx_prestige_level` (`prestige_level`),
+  INDEX `idx_current_tier` (`current_tier`),
+  INDEX `idx_progression_points` (`progression_points`),
+  INDEX `idx_total_power_level` (`total_power_level`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Unified character progression tracking';
 
 -- ============================================================
@@ -74,7 +78,8 @@ CREATE TABLE IF NOT EXISTS `item_upgrades` (
   `upgrade_cost_progression_points` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Total points spent on this item',
   `last_upgrade_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`item_guid`),
-  CONSTRAINT `fk_item_upgrades_guid` FOREIGN KEY (`item_guid`) REFERENCES `item_instance` (`guid`) ON DELETE CASCADE
+  CONSTRAINT `fk_item_upgrades_guid` FOREIGN KEY (`item_guid`) REFERENCES `item_instance` (`guid`) ON DELETE CASCADE,
+  INDEX `idx_upgrade_level` (`upgrade_level`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Item upgrade tracking';
 
 CREATE TABLE IF NOT EXISTS `character_stat_enhancements` (
@@ -95,7 +100,9 @@ CREATE TABLE IF NOT EXISTS `infinite_dungeon_progress` (
   `best_time` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Best completion time in seconds',
   `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`guid`),
-  CONSTRAINT `fk_infinite_dungeon_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE
+  CONSTRAINT `fk_infinite_dungeon_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE,
+  INDEX `idx_highest_floor` (`highest_floor`),
+  INDEX `idx_best_time` (`best_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Infinite dungeon progression';
 
 CREATE TABLE IF NOT EXISTS `seasonal_progress` (
@@ -422,6 +429,54 @@ CREATE TABLE IF NOT EXISTS `instance_reset_usage` (
   INDEX `idx_reset_time` (`reset_time`),
   CONSTRAINT `fk_instance_reset_usage_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Instance reset usage tracking for daily limits and cooldowns';
+
+-- ============================================================
+-- 18. PARAGON SYSTEM
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `character_paragon` (
+  `guid` INT UNSIGNED NOT NULL PRIMARY KEY,
+  `paragon_level` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Current paragon level',
+  `paragon_experience` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Experience towards next paragon level',
+  `total_paragon_experience` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Total paragon experience earned',
+  `paragon_points_available` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Unspent paragon points',
+  `paragon_points_total` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Total paragon points earned',
+  `paragon_tier` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Paragon tier (every 100 levels)',
+  `highest_paragon_level` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Highest paragon level reached',
+  `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_paragon_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE,
+  INDEX `idx_paragon_level` (`paragon_level`),
+  INDEX `idx_paragon_tier` (`paragon_tier`),
+  INDEX `idx_total_paragon_experience` (`total_paragon_experience`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Paragon system progression';
+
+CREATE TABLE IF NOT EXISTS `character_paragon_stats` (
+  `guid` INT UNSIGNED NOT NULL,
+  `stat_type` TINYINT UNSIGNED NOT NULL COMMENT '0=Core, 1=Offense, 2=Defense, 3=Utility',
+  `stat_id` TINYINT UNSIGNED NOT NULL COMMENT 'Stat ID within category',
+  `points_allocated` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Points allocated to this stat',
+  `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`guid`, `stat_type`, `stat_id`),
+  CONSTRAINT `fk_paragon_stats_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Paragon stat point allocation';
+
+CREATE TABLE IF NOT EXISTS `character_paragon_milestones` (
+  `guid` INT UNSIGNED NOT NULL,
+  `milestone_id` INT UNSIGNED NOT NULL COMMENT 'Milestone level (100, 200, 500, etc.)',
+  `reward_claimed` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Whether milestone reward was claimed',
+  `date_achieved` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`guid`, `milestone_id`),
+  CONSTRAINT `fk_paragon_milestones_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Paragon milestone achievements';
+
+CREATE TABLE IF NOT EXISTS `character_paragon_seasonal` (
+  `guid` INT UNSIGNED NOT NULL,
+  `season_id` INT UNSIGNED NOT NULL,
+  `seasonal_paragon_level` INT UNSIGNED NOT NULL DEFAULT 0,
+  `seasonal_experience` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  `seasonal_points_allocated` INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (`guid`, `season_id`),
+  CONSTRAINT `fk_paragon_seasonal_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Seasonal paragon progression';
 
 -- ============================================================
 -- COMPLETE!

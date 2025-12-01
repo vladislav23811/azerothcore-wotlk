@@ -22,6 +22,7 @@ public:
     static bool HandleProgressiveSystemsResetCommand(ChatHandler* handler);
     static bool HandleProgressiveSystemsDebugCommand(ChatHandler* handler, Optional<bool> enable);
     static bool HandleProgressiveSystemsCacheCommand(ChatHandler* handler);
+    static bool HandleProgressiveSystemsReloadStatsCommand(ChatHandler* handler);
 };
 
 #endif // PROGRESSIVE_SYSTEMS_COMMANDS_H

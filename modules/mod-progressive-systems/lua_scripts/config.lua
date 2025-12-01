@@ -16,6 +16,8 @@ Config.NPC = {
     REWARD_SHOP = 190004,
     INFINITE_DUNGEON = 190005,
     PROGRESSIVE_ITEMS = 190006,
+    DAILY_CHALLENGES = 190007,
+    PARAGON_MASTER = 190020,
 }
 
 -- ============================================================
