@@ -5,6 +5,17 @@
 [![StackOverflow](http://img.shields.io/badge/stackoverflow-azerothcore-blue.svg?logo=stackoverflow)](https://stackoverflow.com/questions/tagged/azerothcore?sort=newest "Ask / browse questions here")
 [![Discord](https://img.shields.io/discord/217589275766685707?logo=discord&logoColor=white)](https://discord.gg/gkt4y2x "Our community hub on Discord")
 
+## Build Status
+
+[![playerbots-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-playerbots.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-playerbots.yml?query=branch%3Aplayerbotwithall)
+[![windows-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/windows_build.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/windows_build.yml?query=branch%3Aplayerbotwithall)
+[![nopch-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-nopch.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-nopch.yml?query=branch%3Aplayerbotwithall)
+[![pch-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-pch.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-pch.yml?query=branch%3Aplayerbotwithall)
+[![core-modules-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core_modules_build.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core_modules_build.yml?query=branch%3Aplayerbotwithall)
+[![docker-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/docker_build.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/docker_build.yml?query=branch%3Aplayerbotwithall)
+[![macos-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/macos_build.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/macos_build.yml?query=branch%3Aplayerbotwithall)
+[![tools-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/tools_build.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/tools_build.yml?query=branch%3Aplayerbotwithall)
+
 ## 🎮 Introduction
 
 This is a **customized AzerothCore WotLK server** focused on **Playerbots** and **Progressive Systems**. Based on the popular MMORPG World of Warcraft patch 3.3.5a, this fork enhances the core AzerothCore experience with:
