@@ -5156,6 +5156,20 @@ void SpellMgr::LoadSpellInfoCorrections()
         spellInfo->AttributesEx3 |= SPELL_ATTR3_DOT_STACKING_RULE;
     });
 
+    // King Mrlg-Mrgl's Spare Suit
+    ApplySpellFix({ 45278 }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->ProcCharges = 1;
+    });
+
+    ApplySpellFix({
+        56917, // To Icecrown Airship - Teleport to Airship (A)
+        57417, // To Icecrown Airship - Teleport to Airship (H)
+        }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(6); // 100 yards
+    });
+
     for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
     {
         SpellInfo* spellInfo = mSpellInfoMap[i];
