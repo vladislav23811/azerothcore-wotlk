@@ -1,9 +1,9 @@
 name: windows-build
 on:
   push:
-    branches: [ "Playerbot" ]
+    branches: [ "Playerbot", "playerbotwithall" ]
   pull_request:
-    branches: [ "Playerbot" ]
+    branches: [ "Playerbot", "playerbotwithall" ]
 
 concurrency:
   group: ${{ github.head_ref }} || concat(${{ github.ref_name }}, ${{ github.workflow }})

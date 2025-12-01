@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 'master'
+      - 'playerbotwithall'
   pull_request:
     types:
       - opened
