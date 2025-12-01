@@ -43,9 +43,8 @@ void ProgressiveSystemsAddonScript::OnPlayerLogin(Player* player)
         // Load stat bonuses from database
         sUnifiedStatSystem->LoadPlayerStatBonuses(player);
         
-        // Send initial data to addon
-        sProgressiveSystemsAddon->SendProgressionData(player);
-        sProgressiveSystemsAddon->SendInstanceData(player);
+        // Send all initial data to addon
+        sProgressiveSystemsAddon->SendAllData(player);
     }
 }
 

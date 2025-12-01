@@ -101,10 +101,17 @@ function PS_UI:CreateMainWindow()
     prestigeText:SetText("Prestige Level: 0")
     progContent.prestigeText = prestigeText
     
+    -- Item Upgrades display
+    local itemUpgradesText = progContent:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    itemUpgradesText:SetPoint("TOP", prestigeText, "BOTTOM", 0, -10)
+    itemUpgradesText:SetText("Upgraded Items: 0")
+    itemUpgradesText:SetTextColor(0, 1, 1, 1) -- Cyan color
+    progContent.itemUpgradesText = itemUpgradesText
+    
     -- Instance Reset button in progression tab
     local instanceResetBtn = CreateFrame("Button", nil, progContent, "UIPanelButtonTemplate")
     instanceResetBtn:SetSize(180, 30)
-    instanceResetBtn:SetPoint("TOP", prestigeText, "BOTTOM", 0, -15)
+    instanceResetBtn:SetPoint("TOP", itemUpgradesText, "BOTTOM", 0, -15)
     instanceResetBtn:SetText("Instance Reset")
     instanceResetBtn:SetScript("OnClick", function()
         if ProgressiveSystems.InstanceReset then
@@ -326,6 +333,19 @@ function PS_UI:UpdateMainWindow()
         mainFrame.progContent.prestigeText:SetText(string.format("Prestige Level: %d", prog.prestige_level or 0))
     end
     
+    -- Update item upgrades display
+    if data and data.itemUpgrades then
+        local upgradeCount = data.itemUpgradeCount or #data.itemUpgrades
+        local totalLevels = 0
+        for _, item in ipairs(data.itemUpgrades) do
+            totalLevels = totalLevels + (item.level or 0)
+        end
+        mainFrame.progContent.itemUpgradesText:SetText(string.format(
+            "Upgraded Items: %d (Total +%d levels)", upgradeCount, totalLevels))
+    else
+        mainFrame.progContent.itemUpgradesText:SetText("Upgraded Items: 0")
+    end
+    
     -- Update paragon tab
     if data and data.paragonData then
         local pg = data.paragonData
@@ -333,13 +353,23 @@ function PS_UI:UpdateMainWindow()
         mainFrame.paragonContent.tierText:SetText(string.format("Paragon Tier: %d", pg.tier or 0))
         mainFrame.paragonContent.pointsText:SetText(string.format("Available Points: %d", pg.points or 0))
         
-        if pg.expNeeded and pg.expNeeded > 0 then
-            local percent = ((pg.experience or 0) / pg.expNeeded) * 100
-            mainFrame.paragonContent.expBar:SetMinMaxValues(0, pg.expNeeded)
-            mainFrame.paragonContent.expBar:SetValue(pg.experience or 0)
-            mainFrame.paragonContent.expBar.text:SetText(string.format("%d / %d (%.1f%%)",
-                pg.experience or 0, pg.expNeeded, percent))
+        -- Update experience bar with real data
+        local exp = pg.experience or 0
+        local expNeeded = pg.expNeeded or 1000
+        if expNeeded > 0 then
+            local percent = (exp / expNeeded) * 100
+            mainFrame.paragonContent.expBar:SetMinMaxValues(0, expNeeded)
+            mainFrame.paragonContent.expBar:SetValue(exp)
+            if mainFrame.paragonContent.expBar.text then
+                mainFrame.paragonContent.expBar.text:SetText(string.format("%d / %d (%.1f%%)",
+                    exp, expNeeded, percent))
+            end
         end
+    else
+        -- Default values if no data
+        mainFrame.paragonContent.levelText:SetText("Paragon Level: 0")
+        mainFrame.paragonContent.tierText:SetText("Paragon Tier: 0")
+        mainFrame.paragonContent.pointsText:SetText("Available Points: 0")
     end
     
     -- Update stats tab

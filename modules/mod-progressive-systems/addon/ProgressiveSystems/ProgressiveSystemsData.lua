@@ -53,6 +53,15 @@ function PS_Data:UpdateKills(kills)
     ProgressiveSystems.UI:UpdateAllWindows()
 end
 
+function PS_Data:UpdateItemUpgradeData(data)
+    if not ProgressiveSystemsPerCharDB.charData.itemUpgrades then
+        ProgressiveSystemsPerCharDB.charData.itemUpgrades = {}
+    end
+    ProgressiveSystemsPerCharDB.charData.itemUpgrades = data.items or {}
+    ProgressiveSystemsPerCharDB.charData.itemUpgradeCount = data.count or 0
+    ProgressiveSystems.UI:UpdateAllWindows()
+end
+
 -- Getters
 function PS_Data:GetProgressionPoints()
     return self.progressionData.progression_points or 0

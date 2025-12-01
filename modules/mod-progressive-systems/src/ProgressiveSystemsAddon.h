@@ -30,11 +30,20 @@ public:
            // Send challenge update
            void SendChallengeUpdate(Player* player, uint32 challengeId, uint32 progress);
            
-           // Send instance data
-           void SendInstanceData(Player* player);
-           
-           // Handle addon messages from client
-           void HandleAddonMessage(Player* player, const std::string& prefix, const std::string& message);
+    // Send instance data
+    void SendInstanceData(Player* player);
+    
+    // Send paragon data
+    void SendParagonData(Player* player);
+    
+    // Send item upgrade data
+    void SendItemUpgradeData(Player* player);
+    
+    // Send all data (full sync)
+    void SendAllData(Player* player);
+    
+    // Handle addon messages from client
+    void HandleAddonMessage(Player* player, const std::string& prefix, const std::string& message);
            
        private:
     ProgressiveSystemsAddon() = default;

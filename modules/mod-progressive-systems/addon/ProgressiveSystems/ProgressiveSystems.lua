@@ -43,6 +43,13 @@ function PS:OnInitialize()
     self:RegisterEvent("UNIT_LEVEL")
     self:RegisterEvent("PLAYER_TARGET_CHANGED")
     
+    -- Set up periodic data updates (every 5 seconds)
+    C_Timer.NewTicker(5, function()
+        if UnitLevel("player") >= 80 then
+            self:RequestAllData()
+        end
+    end)
+    
     -- Register slash commands
     SLASH_PROGRESSIVESYSTEMS1 = "/ps"
     SLASH_PROGRESSIVESYSTEMS2 = "/progressive"
@@ -113,8 +120,14 @@ function PS:RequestAllData()
     -- Request all data from server
     self:RequestProgressionData()
     self:RequestParagonData()
+    self:RequestItemUpgradeData()
     self:RequestCustomStatsData()
     self:RequestInstanceData()
+end
+
+function PS:RequestItemUpgradeData()
+    -- Request item upgrade data from server
+    C_ChatInfo.SendAddonMessage("PS_DATA_REQUEST", "ITEM_UPGRADE", "WHISPER", UnitName("player"))
 end
 
 function PS:RequestProgressionData()
@@ -134,30 +147,75 @@ end
 
 function PS:HandleAddonMessage(prefix, msg, channel, sender)
     if prefix == "PROGRESSIVE_SYSTEMS" or prefix == "PS_DATA_UPDATE" then
-        -- Parse message
-        local data = self:ParseDataMessage(msg)
-        if data then
-            if data.type == "PROGRESSION" then
-                ProgressiveSystems.Data:UpdateProgressionData(data)
-            elseif data.type == "PARAGON" then
-                ProgressiveSystems.Data:UpdateParagonData(data)
-            elseif data.type == "CUSTOM_STATS" then
-                ProgressiveSystems.Data:UpdateCustomStatsData(data)
-            elseif data.type == "POINTS_UPDATE" then
-                ProgressiveSystems.Data:UpdatePoints(data.points)
-            elseif data.type == "KILL_UPDATE" then
-                ProgressiveSystems.Data:UpdateKills(data.kills)
-            elseif data.type == "INSTANCE_DATA" then
-                -- Update instance data
+        -- Check message type first
+        local msgType = msg:match("^([^|]+)")
+        
+        if msgType == "PROGRESSION_DATA" then
+            local data = self:ParseDataMessage(msg)
+            if data then
+                -- Map C++ field names to expected names
+                local mappedData = {
+                    type = "PROGRESSION_DATA",
+                    progression_points = data.points or 0,
+                    total_kills = data.kills or 0,
+                    current_tier = data.tier or 1,
+                    difficulty_tier = data.difficulty or 1,
+                    prestige_level = data.prestige or 0,
+                    power_level = data.power or 0
+                }
+                ProgressiveSystems.Data:UpdateProgressionData(mappedData)
+                ProgressiveSystems.UI:UpdateAllWindows()
+            end
+        elseif msgType == "PARAGON_DATA" then
+            local data = self:ParseDataMessage(msg)
+            if data then
+                -- Map C++ field names to expected names
+                local mappedData = {
+                    type = "PARAGON_DATA",
+                    level = data.level or 0,
+                    tier = data.tier or 0,
+                    points = data.points or 0,
+                    experience = data.exp or 0,
+                    expNeeded = data.expNeeded or 1000,
+                    totalExp = data.totalExp or 0
+                }
+                ProgressiveSystems.Data:UpdateParagonData(mappedData)
+                ProgressiveSystems.UI:UpdateAllWindows()
+            end
+        elseif msgType == "ITEM_UPGRADE_DATA" then
+            local data = self:ParseItemUpgradeData(msg)
+            if data then
+                ProgressiveSystems.Data:UpdateItemUpgradeData(data)
+                ProgressiveSystems.UI:UpdateAllWindows()
+            end
+        elseif msgType == "INSTANCE_DATA" then
+            local data = self:ParseDataMessage(msg)
+            if data then
                 if not ProgressiveSystemsPerCharDB.charData.instanceData then
                     ProgressiveSystemsPerCharDB.charData.instanceData = {}
                 end
                 ProgressiveSystemsPerCharDB.charData.instanceData = data.instances or {}
                 ProgressiveSystems.UI:UpdateInstancesTab()
             end
-            
-            -- Update UI
-            ProgressiveSystems.UI:UpdateAllWindows()
+        else
+            -- Legacy format support
+            local data = self:ParseDataMessage(msg)
+            if data then
+                if data.type == "PROGRESSION" or data.type == "PROGRESSION_DATA" then
+                    ProgressiveSystems.Data:UpdateProgressionData(data)
+                elseif data.type == "PARAGON" or data.type == "PARAGON_DATA" then
+                    ProgressiveSystems.Data:UpdateParagonData(data)
+                elseif data.type == "CUSTOM_STATS" then
+                    ProgressiveSystems.Data:UpdateCustomStatsData(data)
+                elseif data.type == "POINTS_UPDATE" then
+                    ProgressiveSystems.Data:UpdatePoints(data.points)
+                elseif data.type == "KILL_UPDATE" then
+                    ProgressiveSystems.Data:UpdateKills(data.kills)
+                end
+                
+                -- Update UI
+                ProgressiveSystems.UI:UpdateAllWindows()
+            end
         end
     end
 end
@@ -187,6 +245,49 @@ function PS:ParseDataMessage(msg)
         return data
     end
     return nil
+end
+
+function PS:ParseItemUpgradeData(msg)
+    -- Parse message format: "ITEM_UPGRADE_DATA|count:N|item0:slot:X,guid:Y,level:Z,bonus:A|item1:..."
+    local data = { type = "ITEM_UPGRADE_DATA", items = {} }
+    local parts = {}
+    for part in string.gmatch(msg, "([^|]+)") do
+        table.insert(parts, part)
+    end
+    
+    if #parts > 0 then
+        -- First part is type, second is count
+        if #parts > 1 then
+            local countStr = parts[2]:match("count:(%d+)")
+            if countStr then
+                data.count = tonumber(countStr) or 0
+            end
+        end
+        
+        -- Parse items
+        for i = 3, #parts do
+            local itemStr = parts[i]
+            local itemMatch = itemStr:match("item%d+:(.+)")
+            if itemMatch then
+                local item = {}
+                -- Parse item properties: slot:X,guid:Y,level:Z,bonus:A
+                for prop in string.gmatch(itemMatch, "([^,]+)") do
+                    local key, value = prop:match("([^:]+):(.+)")
+                    if key and value then
+                        local numValue = tonumber(value)
+                        if numValue then
+                            item[key] = numValue
+                        else
+                            item[key] = value
+                        end
+                    end
+                end
+                table.insert(data.items, item)
+            end
+        end
+    end
+    
+    return data
 end
 
 function PS:HandleSlashCommand(msg)

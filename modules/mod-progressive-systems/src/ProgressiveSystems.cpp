@@ -367,6 +367,9 @@ bool ProgressiveSystems::UpgradeItem(Player* player, Item* item)
         
         // Update power level
         UpdatePowerLevel(player);
+        
+        // Send addon update
+        sProgressiveSystemsAddon->SendItemUpgradeData(player);
 
         if (player->GetSession())
         {
