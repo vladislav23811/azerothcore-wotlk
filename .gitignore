@@ -10,6 +10,12 @@
 !/modules/CMakeLists.txt
 !/modules/*.h
 !/modules/*.cmake
+!/modules/*/conf/*.conf.dist
+!/modules/*/src/**
+!/modules/*/data/**
+!/modules/*/lua_scripts/**
+!/modules/*/CMakeLists.txt
+!/modules/*/README.md
 /build*/
 /var/*
 !/var/build/.gitkeep
