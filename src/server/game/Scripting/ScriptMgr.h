@@ -369,8 +369,8 @@ public: /* PlayerScript */
     bool OnPlayerBeforeAchievementComplete(Player* player, AchievementEntry const* achievement);
     void OnPlayerCriteriaProgress(Player* player, AchievementCriteriaEntry const* criteria);
     bool OnPlayerBeforeCriteriaProgress(Player* player, AchievementCriteriaEntry const* criteria);
-    void OnPlayerAchievementSave(CharacterDatabaseTransaction trans, Player* player, uint16 achiId, CompletedAchievementData achiData);
-    void OnPlayerCriteriaSave(CharacterDatabaseTransaction trans, Player* player, uint16 critId, CriteriaProgress criteriaData);
+    void OnPlayerAchievementSave(CharacterDatabaseTransaction trans, Player* player, uint16 achiId, CompletedAchievementData const& achiData);
+    void OnPlayerCriteriaSave(CharacterDatabaseTransaction trans, Player* player, uint16 critId, CriteriaProgress const& criteriaData);
     void OnPlayerGossipSelect(Player* player, uint32 menu_id, uint32 sender, uint32 action);
     void OnPlayerGossipSelectCode(Player* player, uint32 menu_id, uint32 sender, uint32 action, const char* code);
     void OnPlayerBeingCharmed(Player* player, Unit* charmer, uint32 oldFactionId, uint32 newFactionId);

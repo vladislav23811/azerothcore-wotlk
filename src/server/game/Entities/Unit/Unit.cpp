@@ -17447,8 +17447,11 @@ float Unit::CalculateDefaultCoefficient(SpellInfo const* spellInfo, DamageEffect
         if (!spellInfo->IsChanneled() && DotDuration > 0)
             DotFactor = DotDuration / 15000.0f;
 
-        if (uint32 DotTicks = spellInfo->GetMaxTicks())
+        uint32 DotTicks = spellInfo->GetMaxTicks();
+        if (DotTicks > 0)
             DotFactor /= DotTicks;
+        else
+            LOG_WARN("entities.unit", "Unit::CalculateDefaultCoefficient: Spell {} has DOT but GetMaxTicks() returned 0", spellInfo->Id);
     }
 
     int32 CastingTime = spellInfo->IsChanneled() ? spellInfo->GetDuration() : spellInfo->CalcCastTime();

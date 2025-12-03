@@ -5551,6 +5551,10 @@ void Spell::HandleThreatSpells()
     if (threat == 0.0f)
         return;
 
+    // Prevent division by zero if no targets
+    if (m_UniqueTargetInfo.empty())
+        return;
+
     // since 2.0.1 threat from positive effects also is distributed among all targets, so the overall caused threat is at most the defined bonus
     threat /= m_UniqueTargetInfo.size();
 

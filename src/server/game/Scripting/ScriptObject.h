@@ -19,11 +19,11 @@
 #define _SCRIPT_OBJECT_H_
 
 #include "ScriptObjectFwd.h"
+#include "ObjectGuid.h"
 #include <string>
 
 //#include "Duration.h"
 //#include "LFG.h"
-//#include "ObjectGuid.h"
 //#include "SharedDefines.h"
 //#include "Tuples.h"
 //#include "Types.h"

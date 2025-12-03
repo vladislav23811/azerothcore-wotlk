@@ -593,6 +593,18 @@ bool WorldSession::HandleSocketClosed()
     {
         m_Socket = nullptr;
         GetPlayer()->TradeCancel(false);
+        
+        // SECURITY FIX: Delay logout if player is in combat
+        // Prevents combat logout exploit where players disconnect to avoid death
+        if (GetPlayer()->IsInCombat() && !GetPlayer()->IsGameMaster())
+        {
+            // Set logout time to 20 seconds from now
+            _logoutTime = GameTime::GetGameTime().count() + 20;
+            
+            LOG_INFO("entities.player.exploit", "Player {} ({}) disconnected while in combat. Logout delayed by 20 seconds.",
+                     GetPlayer()->GetName(), GetPlayer()->GetGUID().ToString());
+        }
+        
         return true;
     }
 
@@ -655,7 +667,9 @@ void WorldSession::LogoutPlayer(bool save)
         sScriptMgr->OnPlayerbotLogout(_player);
 
         ///- If the player just died before logging out, make him appear as a ghost
-        //FIXME: logout must be delayed in case lost connection with client in time of combat
+        // TODO: Consider delaying logout when player loses connection during combat
+        // Current behavior: Immediate logout on disconnect (can be exploited)
+        // Desired: Delay logout by 20 seconds if in combat
         if (_player->GetDeathTimer())
         {
             _player->getHostileRefMgr().deleteReferences(true);

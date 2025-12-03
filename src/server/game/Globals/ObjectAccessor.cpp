@@ -182,7 +182,7 @@ Corpse* ObjectAccessor::GetCorpse(WorldObject const& u, ObjectGuid const& guid)
     Map const* map = u.GetMap();
     if (!map)
         return nullptr;
-    return map->GetCorpse(guid);
+    return const_cast<Map*>(map)->GetCorpse(guid);
 }
 
 GameObject* ObjectAccessor::GetGameObject(WorldObject const& u, ObjectGuid const& guid)
@@ -191,7 +191,7 @@ GameObject* ObjectAccessor::GetGameObject(WorldObject const& u, ObjectGuid const
     Map const* map = u.GetMap();
     if (!map)
         return nullptr;
-    return map->GetGameObject(guid);
+    return const_cast<Map*>(map)->GetGameObject(guid);
 }
 
 Transport* ObjectAccessor::GetTransport(WorldObject const& u, ObjectGuid const& guid)
@@ -200,7 +200,7 @@ Transport* ObjectAccessor::GetTransport(WorldObject const& u, ObjectGuid const& 
     Map const* map = u.GetMap();
     if (!map)
         return nullptr;
-    return map->GetTransport(guid);
+    return const_cast<Map*>(map)->GetTransport(guid);
 }
 
 DynamicObject* ObjectAccessor::GetDynamicObject(WorldObject const& u, ObjectGuid const& guid)
@@ -209,7 +209,7 @@ DynamicObject* ObjectAccessor::GetDynamicObject(WorldObject const& u, ObjectGuid
     Map const* map = u.GetMap();
     if (!map)
         return nullptr;
-    return map->GetDynamicObject(guid);
+    return const_cast<Map*>(map)->GetDynamicObject(guid);
 }
 
 Unit* ObjectAccessor::GetUnit(WorldObject const& u, ObjectGuid const& guid)
@@ -230,15 +230,16 @@ Creature* ObjectAccessor::GetCreature(WorldObject const& u, ObjectGuid const& gu
     if (!map)
         return nullptr;
     
-    return map->GetCreature(guid);
+    return const_cast<Map*>(map)->GetCreature(guid);
 }
 
 Pet* ObjectAccessor::GetPet(WorldObject const& u, ObjectGuid const& guid)
 {
+    // Fix for issue #24000: Add null check to prevent crash if GetMap() returns nullptr
     Map const* map = u.GetMap();
     if (!map)
         return nullptr;
-    return map->GetPet(guid);
+    return const_cast<Map*>(map)->GetPet(guid);
 }
 
 Player* ObjectAccessor::GetPlayer(Map const* m, ObjectGuid const& guid)

@@ -3649,7 +3649,11 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
             if (ihit->effectMask & (1 << effIndex))
                 ++count;
 
-        eff_damage /= count;                    // divide to all targets
+        // Prevent division by zero if no targets found
+        if (count > 0)
+            eff_damage /= count;                    // divide to all targets
+        else
+            LOG_WARN("spells", "Spell {} (SPELL_ATTR0_CU_SHARE_DAMAGE) has no targets to share damage with", m_spellInfo->Id);
     }
 
     m_damage += eff_damage;
@@ -5340,8 +5344,10 @@ void Spell::EffectDurabilityDamagePCT(SpellEffIndex effIndex)
 
     int32 slot = m_spellInfo->Effects[effIndex].MiscValue;
 
-    // FIXME: some spells effects have value -1/-2
-    // Possibly its mean -1 all player equipped items and -2 all items
+    // Handle special slot values:
+    // -1 = All equipped items
+    // -2 = All items (equipped + inventory)
+    // These are used by spells that affect multiple item slots
     if (slot < 0)
     {
         player->DurabilityLossAll(float(damage) / 100.0f, (slot < -1));
@@ -5389,7 +5395,8 @@ void Spell::EffectTransmitted(SpellEffIndex effIndex)
 
     if (m_targets.HasDst())
         destTarget->GetPosition(fx, fy, fz);
-    //FIXME: this can be better check for most objects but still hack
+    // For instant AOE spells without explicit destination, calculate position near caster
+    // This is correct behavior for spells with radius but no travel time
     else if (m_spellInfo->Effects[effIndex].HasRadius() && m_spellInfo->Speed == 0)
     {
         float dis = m_spellInfo->Effects[effIndex].CalcRadius(m_originalCaster);

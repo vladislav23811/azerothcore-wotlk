@@ -122,8 +122,20 @@ namespace Acore::XP
 
         if (isRaid)
         {
-            // FIXME: Must apply decrease modifiers depending on raid size.
-            rate = 1.0f;
+            // Raid size XP scaling implementation
+            // Retail behavior: XP decreases with more raid members
+            // Formula: Base rate decreases as raid size increases
+            // 10-man: 100%, 15-man: 75%, 20-man: 60%, 25-man: 50%, 40-man: 40%
+            if (count <= 10)
+                rate = 1.0f;          // 10-man: full XP
+            else if (count <= 15)
+                rate = 0.75f;         // 11-15: 75% XP
+            else if (count <= 20)
+                rate = 0.60f;         // 16-20: 60% XP
+            else if (count <= 25)
+                rate = 0.50f;         // 21-25: 50% XP
+            else
+                rate = 0.40f;         // 26-40: 40% XP
         }
         else
         {

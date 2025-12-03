@@ -20,10 +20,18 @@
 
 #include "ScriptObject.h"
 #include "SharedDefines.h"
+#include "ObjectGuid.h"
+#include "Optional.h"
+#include "DatabaseEnvFwd.h"
+#include "Common.h"
 #include <vector>
+#include <set>
+#include <string>
 
 // Forward declarations instead of full includes for performance
 class AchievementEntry;
+struct CompletedAchievementData;
+struct CriteriaProgress;
 class KillRewarder;
 
 enum PlayerHook
@@ -389,10 +397,10 @@ public:
     virtual bool OnPlayerBeforeCriteriaProgress(Player* /*player*/, AchievementCriteriaEntry const* /*criteria*/) { return true; }
 
     // Called when an Achievement is saved to DB
-    virtual void OnPlayerAchievementSave(CharacterDatabaseTransaction /*trans*/, Player* /*player*/, uint16 /*achId*/, CompletedAchievementData /*achiData*/) { }
+    virtual void OnPlayerAchievementSave(CharacterDatabaseTransaction /*trans*/, Player* /*player*/, uint16 /*achId*/, CompletedAchievementData const& /*achiData*/) { }
 
     // Called when an Criteria is saved to DB
-    virtual void OnPlayerCriteriaSave(CharacterDatabaseTransaction /*trans*/, Player* /*player*/, uint16 /*achId*/, CriteriaProgress /*criteriaData*/) { }
+    virtual void OnPlayerCriteriaSave(CharacterDatabaseTransaction /*trans*/, Player* /*player*/, uint16 /*achId*/, CriteriaProgress const& /*criteriaData*/) { }
 
     // Called when a player selects an option in a player gossip window
     virtual void OnPlayerGossipSelect(Player* /*player*/, uint32 /*menu_id*/, uint32 /*sender*/, uint32 /*action*/) { }

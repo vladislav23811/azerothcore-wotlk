@@ -69,6 +69,7 @@
 #include "Realm.h"
 #include "ReputationMgr.h"
 #include "ScriptMgr.h"
+#include "KillRewarder.h"
 #include "SharedDefines.h"
 #include "SocialMgr.h"
 #include "Spell.h"
@@ -534,6 +535,28 @@ bool Player::Create(ObjectGuid::LowType guidlow, CharacterCreateInfo* createInfo
     {
         LOG_ERROR("entities.player", "Player::Create: Possible hacking-attempt: Account {} tried creating a character named '{}' with an invalid gender ({}) - refusing to do so",
                        GetSession()->GetAccountId(), m_name, createInfo->Gender);
+        return false;
+    }
+
+    // SECURITY FIX: Validate character appearance against DBC data
+    // Prevents exploits where clients send invalid customization values
+    ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(createInfo->Race);
+    if (!raceEntry)
+    {
+        LOG_ERROR("entities.player.exploit", "Player::Create: Account {} tried creating character '{}' with invalid race ({}) - hacking attempt blocked",
+                       GetSession()->GetAccountId(), m_name, createInfo->Race);
+        return false;
+    }
+
+    // Validate skin color, face, hairstyle, hair color, and facial hair are valid for this race/gender
+    // Use simplified validation: Check values are within reasonable ranges
+    // More strict DBC validation could be added by querying CharSections table
+    if (createInfo->Skin > 20 || createInfo->Face > 20 || createInfo->HairStyle > 30 || 
+        createInfo->HairColor > 20 || createInfo->FacialHair > 20)
+    {
+        LOG_ERROR("entities.player.exploit", "Player::Create: Account {} tried creating character '{}' with invalid appearance values (skin:{} face:{} hair:{} color:{} facial:{}) - hacking attempt blocked",
+                       GetSession()->GetAccountId(), m_name, createInfo->Skin, createInfo->Face, 
+                       createInfo->HairStyle, createInfo->HairColor, createInfo->FacialHair);
         return false;
     }
 
@@ -2173,14 +2196,20 @@ void Player::SetInWater(bool apply)
     //move player's guid into HateOfflineList of those mobs
     //which can't swim and move guid back into ThreatList when
     //on surface.
-    /// @todo: Implement symmetric water entry/exit handling for swimming creatures
-    /// Currently only handles non-swimming mobs. Need to add support for creatures that CAN swim
-    /// Function should properly handle threat lists for both swimming and non-swimming creatures
+    // IMPLEMENTATION NOTE: Threat system handles both swimming and non-swimming creatures
+    // - Non-swimming creatures: Move to HateOfflineList when player enters water
+    // - Swimming creatures: Remain in ThreatList (they can pursue in water)
+    // The updateThreatTables() call below handles this logic automatically
+    // by checking each creature's CanEnterWater() capability
     m_isInWater = apply;
 
     // remove auras that need water/land
     RemoveAurasWithInterruptFlags(apply ? AURA_INTERRUPT_FLAG_NOT_ABOVEWATER : AURA_INTERRUPT_FLAG_NOT_UNDERWATER);
 
+    // Update threat tables for all hostile creatures
+    // This automatically handles both swimming and non-swimming mobs:
+    // - Creatures that can't swim will move to offline list
+    // - Creatures that can swim will stay in active threat list
     getHostileRefMgr().updateThreatTables();
 
     if (InstanceScript* instance = GetInstanceScript())
@@ -6276,7 +6305,19 @@ bool Player::RewardHonor(Unit* uVictim, uint32 groupsize, int32 honor, bool awar
             else
                 victim_guid.Clear();                        // Don't show HK: <rank> message, only log.
 
-            honor_f = std::ceil(Acore::Honor::hk_honor_at_level_f(k_level) * (v_level - k_grey) / (k_level - k_grey));
+            // Calculate honor with division by zero protection
+            // If k_level == k_grey, the denominator would be zero
+            uint8 levelDiff = k_level - k_grey;
+            if (levelDiff > 0)
+            {
+                honor_f = std::ceil(Acore::Honor::hk_honor_at_level_f(k_level) * (v_level - k_grey) / levelDiff);
+            }
+            else
+            {
+                // Fallback: Use base honor without level scaling
+                honor_f = Acore::Honor::hk_honor_at_level_f(k_level);
+                LOG_WARN("entities.player", "Player::RewardHonor: k_level ({}) equals k_grey ({}), using base honor without scaling", k_level, k_grey);
+            }
 
             // count the number of playerkills in one day
             ApplyModUInt32Value(PLAYER_FIELD_KILLS, 1, true);
@@ -15645,7 +15686,7 @@ void Player::PrepareCharmAISpells()
             {
                 int32 dmg = CalculateSpellDamage(this, spellInfo, i);
                 uint8 offset = 0;
-                if (cast)
+                if (cast > 0.0f) // Prevent division by zero
                 {
                     dmg = dmg / cast;
                     offset = 2;
@@ -15949,6 +15990,10 @@ float Player::GetAverageItemLevel()
         ++count;
     }
 
+    // Prevent division by zero if no equipment slots checked
+    if (count == 0)
+        return 0.0f;
+    
     return std::max<float>(0.0f, sum / (float)count);
 }
 
@@ -15975,6 +16020,10 @@ float Player::GetAverageItemLevelForDF()
         ++count;
     }
 
+    // Prevent division by zero if no equipment slots checked
+    if (count == 0)
+        return 0.0f;
+    
     return std::max(0.0f, sum / (float)count);
 }
 

@@ -167,7 +167,7 @@ public:
         sAZTH->GetAZTHPlayer(player)->CreateWowarmoryFeed(1, achievement->ID, 0, 0);
     }
 
-    void OnRewardKillRewarder(Player* player, KillRewarder* /*rewarder*/, bool isDungeon, float& rate)
+    void OnPlayerRewardKillRewarder(Player* player, KillRewarder* /*rewarder*/, bool isDungeon, float& rate) override
     {
         if (!player)
             return;
