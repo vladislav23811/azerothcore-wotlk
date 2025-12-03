@@ -52,10 +52,11 @@
 #include "World.h"
 #include "WorldPacket.h"
 
-/// @todo: this import is not necessary for compilation and marked as unused by the IDE
-//  however, for some reasons removing it would cause a damn linking issue
-//  there is probably some underlying problem with imports which should properly addressed
-//  see: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
+/// @todo: Template linking issue - GridNotifiersImpl.h appears unused but is required
+/// This header is necessary despite appearing unused. Removing it causes linker errors
+/// because template implementations in GridNotifiersImpl.h are needed at link time.
+/// Root cause: Template instantiation dependency issue in the grid notification system
+/// See: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
 #include "GridNotifiersImpl.h"
 
 constexpr float VisibilityDistances[AsUnderlyingType(VisibilityDistanceType::Max)] =
@@ -430,7 +431,9 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
                 *data << uint32(GetGUID().GetCounter());
                 break;
             //! Unit, Player and default here are sending wrong values.
-            /// @todo Research the proper formula
+            /// @todo: Research correct update value formula for Unit and Player types
+            /// Current hardcoded values (0x0000000B for Unit, 0x0000002F for Player) may not match retail
+            /// Need packet captures to determine proper calculation
             case TYPEID_UNIT:
                 *data << uint32(0x0000000B);                // unk
                 break;
@@ -468,7 +471,9 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     // 0x80
     if (flags & UPDATEFLAG_VEHICLE)
     {
-        /// @todo Allow players to aquire this updateflag.
+        /// @todo: Implement player vehicle flag acquisition
+        /// Currently only creatures can have UPDATEFLAG_VEHICLE
+        /// Players should be able to acquire this flag when they become vehicles (e.g., passenger mounts)
         *data << uint32(unit->GetVehicleKit()->GetVehicleInfo()->m_ID);
         if (unit->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
             *data << float(unit->GetTransOffsetO());

@@ -772,7 +772,9 @@ void BattlegroundMgr::SetHolidayWeekends(uint32 mask)
 
 void BattlegroundMgr::ScheduleQueueUpdate(uint32 arenaMatchmakerRating, uint8 arenaType, BattlegroundQueueTypeId bgQueueTypeId, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id)
 {
-    //This method must be atomic, @todo add mutex
+    /// @todo: Add mutex protection for thread safety
+    /// This method must be atomic to prevent race conditions when scheduling queue updates
+    /// from multiple threads. Add std::mutex lock guard before modifying m_QueueUpdateScheduler
     //we will use only 1 number created of bgTypeId and bracket_id
     uint64 const scheduleId = ((uint64)arenaMatchmakerRating << 32) | ((uint64)arenaType << 24) | ((uint64)bgQueueTypeId << 16) | ((uint64)bgTypeId << 8) | (uint64)bracket_id;
     if (std::find(m_QueueUpdateScheduler.begin(), m_QueueUpdateScheduler.end(), scheduleId) == m_QueueUpdateScheduler.end())

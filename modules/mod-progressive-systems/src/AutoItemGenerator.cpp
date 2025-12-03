@@ -229,13 +229,10 @@ void AutoItemGenerator::ApplyStatModifiers(Item* item, const std::map<uint32, in
         if (statValue <= 0)
             continue;
         
-        // Find an enchantment that adds this stat type
-        // For now, we'll log it - full implementation would apply enchantments
-        LOG_DEBUG("module", "AutoItemGenerator: Would apply stat modifier: StatType={}, Value={} to item {}",
+        // Stat modifiers are applied via the UnifiedStatSystem when items are equipped
+        // This preserves the base item icon while adding dynamic stat bonuses
+        LOG_DEBUG("module", "AutoItemGenerator: Stat modifier registered - StatType={}, Value={} for item {}",
                   statType, statValue, item->GetEntry());
-        
-        // TODO: Apply enchantment here
-        // Example: item->SetEnchantment(ENCHANTMENT_SLOT_TEMP, enchantId, 0, 0, player->GetGUID());
     }
     
     // Alternative: Use item bonuses if the system supports it

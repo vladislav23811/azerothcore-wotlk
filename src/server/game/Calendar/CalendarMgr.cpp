@@ -571,7 +571,10 @@ void CalendarMgr::SendCalendarEventStatus(CalendarEvent const& calendarEvent, Ca
 void CalendarMgr::SendCalendarEventRemovedAlert(CalendarEvent const& calendarEvent)
 {
     WorldPacket data(SMSG_CALENDAR_EVENT_REMOVED_ALERT, 1 + 8 + 1);
-    data << uint8(1); // FIXME: If true does not SignalEvent(EVENT_CALENDAR_ACTION_PENDING)
+    /// @todo: Verify calendar signal event behavior
+    /// When this flag is true, EVENT_CALENDAR_ACTION_PENDING is not signaled
+    /// Need to confirm correct behavior from retail packet captures
+    data << uint8(1);
     data << uint64(calendarEvent.GetEventId());
     data.AppendPackedTime(calendarEvent.GetEventTime());
 
@@ -584,7 +587,9 @@ void CalendarMgr::SendCalendarEventInviteRemove(CalendarEvent const& calendarEve
     data<< invite.GetInviteeGUID().WriteAsPacked();
     data << uint64(invite.GetEventId());
     data << uint32(flags);
-    data << uint8(1); // FIXME
+    /// @todo: Determine correct value for final byte
+    /// Currently hardcoded to 1 - verify meaning from retail client behavior
+    data << uint8(1);
 
     SendPacketToAllEventRelatives(data, calendarEvent);
 }

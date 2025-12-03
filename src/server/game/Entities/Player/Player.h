@@ -501,7 +501,10 @@ enum PlayerFlags : uint32
 
 DEFINE_ENUM_FLAG(PlayerFlags);
 
-enum PlayerBytesOffsets //@todo: Implement
+/// @todo: Implement helper functions for PlayerBytes field access
+/// These offsets define byte positions in packed PLAYER_BYTES field
+/// Add getter/setter methods: GetSkinId(), SetHairStyle(), etc.
+enum PlayerBytesOffsets
 {
     PLAYER_BYTES_OFFSET_SKIN_ID         = 0,
     PLAYER_BYTES_OFFSET_FACE_ID         = 1,
@@ -509,7 +512,10 @@ enum PlayerBytesOffsets //@todo: Implement
     PLAYER_BYTES_OFFSET_HAIR_COLOR_ID   = 3
 };
 
-enum PlayerBytes2Offsets //@todo: Implement
+/// @todo: Implement helper functions for PlayerBytes2 field access
+/// These offsets define byte positions in packed PLAYER_BYTES_2 field
+/// Add methods: GetFacialStyle(), SetBankBagSlots(), GetRestState(), etc.
+enum PlayerBytes2Offsets
 {
     PLAYER_BYTES_2_OFFSET_FACIAL_STYLE      = 0,
     PLAYER_BYTES_2_OFFSET_PARTY_TYPE        = 1,
@@ -517,7 +523,10 @@ enum PlayerBytes2Offsets //@todo: Implement
     PLAYER_BYTES_2_OFFSET_REST_STATE        = 3
 };
 
-enum PlayerBytes3Offsets //@todo: Implement
+/// @todo: Implement helper functions for PlayerBytes3 field access
+/// These offsets define byte positions in packed PLAYER_BYTES_3 field
+/// Add methods: GetGender(), SetInebriation(), GetPvPTitle(), etc.
+enum PlayerBytes3Offsets
 {
     PLAYER_BYTES_3_OFFSET_GENDER        = 0,
     PLAYER_BYTES_3_OFFSET_INEBRIATION   = 1,
@@ -525,7 +534,10 @@ enum PlayerBytes3Offsets //@todo: Implement
     PLAYER_BYTES_3_OFFSET_ARENA_FACTION = 3
 };
 
-enum PlayerFieldBytesOffsets //@todo: Implement
+/// @todo: Implement helper functions for PlayerFieldBytes access
+/// These offsets define byte positions in packed PLAYER_FIELD_BYTES
+/// Add methods for accessing flags, RAF level, action bar toggles, etc.
+enum PlayerFieldBytesOffsets
 {
     PLAYER_FIELD_BYTES_OFFSET_FLAGS                 = 0,
     PLAYER_FIELD_BYTES_OFFSET_RAF_GRANTABLE_LEVEL   = 1,
@@ -1860,7 +1872,9 @@ public:
         m_contestedPvPTimer = 0;
     }
 
-    /** todo: -maybe move UpdateDuelFlag+DuelComplete to independent DuelHandler.. **/
+    /// @todo: Consider refactoring duel system into separate DuelHandler class
+    /// Duel-related methods (UpdateDuelFlag, DuelComplete, CheckDuelDistance) could be
+    /// extracted to a dedicated handler for better organization and testability
     std::unique_ptr<DuelInfo> duel;
     void UpdateDuelFlag(time_t currTime);
     void CheckDuelDistance(time_t currTime);

@@ -90,7 +90,9 @@ namespace lfg
 
         sLFGMgr->InitializeLockedDungeons(player, group);
         sLFGMgr->SetTeam(player->GetGUID(), player->GetTeamId());
-        /// @todo - Restore LfgPlayerData and send proper status to player if it was in a group
+        /// @todo: Implement LFG player data restoration on login
+        /// If player was in LFG group before logout, restore their LfgPlayerData state
+        /// and send appropriate status update to client (queue position, group status, etc.)
     }
 
     void LFGPlayerScript::OnPlayerBindToInstance(Player* player, Difficulty difficulty, uint32 mapId, bool /*permanent*/)

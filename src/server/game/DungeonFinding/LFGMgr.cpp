@@ -483,6 +483,11 @@ namespace lfg
 
             sScriptMgr->OnInitializeLockedDungeons(player, level, lockData, dungeon);
 
+            /// @todo: Implement additional LFG lock status types
+            /// Missing implementations:
+            /// - Vault of Archavon requires Wintergrasp control (LFG_LOCKSTATUS_RAID_LOCKED)
+            /// - Gear score requirements (LFG_LOCKSTATUS_TOO_LOW/HIGH_GEAR_SCORE)
+            /// - Attunement level checks (LFG_LOCKSTATUS_ATTUNEMENT_TOO_LOW/HIGH_LEVEL)
             /* TODO VoA closed if WG is not under team control (LFG_LOCKSTATUS_RAID_LOCKED)
                 lockData = LFG_LOCKSTATUS_TOO_LOW_GEAR_SCORE;
                 lockData = LFG_LOCKSTATUS_TOO_HIGH_GEAR_SCORE;

@@ -415,7 +415,8 @@ void npc_escortAI::FillPointMovementListForCreature()
     }
 }
 
-//TODO: get rid of this many variables passed in function.
+/// @todo: Refactor to use a configuration struct instead of 6 parameters
+/// Consider creating EscortStartConfig struct to bundle these related parameters
 void npc_escortAI::Start(bool isActiveAttacker /* = true*/, ObjectGuid playerGUID /* = ObjectGuid::Empty */, Quest const* quest /* = nullptr */, bool instantRespawn /* = false */, bool canLoopPath /* = false */, bool resetWaypoints /* = true */)
 {
     if (me->GetVictim())

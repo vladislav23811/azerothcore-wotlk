@@ -56,7 +56,8 @@ enum BG_AV_BroadcastTexts
 
 enum BG_AV_Sounds
 {
-    //TODO: get out if there comes a sound when neutral team captures mine
+    /// @todo: Verify if neutral team mine capture has a unique sound in retail
+    /// Research needed to confirm if there's a sound event for neutral mine captures
 
     /*
     8212:
@@ -107,7 +108,9 @@ enum BG_AV_OTHER_VALUES
     AV_NORTH_MINE               = 0,
     AV_SOUTH_MINE               = 1,
     AV_MINE_TICK_TIMER          = 45000,
-    AV_MINE_RECLAIM_TIMER       = 1200000, //TODO: get the right value.. this is currently 20 minutes
+    /// @todo: Verify correct mine reclaim timer from retail
+    /// Currently set to 20 minutes - needs confirmation of exact retail value
+    AV_MINE_RECLAIM_TIMER       = 1200000,
     BG_AV_QUEST_CREDIT_MINE     = 13796,
     BG_AV_QUEST_CREDIT_TOWER    = 13778,
     BG_AV_QUEST_CREDIT_GRAVEYARD = 13756
@@ -1265,7 +1268,9 @@ const uint32 BG_AV_CreatureInfo[AV_NPC_INFO_MAX] =
     13326, // Seasoned Defender
     13331, // Veteran Defender
     13422, // Champion Defender
-    13358, // Stormpike Bowman /// @todo: Confirm if this is correct. Author assumpted 60, 61 & 69, 70, but wouldn't work here
+    /// @todo: Verify Stormpike Bowman NPC ID is correct
+    /// Original implementation notes suggest IDs 60, 61, 69, 70 were considered but didn't work
+    13358, // Stormpike Bowman
     11949, // not spawned with this data, but used for handlekillunit
     11948, // not spawned with this data, but used for handlekillunit
     12053, // Frostwolf Guardian
@@ -1290,7 +1295,9 @@ const uint32 BG_AV_CreatureInfo[AV_NPC_INFO_MAX] =
     11602, // Irondeep Skullthumper
     11657, // Morloch
 
-    13396, // irondeep alliance /// @todo: Correct and give correct ids
+    /// @todo: Verify Irondeep Alliance NPC IDs are correct
+    /// These IDs need validation against retail data to ensure correct NPCs
+    13396, // irondeep alliance
     13080,
     13098,
     13078,
@@ -1530,7 +1537,8 @@ const uint32 BG_AV_GraveyardIds[9] =
 
 enum BG_AV_BUFF
 {
-    //TODO add all other buffs here
+    /// @todo: Add remaining AV buff spell IDs
+    /// Current list only includes armor and captain buffs - many other AV buffs missing
     AV_BUFF_ARMOR = 21163,
     AV_BUFF_A_CAPTAIN = 23693, //the buff which the alliance captain does
     AV_BUFF_H_CAPTAIN = 22751 //the buff which the horde captain does

@@ -24,6 +24,12 @@ SMSG_CALENDAR_EVENT_INVITE_NOTES_ALERT  [ uint64(inviteId), string(Text) ]
 SMSG_CALENDAR_EVENT_INVITE_STATUS_ALERT [ uint64(eventId), uint32(eventTime), uint32(unkFlag), uint8(deletePending) ]
 
 ----- TODO -----
+/// @todo: Implement calendar event complaint system
+/// Need to determine proper handling for player complaints about calendar events:
+/// - How to store complaints
+/// - What actions to take when complaints received
+/// - How to respond to complaining players
+/// Research retail behavior for complaint system
 
 Finish complains' handling - what to do with received complains and how to respond?
 Find out what to do with all "not used yet" opcodes

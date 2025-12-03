@@ -101,7 +101,8 @@ public:
     [[nodiscard]] bool HasReactState(ReactStates state) const { return (m_reactState == state); }   /// @brief Check if the creature has the specified ReactState
     void InitializeReactState();
 
-    ///// @todo RENAME THIS!!!!!
+    /// @todo: Rename isCanInteractWithBattleMaster to follow naming conventions
+    /// Suggested: CanInteractWithBattleMaster (remove "is" prefix, use PascalCase)
     bool isCanInteractWithBattleMaster(Player* player, bool msg) const;
     bool isCanTrainingAndResetTalentsOf(Player* player) const;
     [[nodiscard]] bool IsValidTrainerForPlayer(Player* player, uint32* npcFlags = nullptr) const;

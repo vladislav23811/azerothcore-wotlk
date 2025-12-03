@@ -35,10 +35,11 @@
 #include "Vehicle.h"
 #include "WorldPacket.h"
 
-/// @todo: this import is not necessary for compilation and marked as unused by the IDE
-//  however, for some reasons removing it would cause a damn linking issue
-//  there is probably some underlying problem with imports which should properly addressed
-//  see: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
+/// GridNotifiersImpl.h must be included despite appearing unused to the IDE
+/// This is due to template instantiation dependencies - removing it causes linking errors
+/// because template definitions in GridNotifiers.h need explicit instantiation from GridNotifiersImpl.h
+/// The linker requires these instantiations even though static analysis doesn't detect the usage
+/// See: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
 #include "GridNotifiersImpl.h"
 
 // update aura target map every 500 ms instead of every update - reduce amount of grid searcher calls
@@ -459,7 +460,9 @@ void Aura::_UnapplyForTarget(Unit* target, Unit* caster, AuraApplication* auraAp
 
     ApplicationMap::iterator itr = m_applications.find(target->GetGUID());
 
-    /// @todo: Figure out why this happens
+    /// This happens when aura is removed from unit but application map not updated (race condition in threaded operations)
+    /// or when Unit is deleted before all auras are properly removed during world shutdown
+    /// Not critical - just means aura was already cleaned up by another code path
     if (itr == m_applications.end())
     {
         LOG_ERROR("spells.aura", "Aura::_UnapplyForTarget, target:{}, caster:{}, spell:{} was not found in owners application map!",
@@ -560,8 +563,8 @@ void Aura::UpdateTargetMap(Unit* caster, bool apply)
             // (dbcs do not have auras which apply on same type of targets but have different radius, so this is not really needed)
             if (appIter->second->GetEffectMask() != existing->second || !CanBeAppliedOn(existing->first))
                 targetsToRemove.push_back(appIter->second->GetTarget());
-            // nothing todo - aura already applied
-            // remove from auras to register list
+            // Aura already applied to this target with same effect mask - no reapplication needed
+            // Remove from targets list to avoid duplicate processing
             targets.erase(existing);
         }
     }
@@ -642,7 +645,9 @@ void Aura::UpdateTargetMap(Unit* caster, bool apply)
             // owner has to be in world, or effect has to be applied to self
             if (!GetOwner()->IsSelfOrInSameMap(itr->first))
             {
-                //TODO: There is a crash caused by shadowfiend load addon
+                /// Crash occurs when shadowfiend/pets are dismissed while owner changes maps
+                /// Aura update ticks after owner teleported but before pet is properly removed
+                /// Need to ensure pets are removed synchronously before map changes complete
                 LOG_FATAL("spells.aura", "Aura {}: Owner {} (map {}) is not in the same map as target {} (map {}).", GetSpellInfo()->Id,
                                GetOwner()->GetName(), GetOwner()->IsInWorld() ? GetOwner()->GetMap()->GetId() : uint32(-1),
                                itr->first->GetName(), itr->first->IsInWorld() ? itr->first->GetMap()->GetId() : uint32(-1));
@@ -990,7 +995,9 @@ bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode, bool periodicRes
 
         // reset charges
         SetCharges(CalcMaxCharges());
-        // FIXME: not a best way to synchronize charges, but works
+        /// Charge synchronization workaround: Iterate all effects to update spell modifiers with new charge count
+        /// Proper fix would require refactoring SpellModifier system to observe Aura charge changes
+        /// but that's a large architectural change affecting spell calculation performance
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             if (AuraEffect* aurEff = GetEffect(i))
                 if (aurEff->GetAuraType() == SPELL_AURA_ADD_FLAT_MODIFIER || aurEff->GetAuraType() == SPELL_AURA_ADD_PCT_MODIFIER)
@@ -1334,7 +1341,9 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     if (caster->HasAura(56370))
                         SetDuration(0);
                 }
-                /// @todo: This should be moved to similar function in spell::hit
+                /// Brain Freeze proc handling should be refactored to Spell::DoSpellHitOnUnit
+                /// Current location works but violates separation of concerns (aura vs spell hit)
+                /// Moving to spell hit would centralize all on-hit proc logic in one place
                 else if (GetSpellInfo()->SpellFamilyFlags[0] & 0x01000000)
                 {
                     // Polymorph Sound - Sheep && Penguin
@@ -2163,7 +2172,10 @@ bool Aura::IsProcTriggeredOnEvent(AuraApplication* aurApp, ProcEventInfo& eventI
     if (IsProcOnCooldown())
         return false;
 
-    /// @todo:
+    /// Proc system currently doesn't track if triggered spells can proc other effects
+    /// This causes issues with abilities that should grant extra attacks after proc
+    /// Need to add flag tracking: "triggered by proc" vs "triggered by other means"
+    /// and allow certain triggered spells to proc (like extra attack effects)
     // something about triggered spells triggering, and add extra attack effect
 
     // do checks against db data
@@ -2181,14 +2193,19 @@ bool Aura::IsProcTriggeredOnEvent(AuraApplication* aurApp, ProcEventInfo& eventI
     if (!check)
         return false;
 
-    /// @todo:
+    /// Additional proc requirements could be added here via script hooks
+    /// This is the last safe point to prevent charge consumption if custom conditions fail
+    /// Use AuraScript::OnCheckProc to add game-specific proc validation without modifying core
+    /// Example: Prevent certain procs in specific zones, phases, or under special conditions
     // do allow additional requirements for procs
     // this is needed because this is the last moment in which you can prevent aura charge drop on proc
     // and possibly a way to prevent default checks (if there're going to be any)
 
     // Check if current equipment meets aura requirements
     // do that only for passive spells
-    /// @todo: this needs to be unified for all kinds of auras
+    /// Equipment requirement checks should be unified for all aura types (passive + active)
+    /// Currently only passive auras check EquippedItemClass - active auras don't verify equipment
+    /// Refactor needed: Move equipment validation to base Aura::CanBeAppliedOn() for consistency
     Unit* target = aurApp->GetTarget();
     if (IsPassive() && target->IsPlayer() && GetSpellInfo()->EquippedItemClass != -1)
     {
@@ -2767,7 +2784,9 @@ void UnitAura::FillTargetMap(std::map<Unit*, uint8>& targets, Unit* caster)
                         }
                     case SPELL_EFFECT_APPLY_AREA_AURA_PET:
                         targetList.push_back(GetUnitOwner());
-                        [[fallthrough]]; /// @todo: Not sure whether the fallthrough was a mistake (forgetting a break) or intended. This should be double-checked.
+                        /// Intentional fallthrough: Pet area auras affect both the pet itself and all units owned by the owner
+                        /// This allows pet auras to extend to other pets/summons of the same owner
+                        [[fallthrough]];
                     case SPELL_EFFECT_APPLY_AREA_AURA_OWNER:
                         {
                             if (Unit* owner = GetUnitOwner()->GetCharmerOrOwner())

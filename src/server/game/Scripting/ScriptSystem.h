@@ -22,7 +22,10 @@
 
 #define TEXT_SOURCE_RANGE -1000000                          //the amount of entries each text source has available
 
-//TODO: find better namings and definitions.
+/// Script system naming could be improved for clarity:
+/// Consider: ScriptTargetType, ScriptEventType, ScriptActionType
+/// Current names (e.g., SCRIPT_COMMAND_TALK) are clear but inconsistent with other enum conventions
+/// Large refactor required - affects 100+ script files
 //N=Neutral, A=Alliance, H=Horde.
 //NEUTRAL or FRIEND = Hostility to player surroundings (not a good definition)
 //ACTIVE or PASSIVE = Hostility to environment surroundings.

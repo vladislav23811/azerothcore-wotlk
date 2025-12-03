@@ -1684,7 +1684,9 @@ bool Battleground::AddSpiritGuide(uint32 type, float x, float y, float z, float 
         creature->setDeathState(DeathState::Dead);
         creature->SetGuidValue(UNIT_FIELD_CHANNEL_OBJECT, creature->GetGUID());
         // aura
-        /// @todo: Fix display here
+        /// @todo: Fix spirit healer visual aura display
+        /// SetVisibleAura is commented out - needs investigation why it doesn't work properly
+        /// Visual effect should show the healing channel spell
         // creature->SetVisibleAura(0, SPELL_SPIRIT_HEAL_CHANNEL);
         // casting visual effect
         creature->SetUInt32Value(UNIT_CHANNEL_SPELL, SPELL_SPIRIT_HEAL_CHANNEL);

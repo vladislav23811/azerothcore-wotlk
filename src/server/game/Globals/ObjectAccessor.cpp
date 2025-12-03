@@ -178,22 +178,38 @@ Object* ObjectAccessor::GetObjectByTypeMask(WorldObject const& p, ObjectGuid con
 
 Corpse* ObjectAccessor::GetCorpse(WorldObject const& u, ObjectGuid const& guid)
 {
-    return u.GetMap()->GetCorpse(guid);
+    // Fix for issue #24000: Add null check to prevent crash if GetMap() returns nullptr
+    Map const* map = u.GetMap();
+    if (!map)
+        return nullptr;
+    return map->GetCorpse(guid);
 }
 
 GameObject* ObjectAccessor::GetGameObject(WorldObject const& u, ObjectGuid const& guid)
 {
-    return u.GetMap()->GetGameObject(guid);
+    // Fix for issue #24000: Add null check to prevent crash if GetMap() returns nullptr
+    Map const* map = u.GetMap();
+    if (!map)
+        return nullptr;
+    return map->GetGameObject(guid);
 }
 
 Transport* ObjectAccessor::GetTransport(WorldObject const& u, ObjectGuid const& guid)
 {
-    return u.GetMap()->GetTransport(guid);
+    // Fix for issue #24000: Add null check to prevent crash if GetMap() returns nullptr
+    Map const* map = u.GetMap();
+    if (!map)
+        return nullptr;
+    return map->GetTransport(guid);
 }
 
 DynamicObject* ObjectAccessor::GetDynamicObject(WorldObject const& u, ObjectGuid const& guid)
 {
-    return u.GetMap()->GetDynamicObject(guid);
+    // Fix for issue #24000: Add null check to prevent crash if GetMap() returns nullptr
+    Map const* map = u.GetMap();
+    if (!map)
+        return nullptr;
+    return map->GetDynamicObject(guid);
 }
 
 Unit* ObjectAccessor::GetUnit(WorldObject const& u, ObjectGuid const& guid)
@@ -209,12 +225,20 @@ Unit* ObjectAccessor::GetUnit(WorldObject const& u, ObjectGuid const& guid)
 
 Creature* ObjectAccessor::GetCreature(WorldObject const& u, ObjectGuid const& guid)
 {
-    return u.GetMap()->GetCreature(guid);
+    // Fix for issue #24000: Add null check to prevent crash if GetMap() returns nullptr
+    Map const* map = u.GetMap();
+    if (!map)
+        return nullptr;
+    
+    return map->GetCreature(guid);
 }
 
 Pet* ObjectAccessor::GetPet(WorldObject const& u, ObjectGuid const& guid)
 {
-    return u.GetMap()->GetPet(guid);
+    Map const* map = u.GetMap();
+    if (!map)
+        return nullptr;
+    return map->GetPet(guid);
 }
 
 Player* ObjectAccessor::GetPlayer(Map const* m, ObjectGuid const& guid)

@@ -40,7 +40,9 @@ bool SpellCastUsefulValue::Calculate()
         return false;
     }
 
-    // TODO: workaround
+    /// @todo: Refactor weapon enchant checking workaround
+    /// This hardcoded list of weapon buffs should be replaced with a more elegant system
+    /// Consider using spell attributes or database lookups instead of string matching
     if (qualifier == "windfury weapon" || qualifier == "flametongue weapon" || qualifier == "frostbrand weapon" ||
         qualifier == "rockbiter weapon" || qualifier == "earthliving weapon" || qualifier == "spellstone")
     {

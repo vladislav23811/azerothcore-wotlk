@@ -1003,7 +1003,9 @@ void WorldSession::HandlePlayerLoginFromDB(LoginQueryHolder const& holder)
             }
         }
 
-        // Reputations if "StartAllReputation" is enabled, -- TODO: Fix this in a better way
+        /// @todo: Refactor START_ALL_REP to use database-driven reputation grants
+        /// Current implementation is hardcoded - should use configuration table
+        /// to define which reputations to grant and at what level
         if (sWorld->getBoolConfig(CONFIG_START_ALL_REP))
         {
             ReputationMgr& repMgr = pCurrChar->GetReputationMgr();

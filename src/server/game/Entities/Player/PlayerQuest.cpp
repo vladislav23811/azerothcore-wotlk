@@ -130,7 +130,9 @@ void Player::SendPreparedQuest(ObjectGuid guid)
             if (qmi0.QuestIcon == 4)
                 PlayerTalkClass->SendQuestGiverRequestItems(quest, guid, CanRewardQuest(quest, false), true);
                 // Send completable on repeatable and autoCompletable quest if player don't have quest
-                /// @todo verify if check for !quest->IsDaily() is really correct (possibly not)
+                /// @todo: Verify repeatable quest logic for daily quests
+                /// The !quest->IsDaily() check may be incorrect - need to test if daily quests
+                /// should show as completable even when player doesn't have them active
             else
             {
                 Object* object = ObjectAccessor::GetObjectByTypeMask(*this, guid, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT | TYPEMASK_ITEM);
@@ -794,7 +796,8 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     // Send reward mail
     if (uint32 mail_template_id = quest->GetRewMailTemplateId())
     {
-        //- TODO: Poor design of mail system
+        // TODO: Mail system could be refactored to avoid transaction per mail send
+        // Consider batching mail operations or using a queued mail system for better performance
         CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
         if (quest->GetRewMailSenderEntry() != 0)
             MailDraft(mail_template_id).SendMailTo(trans, this, quest->GetRewMailSenderEntry(), MAIL_CHECK_MASK_HAS_BODY, quest->GetRewMailDelaySecs());
@@ -2292,21 +2295,32 @@ bool Player::HasQuestForItem(uint32 itemid, uint32 excludeQuestId /* 0 */, bool 
             // This part for ReqItem drop
             for (uint8 j = 0; j < QUEST_ITEM_OBJECTIVES_COUNT; ++j)
             {
-                if (itemid == qinfo->RequiredItemId[j] && q_status.ItemCount[j] < qinfo->RequiredItemCount[j])
+                if (itemid == qinfo->RequiredItemId[j])
                 {
-                    if (showInLoot)
+                    // Fix for issue #24004: Check both quest status count and actual inventory count
+                    // This prevents players from continuing to loot items after gaining all they need
+                    uint32 currentItemCount = GetItemCount(itemid, true);
+                    if (q_status.ItemCount[j] < qinfo->RequiredItemCount[j] && currentItemCount < qinfo->RequiredItemCount[j])
                     {
-                        if (GetItemCount(itemid, true) < qinfo->RequiredItemCount[j])
+                        if (showInLoot)
+                        {
+                            *showInLoot = true;
+                            return true;
+                        }
+                        else
                         {
                             return true;
                         }
-
+                    }
+                    
+                    // Player already has enough items, don't allow looting
+                    if (showInLoot)
+                    {
                         *showInLoot = false;
                     }
-                    else
-                    {
-                        return true;
-                    }
+                    
+                    // Skip the turnIn check below since we already handled this item
+                    continue;
                 }
 
                 if (turnIn && q_status.ItemCount[j] >= qinfo->RequiredItemCount[j])

@@ -498,7 +498,9 @@ void Puppet::Update(uint32 time)
         if (!IsAlive())
         {
             UnSummon();
-            /// @todo: why long distance .die does not remove it
+            /// @todo: Investigate why GM .die command from long distance doesn't trigger UnSummon
+            /// Possible cause: Out of range creatures not properly processing death state changes
+            /// or delayed update cycle preventing immediate removal
         }
     }
 }

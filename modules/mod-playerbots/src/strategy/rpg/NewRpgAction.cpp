@@ -243,7 +243,8 @@ bool NewRpgDoQuestAction::DoIncompleteQuest()
     uint32 questId = RPG_INFO(do_quest, questId);
     if (botAI->rpgInfo.do_quest.pos != WorldPosition())
     {
-        /// @TODO: extract to a new function
+        /// @todo: Extract quest lowering logic to dedicated function
+        /// This quest priority lowering code should be in a separate helper function for reusability
         int32 currentObjective = botAI->rpgInfo.do_quest.objectiveIdx;
         // check if the objective has completed
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
@@ -331,7 +332,9 @@ bool NewRpgDoQuestAction::DoIncompleteQuest()
         {
             // we has reach the poi for more than 5 mins but no progession
             // may not be able to complete this quest, marked as abandoned
-            /// @TODO: It may be better to make lowPriorityQuest a global set shared by all bots (or saved in db)
+            /// @todo: Optimize lowPriorityQuest storage
+            /// Consider making this a global shared set or database-persisted collection
+            /// to avoid each bot maintaining separate low priority quest data
             botAI->lowPriorityQuest.insert(questId);
             botAI->rpgStatistic.questAbandoned++;
             LOG_DEBUG("playerbots", "[New RPG] {} marked as abandoned quest {}", bot->GetName(), questId);

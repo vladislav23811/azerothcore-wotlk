@@ -582,7 +582,7 @@ enum SMART_ACTION
     SMART_ACTION_SET_INVINCIBILITY_HP_LEVEL         = 42,     // MinHpValue(+pct, -flat)
     SMART_ACTION_MOUNT_TO_ENTRY_OR_MODEL            = 43,     // Creature_template entry(param1) OR ModelId (param2) (or 0 for both to dismount)
     SMART_ACTION_SET_INGAME_PHASE_MASK              = 44,     // mask
-    SMART_ACTION_SET_DATA                           = 45,     // Field, Data (only creature TODO)
+    SMART_ACTION_SET_DATA                           = 45,     // Field, Data (only works for creatures, gameobject support not implemented)
     SMART_ACTION_MOVE_FORWARD                       = 46,     // distance
     SMART_ACTION_SET_VISIBILITY                     = 47,     // on/off
     SMART_ACTION_SET_ACTIVE                         = 48,     // on/off
@@ -656,21 +656,21 @@ enum SMART_ACTION
     SMART_ACTION_SET_CORPSE_DELAY                   = 116,    // timer
     SMART_ACTION_DISABLE_EVADE                      = 117,    // 0/1 (1 = disabled, 0 = enabled)
     SMART_ACTION_GO_SET_GO_STATE                    = 118,    // state
-    SMART_ACTION_SET_CAN_FLY                        = 119,    /// @todo: NOT SUPPORTED YET
-    SMART_ACTION_REMOVE_AURAS_BY_TYPE               = 120,    /// @todo: NOT SUPPORTED YET
+    SMART_ACTION_SET_CAN_FLY                        = 119,    // NOT IMPLEMENTED - Reserved for future flying state control
+    SMART_ACTION_REMOVE_AURAS_BY_TYPE               = 120,    // NOT IMPLEMENTED - Reserved for removing auras by type mask
     SMART_ACTION_SET_SIGHT_DIST                     = 121,    // sightDistance
     SMART_ACTION_FLEE                               = 122,    // fleeTime
     SMART_ACTION_ADD_THREAT                         = 123,    // +threat, -threat
     SMART_ACTION_LOAD_EQUIPMENT                     = 124,    // id
     SMART_ACTION_TRIGGER_RANDOM_TIMED_EVENT         = 125,    // id min range, id max range
     SMART_ACTION_REMOVE_ALL_GAMEOBJECTS             = 126,
-    SMART_ACTION_REMOVE_MOVEMENT                    = 127,    /// @todo: NOT SUPPORTED YET
+    SMART_ACTION_REMOVE_MOVEMENT                    = 127,    // NOT IMPLEMENTED - Reserved for stopping all movement
     SMART_ACTION_PLAY_ANIMKIT                       = 128,    // don't use on 3.3.5a
     SMART_ACTION_SCENE_PLAY                         = 129,    // don't use on 3.3.5a
     SMART_ACTION_SCENE_CANCEL                       = 130,    // don't use on 3.3.5a
-    SMART_ACTION_SPAWN_SPAWNGROUP                   = 131,    /// @todo: NOT SUPPORTED YET
-    SMART_ACTION_DESPAWN_SPAWNGROUP                 = 132,    /// @todo: NOT SUPPORTED YET
-    SMART_ACTION_RESPAWN_BY_SPAWNID                 = 133,    /// @todo: NOT SUPPORTED YET
+    SMART_ACTION_SPAWN_SPAWNGROUP                   = 131,    // NOT IMPLEMENTED - Reserved for spawning spawn groups
+    SMART_ACTION_DESPAWN_SPAWNGROUP                 = 132,    // NOT IMPLEMENTED - Reserved for despawning spawn groups
+    SMART_ACTION_RESPAWN_BY_SPAWNID                 = 133,    // NOT IMPLEMENTED - Reserved for respawning by spawn ID
     SMART_ACTION_INVOKER_CAST                       = 134,    // spellID, castFlags, triggerFlags, targetsLimit
     SMART_ACTION_PLAY_CINEMATIC                     = 135,    // entry
     SMART_ACTION_SET_MOVEMENT_SPEED                 = 136,    // movementType, speedInteger, speedFraction

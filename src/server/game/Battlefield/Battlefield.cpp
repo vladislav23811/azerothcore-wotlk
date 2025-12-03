@@ -33,10 +33,11 @@
 #include "WorldPacket.h"
 #include "WorldSessionMgr.h"
 
-/// @todo: this import is not necessary for compilation and marked as unused by the IDE
-//  however, for some reasons removing it would cause a damn linking issue
-//  there is probably some underlying problem with imports which should properly addressed
-//  see: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
+/// @todo: Template linking issue - GridNotifiersImpl.h appears unused but is required
+/// This header is necessary despite appearing unused. Removing it causes linker errors
+/// because template implementations in GridNotifiersImpl.h are needed at link time.
+/// Root cause: Template instantiation dependency issue in the grid notification system
+/// See: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
 #include "GridNotifiersImpl.h"
 
 Battlefield::Battlefield()
@@ -90,12 +91,13 @@ void Battlefield::HandlePlayerEnterZone(Player* player, uint32 /*zone*/)
         if (IsWarTime())
         {
             if (m_PlayersInWar[player->GetTeamId()].size() + m_InvitedPlayers[player->GetTeamId()].size() < m_MaxPlayer) // Vacant spaces
-                InvitePlayerToWar(player);
-            else // No more vacant places
-            {
-                /// @todo: Send a packet to announce it to player
-                m_PlayersWillBeKick[player->GetTeamId()][player->GetGUID()] = GameTime::GetGameTime().count() + (player->IsGameMaster() ? 30 * MINUTE : 10);
-                InvitePlayerToQueue(player);
+            InvitePlayerToWar(player);
+        else // No more vacant places
+        {
+            /// @todo: Implement notification packet when battlefield is full
+            /// Player should receive a message explaining they're queued due to full capacity
+            m_PlayersWillBeKick[player->GetTeamId()][player->GetGUID()] = GameTime::GetGameTime().count() + (player->IsGameMaster() ? 30 * MINUTE : 10);
+            InvitePlayerToQueue(player);
             }
         }
         else
@@ -280,7 +282,8 @@ void Battlefield::InvitePlayerToWar(Player* player)
     if (!player)
         return;
 
-    /// @todo : needed ?
+    /// @todo: Verify if flight check is necessary for battlefield invitations
+    /// Unclear if players in flight should be prevented from accepting battlefield invites
     if (player->IsInFlight())
         return;
 

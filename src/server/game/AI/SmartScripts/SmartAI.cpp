@@ -528,7 +528,8 @@ void SmartAI::UpdateAI(uint32 diff)
     UpdatePath(diff);
     UpdateDespawn(diff);
 
-    //TODO move to void
+    /// @todo: Extract follow logic into separate UpdateFollow() function
+    /// This follow handling should be moved to its own void function for better organization
     if (mFollowGuid)
     {
         if (mFollowArrivedTimer < diff)

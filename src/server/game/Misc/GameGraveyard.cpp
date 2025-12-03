@@ -20,6 +20,7 @@
 #include "DatabaseEnv.h"
 #include "Log.h"
 #include "MapMgr.h"
+#include "Map.h"
 #include "ScriptMgr.h"
 
 Graveyard* Graveyard::instance()
@@ -117,7 +118,27 @@ GraveyardStruct const* Graveyard::GetClosestGraveyard(Player* player, TeamId tea
 
     uint32 zoneId = 0;
     uint32 areaId = 0;
-    player->GetZoneAndAreaId(zoneId, areaId);
+    
+    // Fix for issue #24012: When nearCorpse is true, get zone/area from corpse location, not player's current location
+    // This prevents players dying off the coast in Howling Fjord from being sent to Borean Tundra spirit healer
+    if (nearCorpse)
+    {
+        Map const* map = sMapMgr->FindMap(mapId, 0);
+        if (map)
+        {
+            // Get zone/area from corpse location coordinates
+            map->GetZoneAndAreaId(player->GetPhaseMask(), zoneId, areaId, x, y, z);
+        }
+        else
+        {
+            // Fallback to player's current zone/area if map not found
+            player->GetZoneAndAreaId(zoneId, areaId);
+        }
+    }
+    else
+    {
+        player->GetZoneAndAreaId(zoneId, areaId);
+    }
 
     return GetClosestGraveyard(mapId, x, y, z, teamId, areaId, zoneId, player->getClass() == CLASS_DEATH_KNIGHT);
 }

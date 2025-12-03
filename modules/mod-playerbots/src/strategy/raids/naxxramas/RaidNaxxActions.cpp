@@ -329,11 +329,13 @@ bool RazuviousUseObedienceCrystalAction::Execute(Event event)
                 {
                     continue;
                 }
-                if (botAI->IsMainTank(bot) && unit->GetSpawnId() != 128352)
+                // Use creature entry instead of hardcoded spawnId for better compatibility
+                // Stalagg = 15929, Feugen = 15930 (from naxxramas.h)
+                if (botAI->IsMainTank(bot) && unit->GetEntry() != 15929) // Stalagg
                 {
                     continue;
                 }
-                if (!botAI->IsMainTank(bot) && unit->GetSpawnId() != 128353)
+                if (!botAI->IsMainTank(bot) && unit->GetEntry() != 15930) // Feugen
                 {
                     continue;
                 }

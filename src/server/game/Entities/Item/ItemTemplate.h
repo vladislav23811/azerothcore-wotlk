@@ -101,8 +101,11 @@ enum ItemBondingType
 };
 
 #define MAX_BIND_TYPE                             6
-/* /// @todo: Requiring actual cases in which using (an) item isn't allowed while shapeshifted. Else, this flag would need an implementation.
-    ITEM_FLAG_USE_WHEN_SHAPESHIFTED    = 0x00800000, // Item can be used in shapeshift forms */
+/// @todo: Implement ITEM_FLAG_USE_WHEN_SHAPESHIFTED if needed
+/// Research actual retail cases where items are restricted during shapeshift
+/// Most items are already handled by spell cast restrictions in shapeshift forms
+/// This flag may only be needed for special case items that override normal restrictions
+/* ITEM_FLAG_USE_WHEN_SHAPESHIFTED    = 0x00800000, // Item can be used in shapeshift forms */
 
 enum ItemFieldFlags : uint32
 {

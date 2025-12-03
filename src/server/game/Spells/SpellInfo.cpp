@@ -501,7 +501,8 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                     break;
             }
 
-            if ((sSpellMgr->GetSpellInfo(_spellInfo->Effects[EffectIndex].TriggerSpell) && sSpellMgr->GetSpellInfo(_spellInfo->Effects[EffectIndex].TriggerSpell)->HasAttribute(SPELL_ATTR0_SCALES_WITH_CREATURE_LEVEL)) && _spellInfo->HasAttribute(SPELL_ATTR0_SCALES_WITH_CREATURE_LEVEL))
+            SpellInfo const* triggerSpellInfo = sSpellMgr->GetSpellInfo(_spellInfo->Effects[EffectIndex].TriggerSpell);
+            if (triggerSpellInfo && triggerSpellInfo->HasAttribute(SPELL_ATTR0_SCALES_WITH_CREATURE_LEVEL) && _spellInfo->HasAttribute(SPELL_ATTR0_SCALES_WITH_CREATURE_LEVEL))
                 canEffectScale = false;
 
             if (canEffectScale)

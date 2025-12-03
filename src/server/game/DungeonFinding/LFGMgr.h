@@ -92,7 +92,9 @@ namespace lfg
         LFG_TELEPORTERROR_IN_VEHICLE                 = 3,
         LFG_TELEPORTERROR_FATIGUE                    = 4,
         LFG_TELEPORTERROR_INVALID_LOCATION           = 6,
-        LFG_TELEPORTERROR_COMBAT                     = 8       // FIXME - It can be 7 or 8 (Need proper data)
+        /// @todo: Verify correct combat teleport error value
+        /// Retail data indicates it can be either 7 or 8 - need packet capture confirmation
+        LFG_TELEPORTERROR_COMBAT                     = 8
     };
 
     /// Queue join results

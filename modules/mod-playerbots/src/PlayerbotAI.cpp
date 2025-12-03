@@ -663,7 +663,8 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
         Reset(true);
     }
 
-    // TODO: missing implementation to port
+    /// @todo: Port logout command implementation
+    /// This command was available in previous versions but needs to be ported to current codebase
     /*else if (filtered == "logout")
     {
         if (!(bot->IsStunnedByLogout() || bot->GetSession()->isLogingOut()))
@@ -3102,7 +3103,9 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
     Unit* oldSel = bot->GetSelectedUnit();
     // TRIGGERED_IGNORE_POWER_AND_REAGENT_COST flag for not calling CheckPower in check
     // which avoids buff charge to be ineffectively reduced (e.g. dk freezing fog for howling blast)
-    /// @TODO: Fix all calls to ApplySpellMod
+    /// @todo: Review and fix ApplySpellMod calls throughout playerbot code
+    /// Some spell modifier applications may not be correctly handled
+    /// Audit all spell casting to ensure modifiers are properly applied
     Spell* spell = new Spell(bot, spellInfo, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 
     spell->m_targets.SetUnitTarget(target);

@@ -238,7 +238,8 @@ TurretAI::TurretAI(Creature* c) : CreatureAI(c)
 
 bool TurretAI::CanAIAttack(Unit const* /*who*/) const
 {
-    /// @todo: use one function to replace it
+    /// @todo: Refactor to use a single combined range check function
+    /// Consider creating Unit::IsWithinCombatRangeMinMax() to handle both min and max range checks
     if (!me->IsWithinCombatRange(me->GetVictim(), me->m_CombatDistance)
             || (m_minRange && me->IsWithinCombatRange(me->GetVictim(), m_minRange)))
         return false;

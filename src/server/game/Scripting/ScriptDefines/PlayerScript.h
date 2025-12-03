@@ -22,9 +22,9 @@
 #include "SharedDefines.h"
 #include <vector>
 
-// TODO to remove
-#include "AchievementMgr.h"
-#include "KillRewarder.h"
+// Forward declarations instead of full includes for performance
+class AchievementEntry;
+class KillRewarder;
 
 enum PlayerHook
 {

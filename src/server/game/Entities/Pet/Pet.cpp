@@ -389,7 +389,9 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool c
 
     // Send fake summon spell cast - this is needed for correct cooldown application for spells
     // Example: 46584 - without this cooldown (which should be set always when pet is loaded) isn't set clientside
-    /// @todo pets should be summoned from real cast instead of just faking it?
+    /// @todo: Refactor pet summoning to use actual spell cast system
+    /// Currently fakes spell cast packet for cooldown tracking
+    /// Ideally pets should be summoned through proper spell casting flow
     if (petInfo->CreatedBySpellId && spellInfo && (spellInfo->CategoryRecoveryTime > 0 || spellInfo->RecoveryTime > 0))
     {
         WorldPacket data(SMSG_SPELL_GO, (8 + 8 + 4 + 4 + 2));
@@ -1014,7 +1016,9 @@ bool Pet::CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phas
     return true;
 }
 
-/// @todo: Move stat mods code to pet passive auras
+/// @todo: Refactor guardian stat modifications to use aura system
+/// Current stat bonus calculations should be moved to passive auras
+/// This would allow for better modularity and easier balance adjustments
 bool Guardian::InitStatsForLevel(uint8 petlevel)
 {
     CreatureTemplate const* cinfo = GetCreatureTemplate();

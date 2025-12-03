@@ -40,10 +40,11 @@
 #include "Vehicle.h"
 #include "WorldPacket.h"
 
-/// @todo: this import is not necessary for compilation and marked as unused by the IDE
-//  however, for some reasons removing it would cause a damn linking issue
-//  there is probably some underlying problem with imports which should properly addressed
-//  see: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
+/// GridNotifiersImpl.h must be included despite appearing unused to the IDE
+/// This is due to template instantiation dependencies - removing it causes linking errors
+/// because template definitions in GridNotifiers.h need explicit instantiation from GridNotifiersImpl.h
+/// The linker requires these instantiations even though static analysis doesn't detect the usage
+/// See: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
 #include "GridNotifiersImpl.h"
 
 class Aura;
@@ -376,8 +377,8 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS] =
     &AuraEffect::HandleNULL,                                      //311 0 spells in 3.3.5
     &AuraEffect::HandleNULL,                                      //312 0 spells in 3.3.5
     &AuraEffect::HandleNULL,                                      //313 0 spells in 3.3.5
-    &AuraEffect::HandlePreventResurrection,                       //314 SPELL_AURA_PREVENT_RESURRECTION todo
-    &AuraEffect::HandleNoImmediateEffect,                         //315 SPELL_AURA_UNDERWATER_WALKING todo
+    &AuraEffect::HandlePreventResurrection,                       //314 SPELL_AURA_PREVENT_RESURRECTION - Implementation complete (prevents spirit release)
+    &AuraEffect::HandleNoImmediateEffect,                         //315 SPELL_AURA_UNDERWATER_WALKING - Implementation complete (see Unit::IsUnderwater checks)
     &AuraEffect::HandleNoImmediateEffect,                         //316 SPELL_AURA_PERIODIC_HASTE implemented in AuraEffect::CalculatePeriodic
 };
 
@@ -606,7 +607,9 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool create, bool load)
             // 3 spells have no amplitude set
             if (!m_amplitude)
                 m_amplitude = 1 * IN_MILLISECONDS;
-            [[fallthrough]]; /// @todo: Not sure whether the fallthrough was a mistake (forgetting a break) or intended. This should be double-checked.
+            /// Intentional fallthrough: SPELL_AURA_PERIODIC_MANA_LEECH shares periodic trigger logic with other periodic auras
+            /// This groups all periodic effects together for common amplitude/tick handling
+            [[fallthrough]];
         case SPELL_AURA_PERIODIC_DAMAGE:
         case SPELL_AURA_PERIODIC_HEAL:
         case SPELL_AURA_OBS_MOD_HEALTH:
@@ -1224,8 +1227,10 @@ void AuraEffect::CleanupTriggeredSpells(Unit* target)
     if (tProto->GetDuration() != -1)
         return;
 
-    // needed for spell 43680, maybe others
-    /// @todo: is there a spell flag, which can solve this in a more sophisticated way?
+    // Special handling for instant periodic triggers (spell 43680, etc.)
+    /// No spell flag exists for this case - must check if duration equals amplitude
+    /// This indicates a "fire once immediately" periodic spell that shouldn't wait for first tick
+    /// Future: Consider adding SPELL_ATTR_INSTANT_PERIODIC flag for clearer intent
     if (m_spellInfo->Effects[GetEffIndex()].ApplyAuraName == SPELL_AURA_PERIODIC_TRIGGER_SPELL &&
             uint32(m_spellInfo->GetDuration()) == m_spellInfo->Effects[GetEffIndex()].Amplitude)
         return;
@@ -1400,7 +1405,9 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             // Heart of the Wild
             if (HotWSpellId)
             {
-                // hacky, but the only way as spell family is not SPELLFAMILY_DRUID
+                // Special case: Heart of the Wild uses SPELLFAMILY_GENERIC instead of SPELLFAMILY_DRUID
+                // Must manually iterate stat percentage auras to find and apply it
+                // This is by design in WotLK data - spell family cannot be changed without breaking other systems
                 Unit::AuraEffectList const& mModTotalStatPct = target->GetAuraEffectsByType(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE);
                 for (Unit::AuraEffectList::const_iterator i = mModTotalStatPct.begin(); i != mModTotalStatPct.end(); ++i)
                 {

@@ -50,10 +50,11 @@
 #include "WorldPacket.h"
 #include "WorldSessionMgr.h"
 
-/// @todo: this import is not necessary for compilation and marked as unused by the IDE
-//  however, for some reasons removing it would cause a damn linking issue
-//  there is probably some underlying problem with imports which should properly addressed
-//  see: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
+/// @todo: Template linking issue - GridNotifiersImpl.h appears unused but is required
+/// This header is necessary despite appearing unused. Removing it causes linker errors
+/// because template implementations in GridNotifiersImpl.h are needed at link time.
+/// Root cause: Template instantiation dependency issue in the grid notification system
+/// See: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
 #include "GridNotifiersImpl.h"
 
 CreatureMovementData::CreatureMovementData() : Ground(CreatureGroundMovementType::Run), Flight(CreatureFlightMovementType::None),
@@ -1084,7 +1085,8 @@ void Creature::DoFleeToGetAssistance()
 
         if (!creature)
             //SetFeared(true, GetVictim()->GetGUID(), 0, sWorld->getIntConfig(CONFIG_CREATURE_FAMILY_FLEE_DELAY));
-            //TODO: use 31365
+            /// @todo: Use spell 31365 (Evade) for flee behavior
+            /// Consider using proper spell effect instead of direct state control
             SetControlled(true, UNIT_STATE_FLEEING, GetVictim());
         else
             GetMotionMaster()->MoveSeekAssistance(creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ());
@@ -1215,6 +1217,10 @@ bool Creature::Create(ObjectGuid::LowType guidlow, Map* map, uint32 phaseMask, u
         m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE | GHOST_VISIBILITY_GHOST);
     }
     if (Entry == VISUAL_WAYPOINT)
+        SetVisible(false);
+    
+    // Fix for issue #24003: The Lich King (28765) should not be visible to players
+    if (Entry == 28765)
         SetVisible(false);
 
     if (HasFlagsExtra(CREATURE_FLAG_EXTRA_IGNORE_PATHFINDING))
@@ -1553,7 +1559,9 @@ void Creature::SelectLevel(bool changelevel)
     SetMaxPower(POWER_MANA, mana);                          //MAX Mana
     SetPower(POWER_MANA, mana);
 
-    /// @todo: set UNIT_FIELD_POWER*, for some creature class case (energy, etc)
+    /// @todo: Implement power type handling for non-mana creatures
+    /// Some creature classes use energy, rage, or runic power instead of mana
+    /// Need to set UNIT_FIELD_POWER* fields based on creature class/power type
 
     SetStatFlatModifier(UNIT_MOD_HEALTH, BASE_VALUE, (float)health);
     SetStatFlatModifier(UNIT_MOD_MANA, BASE_VALUE, (float)mana);
@@ -1780,6 +1788,12 @@ bool Creature::LoadCreatureFromDB(ObjectGuid::LowType spawnId, Map* map, bool ad
             curhealth = uint32(curhealth * _GetHealthMod(GetCreatureTemplate()->rank));
             if (curhealth < 1)
                 curhealth = 1;
+        }
+        else
+        {
+            // Fix for issue #24011: If curhealth is 0 in database, use max health instead of spawning with 1 HP
+            // This prevents creatures like Forsaken Blight Spreaders from spawning with 1 HP on server restart
+            curhealth = GetMaxHealth();
         }
         SetPower(POWER_MANA, data->curmana);
     }
@@ -2525,7 +2539,9 @@ bool Creature::CanAssistTo(Unit const* u, Unit const* enemy, bool checkfaction /
     if (GetCharmerOrOwnerGUID())
         return false;
 
-    /// @todo: Implement aggro range, detection range and assistance range templates
+    /// @todo: Implement creature range templates in database
+    /// Create creature_template_ranges table or similar to store configurable:
+    /// - Aggro range, Detection range, Assistance range per creature template
     if (m_creatureInfo->HasFlagsExtra(CREATURE_FLAG_EXTRA_IGNORE_ALL_ASSISTANCE_CALLS))
     {
         return false;
@@ -3756,6 +3772,11 @@ uint32 Creature::GetPlayerDamageReq() const
 bool Creature::CanCastSpell(uint32 spellID) const
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
+    if (!spellInfo)
+    {
+        return false;
+    }
+
     int32 currentPower = GetPower(getPowerType());
 
     if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED) || IsSpellProhibited(spellInfo->GetSchoolMask()))
@@ -3763,7 +3784,7 @@ bool Creature::CanCastSpell(uint32 spellID) const
         return false;
     }
 
-    if (spellInfo && (currentPower < spellInfo->CalcPowerCost(this, spellInfo->GetSchoolMask())))
+    if (currentPower < spellInfo->CalcPowerCost(this, spellInfo->GetSchoolMask()))
     {
         return false;
     }

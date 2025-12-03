@@ -496,7 +496,8 @@ enum WintergraspWorkshopIds
     BATTLEFIELD_WG_WORKSHOP_KEEP_EAST,
 };
 
-/// @todo: Handle this with creature_text ?
+/// @todo: Migrate WG text announcements to creature_text system
+/// Current hardcoded text IDs should use the creature_text database table instead
 enum eWGText
 {
     BATTLEFIELD_WG_TEXT_START                    = 28,
@@ -758,7 +759,8 @@ struct WintergraspTowerData
     uint8 nbObject;                     // Number of gameobjects spawned on this point
     WintergraspObjectPositionData GameObject[6];   // Gameobject position and entry (Horde/Alliance)
 
-    // Creature : Turrets and Guard, TODO: check if killed on tower destruction? tower damage?
+    /// @todo: Verify creature behavior on tower destruction
+    /// Need to confirm if turrets and guards are killed when tower is destroyed or takes damage
     uint8 nbCreatureBottom;
     WintergraspObjectPositionData CreatureBottom[9];
     uint8 nbCreatureTop;

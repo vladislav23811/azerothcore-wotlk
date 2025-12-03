@@ -211,8 +211,15 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
                         // Can't attack if owner is pacified
                         if (_player->HasPacifyAura())
                         {
-                            //pet->SendPetCastFail(spellId, SPELL_FAILED_PACIFIED);
-                            //TODO: Send proper error message to client
+                            // Send proper error message to player when pet can't attack due to pacify
+                            if (Pet* pet = _player->GetPet())
+                            {
+                                WorldPacket data(SMSG_PET_CAST_FAILED, 1 + 4 + 1);
+                                data << uint8(0); // cast count
+                                data << uint32(spellId);
+                                data << uint8(SPELL_FAILED_PACIFIED);
+                                _player->SendDirectMessage(&data);
+                            }
                             return;
                         }
 

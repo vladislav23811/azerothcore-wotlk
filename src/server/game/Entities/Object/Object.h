@@ -194,7 +194,9 @@ public:
     void SetFieldNotifyFlag(uint16 flag) { _fieldNotifyFlags |= flag; }
     void RemoveFieldNotifyFlag(uint16 flag) { _fieldNotifyFlags &= ~flag; }
 
-    // FG: some hacky helpers
+    /// @todo: Review and refactor force update helper functions
+    /// These are workaround functions that force field updates
+    /// May indicate architectural issues that should be addressed properly
     void ForceValuesUpdateAtIndex(uint32);
 
     [[nodiscard]] inline bool IsPlayer() const { return GetTypeId() == TYPEID_PLAYER; }

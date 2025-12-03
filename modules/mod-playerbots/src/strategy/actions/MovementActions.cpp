@@ -1338,7 +1338,9 @@ bool MovementAction::ChaseTo(WorldObject* obj, float distance, float angle)
     // bot->GetMotionMaster()->Clear();
     bot->GetMotionMaster()->MoveChase((Unit*)obj, distance);
 
-    // TODO shouldnt this use "last movement" value?
+    /// @todo: Consider using "last movement" value for wait calculation
+    /// Current implementation calculates wait time from exact distance
+    /// May be more accurate to use stored "last movement" position/time
     WaitForReach(bot->GetExactDist2d(obj) - distance);
     return true;
 }
@@ -1362,7 +1364,9 @@ float MovementAction::MoveDelay(float distance, bool backwards)
     return delay;
 }
 
-// TODO should this be removed? (or modified to use "last movement" value?)
+/// @todo: Review WaitForReach implementation necessity
+/// Consider if this function should be removed or refactored to use "last movement" value
+/// Current implementation may not be optimal for movement prediction
 void MovementAction::WaitForReach(float distance)
 {
     float delay = 1000.0f * MoveDelay(distance);
@@ -1673,7 +1677,9 @@ bool MovementAction::Move(float angle, float distance)
     float x = bot->GetPositionX() + cos(angle) * distance;
     float y = bot->GetPositionY() + sin(angle) * distance;
 
-    // TODO do we need GetMapWaterOrGroundLevel() if we're using CheckCollisionAndGetValidCoords() ?
+    /// @todo: Determine if GetMapWaterOrGroundLevel is redundant
+    /// CheckCollisionAndGetValidCoords() is called after this - may already handle ground level
+    /// Consider removing this call if it's redundant to improve performance
     float z = bot->GetMapWaterOrGroundLevel(x, y, bot->GetPositionZ());
     if (z == -100000.0f || z == -200000.0f)
         z = bot->GetPositionZ();

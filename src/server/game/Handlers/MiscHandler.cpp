@@ -440,7 +440,9 @@ void WorldSession::HandleLogoutRequestOpcode(WorldPackets::Character::LogoutRequ
     else if (GetPlayer()->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR))
         reason = 3;                                         // is jumping or falling
     else if (preventAfkSanctuaryLogout || preventAfkLogout || GetPlayer()->duel || GetPlayer()->HasAura(9454)) // is dueling or frozen by GM via freeze command
-        reason = 2;                                         // FIXME - Need the correct value
+        /// @todo: Verify correct logout cancel reason value
+        /// Currently using reason = 2 but exact retail value needs confirmation from packet captures
+        reason = 2;
 
     WorldPackets::Character::LogoutResponse logoutResponse;
     logoutResponse.LogoutResult = reason;

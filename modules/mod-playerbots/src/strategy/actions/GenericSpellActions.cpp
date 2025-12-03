@@ -227,7 +227,9 @@ Value<Unit*>* CurePartyMemberAction::GetTargetValue()
 }
 
 // Make Bots Paladin, druid, mage use the greater buff rank spell
-// TODO Priest doen't verify il he have components
+/// @todo: Add reagent/component checking for Priest buffs
+/// Priest bots don't verify they have required components (e.g. candles for Prayer of Fortitude)
+/// before attempting to cast group buffs
 Value<Unit*>* BuffOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));

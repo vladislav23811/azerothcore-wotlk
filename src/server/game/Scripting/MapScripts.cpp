@@ -661,7 +661,10 @@ void Map::ScriptsProcess()
 
             case SCRIPT_COMMAND_CAST_SPELL:
                 {
-                    /// @todo: Allow gameobjects to be targets and casters
+                    /// GameObject support for EffectTarget/EffectSource not yet implemented
+/// Would require extending ScriptInfo structure to handle GO types beyond just creatures/players
+/// Implementation needs: GO GUID storage, GO accessor functions, GO-specific effect handlers
+/// Use case: Environmental interactions (altar activations, door triggers, etc.)
                     if (!source && !target)
                     {
                         LOG_ERROR("maps.script", "{} source and target objects are nullptr.", step.script->GetDebugInfo());

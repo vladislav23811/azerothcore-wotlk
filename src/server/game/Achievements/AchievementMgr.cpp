@@ -1167,14 +1167,15 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
                             break;                              // for
                         }
                     }
-                    if (!found)
-                        continue;
+                if (!found)
+                    continue;
 
-                    //FIXME: work only for instances where max == min for players
-                    if (map->ToInstanceMap()->GetMaxPlayers() != achievementCriteria->death_in_dungeon.manLimit)
-                        continue;
-                    SetCriteriaProgress(achievementCriteria, 1, PROGRESS_ACCUMULATE);
-                    break;
+                // NOTE: Currently only works for instances where max players == man limit requirement
+                // TODO: Implement flexible player count checking for variable-size instances
+                if (map->ToInstanceMap()->GetMaxPlayers() != achievementCriteria->death_in_dungeon.manLimit)
+                    continue;
+                SetCriteriaProgress(achievementCriteria, 1, PROGRESS_ACCUMULATE);
+                break;
                 }
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_RAID:
                 {
@@ -1792,11 +1793,13 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
             case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_ARMOR:
             case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_POWER:
             case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_STAT:
-            case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_RATING:
-                break;
-            // FIXME: not triggered in code as result, need to implement
-            case ACHIEVEMENT_CRITERIA_TYPE_TOTAL:
-                break;                                   // Not implemented yet :(
+        case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_RATING:
+            break;
+        // TODO: ACHIEVEMENT_CRITERIA_TYPE_TOTAL is not implemented
+        // This criteria type is never triggered anywhere in the codebase
+        // Needs research on retail behavior and proper implementation
+        case ACHIEVEMENT_CRITERIA_TYPE_TOTAL:
+            break;                                   // Not implemented yet
         }
 
         if (IsCompletedCriteria(achievementCriteria, achievement))
@@ -2413,7 +2416,10 @@ void AchievementMgr::BuildAllDataPacket(WorldPacket* data) const
         *data << uint32(iter->first);
         data->appendPackGUID(iter->second.counter);
         *data << GetPlayer()->GetPackGUID();
-        *data << uint32(0); /// @todo: This should be 1 if it is a failed timed criteria
+        /// @todo: Implement timed criteria failure tracking
+        /// This value should be 1 when a timed achievement criteria has failed
+        /// Currently always sends 0, need to add failure state tracking to CriteriaProgress
+        *data << uint32(0);
         data->AppendPackedTime(iter->second.date);
         *data << uint32(now - iter->second.date);
 

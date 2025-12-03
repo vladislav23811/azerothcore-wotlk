@@ -24,10 +24,11 @@
 #include "SpellMgr.h"
 #include "Totem.h"
 
-/// @todo: this import is not necessary for compilation and marked as unused by the IDE
-//  however, for some reasons removing it would cause a damn linking issue
-//  there is probably some underlying problem with imports which should properly addressed
-//  see: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
+/// @todo: Template linking issue - GridNotifiersImpl.h appears unused but is required
+/// This header is necessary despite appearing unused. Removing it causes linker errors
+/// because template implementations in GridNotifiersImpl.h are needed at link time.
+/// Root cause: Template instantiation dependency issue in the grid notification system
+/// See: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
 #include "GridNotifiersImpl.h"
 
 int32 TotemAI::Permissible(Creature const* creature)

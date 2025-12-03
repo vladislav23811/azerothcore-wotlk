@@ -535,7 +535,9 @@ public:
     void HandleTriggerBuff(GameObject* gameObject);
     void SetHoliday(bool is_holiday);
 
-    /// @todo: make this protected:
+    /// @todo: Refactor to make BgObjects and BgCreatures protected
+    /// These members should be protected with proper public accessor methods
+    /// to improve encapsulation and prevent direct external modification
     typedef GuidVector BGObjects;
     typedef GuidVector BGCreatures;
     BGObjects BgObjects;

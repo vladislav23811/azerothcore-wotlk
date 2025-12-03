@@ -37,10 +37,11 @@
 #include "Vehicle.h"
 #include "WorldState.h"
 
-/// @todo: this import is not necessary for compilation and marked as unused by the IDE
-//  however, for some reasons removing it would cause a damn linking issue
-//  there is probably some underlying problem with imports which should properly addressed
-//  see: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
+/// @todo: Template linking issue - GridNotifiersImpl.h appears unused but is required
+/// This header is necessary despite appearing unused. Removing it causes linker errors
+/// because template implementations in GridNotifiersImpl.h are needed at link time.
+/// Root cause: Template instantiation dependency issue in the grid notification system
+/// See: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
 #include "GridNotifiersImpl.h"
 
 SmartScript::SmartScript()
@@ -4893,13 +4894,15 @@ void SmartScript::UpdateTimer(SmartScriptHolder& e, uint32 const diff)
         }
 
         // Delay flee for assist event if casting
-        if (e.GetActionType() == SMART_ACTION_FLEE_FOR_ASSIST && me && me->HasUnitState(UNIT_STATE_CASTING))
-        {
-            e.timer = 1200;
-            return;
-        } // @TODO: Can't these be handled by the action themselves instead? Less expensive
+    if (e.GetActionType() == SMART_ACTION_FLEE_FOR_ASSIST && me && me->HasUnitState(UNIT_STATE_CASTING))
+    {
+        e.timer = 1200;
+        return;
+    }
+    /// @todo: Move casting state checks into individual action handlers for better performance
+    /// This special case handling should be part of SMART_ACTION_FLEE_FOR_ASSIST itself
 
-        e.active = true;//activate events with cooldown
+    e.active = true;//activate events with cooldown
         switch (e.GetEventType())//process ONLY timed events
         {
             case SMART_EVENT_NEAR_PLAYERS:

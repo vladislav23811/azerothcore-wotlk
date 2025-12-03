@@ -46,7 +46,9 @@ namespace lfg
     enum LfgUpdateType
     {
         LFG_UPDATETYPE_DEFAULT                       = 0,      // Internal Use
-        LFG_UPDATETYPE_LEADER_UNK1                   = 1,      // FIXME: At group leave
+        /// @todo: Determine exact meaning of update type 1
+        /// Appears to be sent when group leader leaves - verify exact retail behavior
+        LFG_UPDATETYPE_LEADER_UNK1                   = 1,
         LFG_UPDATETYPE_LEAVE_RAIDBROWSER             = 2,
         LFG_UPDATETYPE_JOIN_RAIDBROWSER              = 3,
         LFG_UPDATETYPE_ROLECHECK_ABORTED             = 4,
@@ -60,7 +62,9 @@ namespace lfg
         LFG_UPDATETYPE_PROPOSAL_BEGIN                = 13,
         LFG_UPDATETYPE_UPDATE_STATUS                 = 14,
         LFG_UPDATETYPE_GROUP_MEMBER_OFFLINE          = 15,
-        LFG_UPDATETYPE_GROUP_DISBAND_UNK16           = 16,     // FIXME: Sometimes at group disband
+        /// @todo: Clarify conditions for update type 16
+        /// Sometimes sent during group disband - determine exact trigger conditions
+        LFG_UPDATETYPE_GROUP_DISBAND_UNK16           = 16,
     };
 
     enum LfgState

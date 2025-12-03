@@ -485,7 +485,8 @@ bool LootItem::AllowedForPlayer(Player const* player, ObjectGuid source) const
         if (pProto->StartQuest)
         {
             // Don't drop the item if the player has already finished the quest OR player already has the item in their inventory, and that item is unique OR the player has not finished a prerequisite quest
-            uint32 prevQuestId = sObjectMgr->GetQuestTemplate(pProto->StartQuest) ? sObjectMgr->GetQuestTemplate(pProto->StartQuest)->GetPrevQuestId() : 0;
+            Quest const* questTemplate = sObjectMgr->GetQuestTemplate(pProto->StartQuest);
+            uint32 prevQuestId = questTemplate ? questTemplate->GetPrevQuestId() : 0;
             if (player->GetQuestStatus(pProto->StartQuest) != QUEST_STATUS_NONE || (player->HasItemCount(itemid, pProto->MaxCount) && pProto->MaxCount) || (prevQuestId && !player->GetQuestRewardStatus(prevQuestId)))
                 return false;
         }
@@ -610,7 +611,7 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
             }
         }
 
-        for (uint8 i = 0; i < items.size(); ++i)
+        for (size_t i = 0; i < items.size(); ++i)
         {
             if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(items[i].itemid))
                 if (proto->Quality < uint32(group->GetLootThreshold()))
@@ -665,7 +666,7 @@ QuestItemList* Loot::FillFFALoot(Player* player)
 {
     QuestItemList* ql = new QuestItemList();
 
-    for (uint8 i = 0; i < items.size(); ++i)
+    for (size_t i = 0; i < items.size(); ++i)
     {
         LootItem& item = items[i];
         if (!item.is_looted && item.freeforall && item.AllowedForPlayer(player, containerGUID))
@@ -693,7 +694,7 @@ QuestItemList* Loot::FillQuestLoot(Player* player)
 
     Player* lootOwner = (roundRobinPlayer) ? ObjectAccessor::FindPlayer(roundRobinPlayer) : player;
 
-    for (uint8 i = 0; i < quest_items.size(); ++i)
+    for (size_t i = 0; i < quest_items.size(); ++i)
     {
         LootItem& item = quest_items[i];
 
@@ -994,7 +995,8 @@ ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li)
 {
     b << uint32(li.itemid);
     b << uint32(li.count);                                  // nr of items of this type
-    b << uint32(sObjectMgr->GetItemTemplate(li.itemid)->DisplayInfoID);
+    ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(li.itemid);
+    b << uint32(itemTemplate ? itemTemplate->DisplayInfoID : 0);
     b << uint32(li.randomSuffix);
     b << uint32(li.randomPropertyId);
     //b << uint8(0);                                        // slot type - will send after this function call

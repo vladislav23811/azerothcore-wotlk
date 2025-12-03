@@ -125,4 +125,27 @@
     "C_Cpp.default.compilerPath": "/usr/bin/clang",
     "cmake.sourceDirectory": ["${workspaceFolder}"],
     "cmake.buildDirectory": "${workspaceFolder}/var/build",
+    "cmake.buildType": "RelWithDebInfo",
+    "cmake.defaultVariants": {
+        "buildType": {
+            "default": "relwithdebinfo",
+            "description": "The build type to use"
+        }
+    },
+    "cmake.variantLabel": "RelWithDebInfo",
+    "cmake.generator": "Visual Studio 18 2026",
+    "cmake.preferredGenerators": [
+        "Visual Studio 18 2026",
+        "Visual Studio 17 2022"
+    ],
+    "cmake.configureSettings": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_GENERATOR_PLATFORM": "x64",
+        "APPS_BUILD": "all",
+        "TOOLS_BUILD": "all"
+    },
+    "cmake.buildArgs": [
+        "--config",
+        "RelWithDebInfo"
+    ]
 }

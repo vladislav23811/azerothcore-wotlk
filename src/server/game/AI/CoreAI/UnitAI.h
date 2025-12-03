@@ -104,7 +104,9 @@ struct DefaultTargetSelector : public Acore::unary_function<Unit*, bool>
 };
 
 // Target selector for spell casts checking range, auras and attributes
-/// @todo: Add more checks from Spell::CheckCast
+/// @todo: Add additional validation checks from Spell::CheckCast
+/// Currently only checks basic range and auras. Should include line of sight,
+/// power requirements, cooldowns, and other casting requirements
 struct SpellTargetSelector : public Acore::unary_function<Unit*, bool>
 {
 public:
@@ -346,14 +348,16 @@ public:
      * @brief Called when the unit enters combat
      * @note NOTE: Creature engage logic should NOT be here, but in JustEngagedWith, which happens once threat is established!)
      *
-     * @todo Never invoked right now. Preparation for Combat Threat refactor
+     * @todo Not currently invoked - Planned for future Combat Threat system refactor
+     * This will be part of separating "entering combat" from "establishing threat"
      */
     virtual void JustEnteredCombat(Unit* /*who*/) { }
 
     /**
      * @brief Called when the unit leaves combat
      *
-     * @todo Never invoked right now. Preparation for Combat Threat refactor
+     * @todo Not currently invoked - Planned for future Combat Threat system refactor
+     * This will provide a cleaner separation between combat state and threat state
      */
     virtual void JustExitedCombat() { }
 

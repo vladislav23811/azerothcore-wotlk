@@ -574,7 +574,29 @@ void BattlegroundSA::TeleportToEntrancePosition(Player* player)
         if (!ShipsStarted)
         {
             player->CastSpell(player, 12438, true);//Without this player falls before boat loads...
-            if (urand(0, 1))
+            // Fix for issue #24007: Balance boat distribution for attackers
+            // Count players on each boat to ensure balanced distribution
+            uint32 boatOneCount = 0;
+            uint32 boatTwoCount = 0;
+            
+            for (auto const& [playerGuid, bgPlayer] : GetPlayers())
+            {
+                if (bgPlayer && bgPlayer->GetTeamId() == Attackers && bgPlayer != player)
+                {
+                    // Check which boat the player is on based on their position
+                    float x = bgPlayer->GetPositionX();
+                    // Boat one is at x ~2682, boat two is at x ~2577
+                    if (x > 2600.0f)
+                        boatOneCount++;
+                    else if (x > 2500.0f)
+                        boatTwoCount++;
+                }
+            }
+            
+            // Teleport to the boat with fewer players, or random if equal
+            bool useBoatOne = (boatOneCount < boatTwoCount) || (boatOneCount == boatTwoCount && urand(0, 1));
+            
+            if (useBoatOne)
                 player->TeleportTo(MAP_STRAND_OF_THE_ANCIENTS, 2682.936f, -830.368f, 15.0f, 2.895f, 0);
             else
                 player->TeleportTo(MAP_STRAND_OF_THE_ANCIENTS, 2577.003f, 980.261f, 15.0f, 0.807f, 0);

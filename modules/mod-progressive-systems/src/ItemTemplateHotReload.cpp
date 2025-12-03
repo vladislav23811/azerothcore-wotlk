@@ -27,9 +27,8 @@ void ItemTemplateHotReload::Initialize()
     m_lastReloadTime = std::chrono::system_clock::now();
     m_lastCheckTime = std::chrono::system_clock::now();
     
-    // Schedule periodic checks
-    // Note: TaskScheduler not available at World level, using manual checks on item load instead
-    // Periodic checks can be implemented via WorldScript hooks or manual polling
+    // Item template hot reload is triggered on item load events
+    // This ensures items are updated when they're first accessed by players
     if (m_autoReloadEnabled)
     {
         LOG_INFO("module", "Item Template Hot Reload: Auto-reload enabled (manual check on item access)");

@@ -820,7 +820,9 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket& recvData)
     }
 }
 
-//TODO Fix me! ... this void has probably bad condition, but good data are sent
+/// @todo: Review and fix mail query time condition logic
+/// Function sends correct data but the condition checking may be incorrect
+/// Audit the logic that determines when to send next mail time updates
 void WorldSession::HandleQueryNextMailTime(WorldPacket& /*recvData*/)
 {
     WorldPacket data(MSG_QUERY_NEXT_MAIL_TIME, 8);

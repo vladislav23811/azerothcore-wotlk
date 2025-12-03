@@ -190,7 +190,7 @@ namespace VMAP
                     fclose(tilefile);
                 }
             }
-            // break; //test, extract only first map; TODO: remvoe this line
+            // Test code removed - was used to extract only first map during development
         }
 
         // add an object models, listed in temp_gameobject_models file

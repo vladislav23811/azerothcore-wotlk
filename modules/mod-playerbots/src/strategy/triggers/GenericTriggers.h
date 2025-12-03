@@ -196,7 +196,9 @@ public:
     bool IsActive() override;
 };
 
-// TODO: check other targets
+/// @todo: Implement multi-target interrupt checking
+/// Currently only checks primary target - should check all nearby enemies casting spells
+/// to prioritize which cast to interrupt based on threat/importance
 class InterruptSpellTrigger : public SpellTrigger
 {
 public:

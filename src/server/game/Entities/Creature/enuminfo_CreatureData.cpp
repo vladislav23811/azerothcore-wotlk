@@ -42,7 +42,7 @@ AC_API_EXPORT EnumText EnumUtils<CreatureFlagsExtra>::ToString(CreatureFlagsExtr
         case CREATURE_FLAG_EXTRA_NO_TAUNT: return { "CREATURE_FLAG_EXTRA_NO_TAUNT", "CREATURE_FLAG_EXTRA_NO_TAUNT", "creature is immune to taunt auras and 'attack me' effects" };
         case CREATURE_FLAG_EXTRA_NO_MOVE_FLAGS_UPDATE: return { "CREATURE_FLAG_EXTRA_NO_MOVE_FLAGS_UPDATE", "CREATURE_FLAG_EXTRA_NO_MOVE_FLAGS_UPDATE", "creature won't update movement flags" };
         case CREATURE_FLAG_EXTRA_GHOST_VISIBILITY: return { "CREATURE_FLAG_EXTRA_GHOST_VISIBILITY", "CREATURE_FLAG_EXTRA_GHOST_VISIBILITY", "creature will only be visible to dead players" };
-        case CREATURE_FLAG_EXTRA_USE_OFFHAND_ATTACK: return { "CREATURE_FLAG_EXTRA_USE_OFFHAND_ATTACK", "CREATURE_FLAG_EXTRA_USE_OFFHAND_ATTACK", "/ @todo: Implement CREATURE_FLAG_EXTRA_USE_OFFHAND_ATTACK (creature will use offhand attacks)" };
+        case CREATURE_FLAG_EXTRA_USE_OFFHAND_ATTACK: return { "CREATURE_FLAG_EXTRA_USE_OFFHAND_ATTACK", "CREATURE_FLAG_EXTRA_USE_OFFHAND_ATTACK", "NOT IMPLEMENTED - creature should use offhand attacks (dual-wielding)" };
         case CREATURE_FLAG_EXTRA_NO_SELL_VENDOR: return { "CREATURE_FLAG_EXTRA_NO_SELL_VENDOR", "CREATURE_FLAG_EXTRA_NO_SELL_VENDOR", "players can't sell items to this vendor" };
         case CREATURE_FLAG_EXTRA_IGNORE_COMBAT: return { "CREATURE_FLAG_EXTRA_IGNORE_COMBAT", "CREATURE_FLAG_EXTRA_IGNORE_COMBAT", "" };
         case CREATURE_FLAG_EXTRA_WORLDEVENT: return { "CREATURE_FLAG_EXTRA_WORLDEVENT", "CREATURE_FLAG_EXTRA_WORLDEVENT", "custom flag for world event creatures (left room for merging)" };

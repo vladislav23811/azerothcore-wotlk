@@ -203,7 +203,8 @@ bool NewRpgBaseAction::ForceToWait(uint32 duration, MovementPriority priority)
     return true;
 }
 
-/// @TODO: Fix redundant code
+/// @todo: Refactor to eliminate code duplication
+/// This section contains redundant code that should be extracted into shared helper functions
 /// Quest related method refer to TalkToQuestGiverAction.h
 bool NewRpgBaseAction::InteractWithNpcOrGameObjectForQuest(ObjectGuid guid)
 {
