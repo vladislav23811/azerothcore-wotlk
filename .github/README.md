@@ -656,9 +656,11 @@ This fork maintains AzerothCore's core philosophy while adding specialized featu
 
 ---
 
-**Branch**: `playerbotwithall` | **Focus**: Playerbots & Progressive Systems | **Status**: ✅ Stable & Ready
+**Branches**: `master` and `playerbotwithall` *(both identical!)* | **Focus**: Playerbots & Progressive Systems | **Status**: ✅ Stable & Ready
 
 **Build Status**: ✅ All workflows passing | **Compilation**: ✅ Zero errors | **Modernization**: ✅ C++20 Complete
 
+**Clone**: `git clone https://github.com/vladislav23811/azerothcore-wotlk.git` - Works perfectly! All features included on both branches.
+
 ---
-*Last updated: December 3, 2025 - All compilation errors fixed, C++20 modernization complete*
+*Last updated: December 3, 2025 - All compilation errors fixed, C++20 modernization complete, both branches synchronized*

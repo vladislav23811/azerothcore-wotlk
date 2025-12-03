@@ -1,20 +1,27 @@
-# How to Clone This Repository Correctly
+# How to Clone This Repository
 
-## ⚠️ Important: Branch Selection
+## ✅ Good News: Both Branches Are Identical!
 
-This repository's main work is on the `playerbotwithall` branch, NOT the `master` branch!
+As of **December 3, 2025**, both `master` and `playerbotwithall` branches contain the same code!
 
-## ✅ Correct Clone Command
+You can clone either way and get all the features:
+
+## ✅ Clone Commands (Both Work!)
 
 ```bash
-# Clone with the correct branch
-git clone --branch playerbotwithall https://github.com/vladislav23811/azerothcore-wotlk.git
-
-# Or clone and then switch to the branch
+# Option 1: Clone master (default)
 git clone https://github.com/vladislav23811/azerothcore-wotlk.git
-cd azerothcore-wotlk
-git checkout playerbotwithall
+
+# Option 2: Clone playerbotwithall specifically
+git clone --branch playerbotwithall https://github.com/vladislav23811/azerothcore-wotlk.git
 ```
+
+Both commands will give you:
+- ✅ All 23 modules
+- ✅ All lua_scripts
+- ✅ All configuration files
+- ✅ C++20 modernization
+- ✅ Latest commits and fixes
 
 ## 📁 What You Should See After Cloning
 
@@ -80,17 +87,20 @@ ls modules/mod-*/conf/*.conf.dist | wc -l
 # Should show: 26 (or similar number)
 ```
 
-## ❌ Common Mistake
+## 🔄 Branch Information
 
-If you clone without specifying the branch, you'll get the `master` branch which may not have all the latest features!
+**Current Status**: Both branches are synchronized!
 
-```bash
-# WRONG - This gets master branch
-git clone https://github.com/vladislav23811/azerothcore-wotlk.git
+- **`master`**: Main branch (identical to playerbotwithall as of Dec 3, 2025)
+- **`playerbotwithall`**: Development branch (where new features are added first)
 
-# CORRECT - This gets playerbotwithall branch
-git clone --branch playerbotwithall https://github.com/vladislav23811/azerothcore-wotlk.git
-```
+Both branches currently point to commit: **`3dcb00374`**
+
+### Going Forward
+- New features will be added to `playerbotwithall` first
+- `master` will be periodically updated to match `playerbotwithall`
+- For the latest bleeding-edge features, use `playerbotwithall`
+- For stable releases, use `master`
 
 ## 📊 File Counts in playerbotwithall Branch
 
@@ -132,16 +142,17 @@ If you cloned the correct branch and files are still missing:
 
 ## ✅ Confirmation
 
-After cloning correctly, you should see:
+After cloning (either master or playerbotwithall), you should see:
 - ✅ 23 module folders in `modules/`
 - ✅ 13 lua scripts in `modules/mod-progressive-systems/lua_scripts/`
 - ✅ 26+ .conf.dist files across all modules
 - ✅ SQL files in `modules/mod-progressive-systems/data/sql/`
-- ✅ Latest commit: `79d91df62`
+- ✅ Latest commit: `3dcb00374`
 
 ---
 
 **Last Updated**: December 3, 2025
-**Branch**: playerbotwithall
-**Latest Commit**: 79d91df62 (Comprehensive README update)
+**Branches**: Both `master` and `playerbotwithall` are synchronized
+**Latest Commit**: 3dcb00374 (Add CLONE_INSTRUCTIONS.md)
+**Status**: ✅ Both branches contain all features!
 
