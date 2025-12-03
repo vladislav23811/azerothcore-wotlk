@@ -15,9 +15,14 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @todo: Implement proper support for vehicle+player teleportation
-/// @todo: Use spell victory/defeat in wg instead of RewardMarkOfHonor() && RewardHonor
-/// @todo: Add proper implement of achievement
+/// @todo: Implement proper vehicle+player teleportation handling
+/// Currently players in vehicles may have issues when teleporting in Wintergrasp
+///
+/// @todo: Replace direct reward calls with spell-based victory/defeat system
+/// Use spell effects for RewardMarkOfHonor() and RewardHonor() instead of direct calls
+///
+/// @todo: Implement Wintergrasp-specific achievements
+/// Many WG achievements are missing or incomplete
 
 #include "AreaDefines.h"
 #include "BattlefieldWG.h"
@@ -275,7 +280,8 @@ void BattlefieldWG::OnBattleStart()
     for (uint8 team = 0; team < 2; ++team)
         for (GuidUnorderedSet::const_iterator itr = m_players[team].begin(); itr != m_players[team].end(); ++itr)
         {
-            // Kick player in orb room, TODO: offline player ?
+            /// @todo: Handle offline players in orb room during battle start
+            /// Currently only kicks online players - offline players remain in orb room
             if (Player* player = ObjectAccessor::FindPlayer(*itr))
             {
                 float x, y, z;
@@ -877,7 +883,9 @@ void BattlefieldWG::OnPlayerJoinWar(Player* player)
 
 void BattlefieldWG::OnPlayerLeaveWar(Player* player)
 {
-    // Remove all aura from WG /// @todo: false we can go out of this zone on retail and keep Rank buff, remove on end of WG
+    /// @todo: Fix aura removal behavior to match retail
+    /// On retail: Rank buffs persist when leaving WG zone, only removed when battle ends
+    /// Currently: All auras removed when leaving zone (incorrect behavior)
     if (!player->GetSession()->PlayerLogout())
     {
         if (player->GetVehicle())                              // Remove vehicle of player if he go out.

@@ -693,8 +693,12 @@ void GameObject::Update(uint32 diff)
                             break;
                         }
 
-                        /// @todo This is activation radius. Casting radius must be selected from spell data.
-                        /// @todo Move activated state code to GO_ACTIVATED, in this place just check for activation and set state.
+                        /// @todo: Use spell data for trap casting radius
+                        /// Currently using trap diameter for activation - should query spell range from spell data
+                        /// 
+                        /// @todo: Refactor trap activation logic
+                        /// Move GO_ACTIVATED state code to separate function for better organization
+                        /// This section should only check activation conditions and set state
                         float radius = float(goInfo->trap.diameter) * 0.5f;
                         if (!goInfo->trap.diameter)
                         {
@@ -795,7 +799,10 @@ void GameObject::Update(uint32 diff)
                         if (goInfo->trap.type == 2)
                         {
                             if (goInfo->trap.spellId)
-                                CastSpell(nullptr, goInfo->trap.spellId);  // FIXME: null target won't work for target type 1
+                                /// @todo: Fix trap spell targeting for TARGET_UNIT_TARGET
+                                /// Passing nullptr as target fails for spells requiring TARGET_UNIT_TARGET (type 1)
+                                /// Need to determine and pass appropriate target based on spell targeting type
+                                CastSpell(nullptr, goInfo->trap.spellId);
                             SetLootState(GO_JUST_DEACTIVATED);
                         }
                         else if (Unit* target = ObjectAccessor::GetUnit(*this, _lootStateUnitGUID))
@@ -1321,6 +1328,8 @@ bool GameObject::ActivateToQuest(Player* target) const
                 QuestGiverStatus questStatus = target->GetQuestDialogStatus(go);
                 if (questStatus > DIALOG_STATUS_UNAVAILABLE)
                     return true;
+                /// @todo: Review quest giver gameobject interaction logic
+                /// Break statement may need additional handling for edge cases
                 break;
             }
         case GAMEOBJECT_TYPE_CHEST:
@@ -1743,6 +1752,8 @@ void GameObject::Use(Unit* user)
                             if (!zoneSkill)
                                 LOG_ERROR("sql.sql", "Fishable areaId {} are not properly defined in `skill_fishing_base_level`.", subzone);
 
+                            /// @todo: Verify fishing hole search radius value
+                            /// Current radius calculation may need adjustment based on retail behavior
                             // no miss skill is zone skill + 95 since at least patch 2.1
                             int32 const noMissSkill = zoneSkill + 95;
 
@@ -1769,6 +1780,8 @@ void GameObject::Use(Unit* user)
 
                             if (sScriptMgr->OnPlayerUpdateFishingSkill(player, skill, zoneSkill, chance, roll))
                                 player->UpdateFishingSkill();
+                            /// @todo: Implement high skill fishing area junk catch prevention
+                            /// Currently may produce junk catches even in high-skill-requirement areas
                             // but you will likely cause junk in areas that require a high fishing skill (not yet implemented)
                             if (chance >= roll)
                             {
@@ -2295,6 +2308,9 @@ void GameObject::ModifyHealth(int32 change, Unit* attackerOrHealer /*= nullptr*/
     else
         m_goValue.Building.Health += change;
 
+    /// @todo: Implement building/destructible healing packet
+    /// Currently no packet sent for healing - only damage is communicated to client
+    /// May need SMSG_DESTRUCTIBLE_BUILDING_DAMAGE with negative value or separate healing packet
     // Set the health bar, value = 255 * healthPct;
     SetGoAnimProgress(m_goValue.Building.Health * 255 / m_goValue.Building.MaxHealth);
 

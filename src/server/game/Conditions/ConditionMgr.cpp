@@ -1269,7 +1269,8 @@ void ConditionMgr::LoadConditions(bool isReload)
             }
             case CONDITION_SOURCE_TYPE_SMART_EVENT:
             {
-                //! TODO: PAIR_32 ?
+                /// @todo: Consider using MAKE_PAIR32 macro for consistency
+                /// Other parts of codebase use MAKE_PAIR32 for combining two 32-bit values
                 std::pair<int32, uint32> key = std::make_pair(cond->SourceEntry, cond->SourceId);
                 SmartEventConditionStore[key][cond->SourceGroup].push_back(cond);
                 valid = true;

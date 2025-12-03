@@ -1877,7 +1877,13 @@ InventoryResult Player::CanEquipItem(uint8 slot, uint16& dest, Item* pItem, bool
                 if (IsInCombat() && (pProto->Class == ITEM_CLASS_WEAPON || pProto->InventoryType == INVTYPE_RELIC))
                 {
                     uint32 cooldownSpell = IsClass(CLASS_ROGUE, CLASS_CONTEXT_WEAPON_SWAP) ? 6123 : 6119;
-                    uint32 startRecoveryTime = sSpellMgr->GetSpellInfo(cooldownSpell)->StartRecoveryTime;
+                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(cooldownSpell);
+                    if (!spellInfo)
+                    {
+                        LOG_ERROR("entities.player", "PlayerStorage::CanEquipItem: Invalid spell {} for weapon swap cooldown", cooldownSpell);
+                        return EQUIP_ERR_ITEM_NOT_FOUND;
+                    }
+                    uint32 startRecoveryTime = spellInfo->StartRecoveryTime;
                     if (m_weaponChangeTimer != 0 && m_weaponChangeTimer != startRecoveryTime)
                         return EQUIP_ERR_CANT_DO_RIGHT_NOW;         // maybe exist better err
                 }
@@ -6875,7 +6881,14 @@ bool Player::Satisfy(DungeonProgressionRequirements const* ar, uint32 target_map
                     else if (missingPlayerItems.size())
                     {
                         LocaleConstant loc_idx = GetSession()->GetSessionDbLocaleIndex();
-                        std::string name = sObjectMgr->GetItemTemplate(missingPlayerItems[0]->id)->Name1;
+                        ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(missingPlayerItems[0]->id);
+                        if (!itemTemplate)
+                        {
+                            LOG_ERROR("entities.player", "PlayerStorage::CanEnterMap: Invalid item template {} for missing item check", missingPlayerItems[0]->id);
+                            SendTransferAborted(target_map, TRANSFER_ABORT_DIFFICULTY, target_difficulty);
+                            return false;
+                        }
+                        std::string name = itemTemplate->Name1;
                         if (ItemLocale const* il = sObjectMgr->GetItemLocale(missingPlayerItems[0]->id))
                         {
                             ObjectMgr::GetLocaleString(il->Name, loc_idx, name);

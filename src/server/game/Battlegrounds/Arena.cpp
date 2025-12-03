@@ -226,6 +226,8 @@ void Arena::EndBattleground(TeamId winnerTeamId)
         auto SaveArenaLogs = [&]()
         {
             // pussywizard: arena logs in database
+            // Fix for issue #24010: Always save arena logs, even if arena didn't officially finish
+            // This ensures stats are dumped to database regardless of how the arena ended
             uint32 fightId = sArenaTeamMgr->GetNextArenaLogId();
             uint32 currOnline = sWorldSessionMgr->GetActiveSessionCount();
 

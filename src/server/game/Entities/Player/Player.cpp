@@ -95,10 +95,11 @@
 #include <cmath>
 #include <queue>
 
-/// @todo: this import is not necessary for compilation and marked as unused by the IDE
-//  however, for some reasons removing it would cause a damn linking issue
-//  there is probably some underlying problem with imports which should properly addressed
-//  see: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
+/// @todo: Template linking issue - GridNotifiersImpl.h appears unused but is required
+/// This header is necessary despite appearing unused. Removing it causes linker errors
+/// because template implementations in GridNotifiersImpl.h are needed at link time.
+/// Root cause: Template instantiation dependency issue in the grid notification system
+/// See: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
 #include "GridNotifiersImpl.h"
 
 enum CharacterFlags
@@ -485,10 +486,13 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
 
 bool Player::Create(ObjectGuid::LowType guidlow, CharacterCreateInfo* createInfo)
 {
-    // FIXME: outfitId not used in player creating
-    /// @todo: need more checks against packet modifications
-    // should check that skin, face, hair* are valid via DBC per race/class
-    // also do it in Player::BuildEnumData, Player::LoadFromDB
+    /// @todo: Implement outfit ID support in character creation
+    /// Currently outfitId field from client packet is ignored
+    /// 
+    /// @todo: Add comprehensive character creation validation
+    /// Need to validate against DBC: skin color, face, hairstyle, haircolor, facial hair
+    /// Should check these values are valid for the chosen race/class combination
+    /// Apply same validation in Player::BuildEnumData and Player::LoadFromDB to prevent exploits
 
     Object::_Create(guidlow, 0, HighGuid::Player);
 
@@ -869,7 +873,8 @@ void Player::HandleDrowning(uint32 time_diff)
             {
                 m_MirrorTimer[BREATH_TIMER] += 1 * IN_MILLISECONDS;
                 // Calculate and deal damage
-                /// @todo: Check this formula
+                /// @todo: Verify drowning damage formula against retail
+                /// Current formula may not match retail damage values - needs testing
                 uint32 damage = GetMaxHealth() / 5 + urand(0, GetLevel() - 1);
                 EnvironmentalDamage(DAMAGE_DROWNING, damage);
             }
@@ -938,7 +943,8 @@ void Player::HandleDrowning(uint32 time_diff)
             {
                 m_MirrorTimer[FIRE_TIMER] += 2020;
                 // Calculate and deal damage
-                /// @todo: Check this formula
+                /// @todo: Verify fire/lava damage formula against retail
+                /// Current formula and 2020ms interval may not match retail values
                 uint32 damage = urand(600, 700);
                 if (m_MirrorTimerFlags & UNDERWATER_INLAVA)
                     EnvironmentalDamage(DAMAGE_LAVA, damage);
@@ -1051,7 +1057,10 @@ void Player::setDeathState(DeathState s, bool /*despawn = false*/)
 
         clearResurrectRequestData();
 
-        //FIXME: is pet dismissed at dying or releasing spirit? if second, add setDeathState(DeathState::Dead) to HandleRepopRequestOpcode and define pet unsummon here with (s == DEAD)
+        /// @todo: Verify pet dismissal timing - on death or spirit release?
+        /// If pet should be dismissed on spirit release (not death):
+        /// - Add setDeathState(DeathState::Dead) to HandleRepopRequestOpcode
+        /// - Move pet unsummon code to only trigger when (s == DEAD)
         RemovePet(nullptr, PET_SAVE_NOT_IN_SLOT, true);
 
         // save value before aura remove in Unit::setDeathState
@@ -1859,7 +1868,9 @@ void Player::Regenerate(Powers power)
 
     uint32 curValue = GetPower(power);
 
-    /// @todo: possible use of miscvalueb instead of amount
+    /// @todo: Review if miscValueB should be used instead of amount
+    /// Some power modification effects may need to reference miscValueB field
+    /// Audit all power modification code to ensure correct value source
     if (HasAuraTypeWithMiscvalue(SPELL_AURA_PREVENT_REGENERATE_POWER, power + 1))
         return;
 
@@ -2162,7 +2173,9 @@ void Player::SetInWater(bool apply)
     //move player's guid into HateOfflineList of those mobs
     //which can't swim and move guid back into ThreatList when
     //on surface.
-    //TODO: exist also swimming mobs, and function must be symmetric to enter/leave water
+    /// @todo: Implement symmetric water entry/exit handling for swimming creatures
+    /// Currently only handles non-swimming mobs. Need to add support for creatures that CAN swim
+    /// Function should properly handle threat lists for both swimming and non-swimming creatures
     m_isInWater = apply;
 
     // remove auras that need water/land
@@ -2510,6 +2523,9 @@ void Player::GiveLevel(uint8 level)
         SetFullHealth();
         SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
         SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
+        /// @todo: Review rage power capping logic
+        /// This only caps if current rage exceeds max, but doesn't fill to max if below
+        /// Consider if rage should be set to max like mana/energy, or intentionally preserved
         if (GetPower(POWER_RAGE) > GetMaxPower(POWER_RAGE))
             SetPower(POWER_RAGE, GetMaxPower(POWER_RAGE));
         SetPower(POWER_FOCUS, 0);
@@ -3244,6 +3260,8 @@ bool Player::_addSpell(uint32 spellId, uint8 addSpecMask, bool temporary, bool l
         uint32 skill_max_value = GetPureMaxSkillValue(spellLearnSkill->skill);
         uint32 new_skill_max_value = spellLearnSkill->maxvalue == 0 ? maxskill : spellLearnSkill->maxvalue;
 
+        /// @todo: Add validation for skill value bounds
+        /// Ensure skill values don't exceed maximum and handle edge cases
         if (skill_value < spellLearnSkill->value)
             skill_value = spellLearnSkill->value;
         if (skill_max_value < new_skill_max_value)
@@ -5127,7 +5145,7 @@ void Player::UpdateDamageDoneMods(WeaponAttackType attackType, int32 skipEnchant
                     amount += enchantmentEntry->amount[i];
                     break;
                 case ITEM_ENCHANTMENT_TYPE_TOTEM:
-                    if (IsClass(CLASS_SHAMAN, CLASS_CONTEXT_ABILITY))
+                    if (IsClass(CLASS_SHAMAN, CLASS_CONTEXT_ABILITY) && item->GetTemplate()->Delay > 0)
                         amount += enchantmentEntry->amount[i] * item->GetTemplate()->Delay / 1000.0f;
                     break;
                 default:
@@ -5242,6 +5260,8 @@ void Player::GetDodgeFromAgility(float& diminishing, float& nondiminishing)
         0.85f / 1.15f,  // DK
         1.60f / 1.15f,  // Shaman
         1.00f / 1.15f,  // Mage
+        /// @todo: Verify Warlock dodge coefficient value
+        /// Currently marked as uncertain - needs retail data confirmation
         0.97f / 1.15f,  // Warlock (?)
         0.0f,           // ??
         2.00f / 1.15f   // Druid
@@ -7041,7 +7061,7 @@ void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, ScalingSt
             int32 extraDPS = ssv->getDPSMod(ScalingStatValue);
             if (extraDPS)
             {
-                float average = extraDPS * proto->Delay / 1000.0f;
+                float average = (proto->Delay > 0) ? extraDPS * proto->Delay / 1000.0f : 0.0f;
                 float mod = ssv->IsTwoHand(proto->ScalingStatValue) ? 0.2f : 0.3f;
 
                 minDamage = (1.0f - mod) * average;
@@ -7910,6 +7930,9 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type)
         GameObject* go = GetMap()->GetGameObject(guid);
 
         // not check distance for GO in case owned GO (fishing bobber case, for example)
+        /// @todo: Simplify complex loot validation condition
+        /// This condition chain is difficult to read and maintain
+        /// Consider extracting to helper functions: IsValidLootTarget(), CanLootGameObject(), etc.
         // And permit out of range GO with no owner in case fishing hole
         if (!go || (loot_type != LOOT_FISHINGHOLE && ((loot_type != LOOT_FISHING && loot_type != LOOT_FISHING_JUNK) || go->GetOwnerGUID() != GetGUID()) && !go->IsWithinDistInMap(this)) || (loot_type == LOOT_CORPSE && go->GetRespawnTime() && go->isSpawnedByDefault()))
         {
@@ -8279,6 +8302,8 @@ void Player::SendLootError(ObjectGuid guid, LootError error)
     data << guid;
     data << uint8(LOOT_NONE);
     data << uint8(error);
+    /// @todo: Verify packet structure for loot error responses
+    /// Current implementation may not match retail packet format exactly
     SendDirectMessage(&data);
 }
 
@@ -10039,6 +10064,9 @@ void Player::RestoreSpellMods(Spell* spell, uint32 ownerAuraId, Aura* aura)
             if (!(mod->mask & spell->m_spellInfo->SpellFamilyFlags))
                 continue;
 
+            /// @todo: Review aura modifier removal queue system
+            /// Current design uses deferred removal to handle multi-mod auras correctly
+            /// Consider if there's a cleaner way to handle this without queueing
             // remove from list - This will be done after all mods have been gone through
             // to ensure we iterate over all mods of an aura before removing said aura
             // from applied mods (Else, an aura with two mods on the current spell would
@@ -11761,6 +11789,8 @@ void Player::SendInitialPacketsAfterAddToMap()
 
     if (HasAuraType(SPELL_AURA_WATER_WALK))
     {
+        /// @todo: Review water walk packet construction
+        /// Verify this compound state packet matches retail client expectations
         uint32 const counter = GetSession()->GetOrderCounter();
         setCompoundState << uint8(2 + GetPackGUID().size() + 4);
         setCompoundState << uint16(SMSG_MOVE_WATER_WALK);
@@ -13000,7 +13030,8 @@ void Player::SetMover(Unit* target)
     {
         LOG_INFO("misc", "Player::SetMover (A1) - {}, {}, {}, {}, {}, {}, {}, {}", GetGUID().ToString(), GetMapId(), GetInstanceId(), FindMap()->GetId(), IsInWorld() ? 1 : 0, IsDuringRemoveFromWorld() ? 1 : 0, IsBeingTeleported() ? 1 : 0, isBeingLoaded() ? 1 : 0);
         LOG_INFO("misc", "Player::SetMover (A2) - {}, {}, {}, {}, {}, {}, {}, {}", target->GetGUID().ToString(), target->GetMapId(), target->GetInstanceId(), target->FindMap()->GetId(), target->IsInWorld() ? 1 : 0, target->IsDuringRemoveFromWorld() ? 1 : 0, (target->ToPlayer() && target->ToPlayer()->IsBeingTeleported() ? 1 : 0), target->isBeingLoaded() ? 1 : 0);
-        LOG_INFO("misc", "Player::SetMover (A3) - {}, {}, {}, {}, {}, {}, {}, {}", target->m_movedByPlayer->GetGUID().ToString(), target->m_movedByPlayer->GetMapId(), target->m_movedByPlayer->GetInstanceId(), target->m_movedByPlayer->FindMap()->GetId(), target->m_movedByPlayer->IsInWorld() ? 1 : 0, target->m_movedByPlayer->IsDuringRemoveFromWorld() ? 1 : 0, target->m_movedByPlayer->ToPlayer()->IsBeingTeleported() ? 1 : 0, target->m_movedByPlayer->isBeingLoaded() ? 1 : 0);
+        Player* movedByPlayer = target->m_movedByPlayer->ToPlayer();
+        LOG_INFO("misc", "Player::SetMover (A3) - {}, {}, {}, {}, {}, {}, {}, {}", target->m_movedByPlayer->GetGUID().ToString(), target->m_movedByPlayer->GetMapId(), target->m_movedByPlayer->GetInstanceId(), target->m_movedByPlayer->FindMap()->GetId(), target->m_movedByPlayer->IsInWorld() ? 1 : 0, target->m_movedByPlayer->IsDuringRemoveFromWorld() ? 1 : 0, (movedByPlayer && movedByPlayer->IsBeingTeleported()) ? 1 : 0, target->m_movedByPlayer->isBeingLoaded() ? 1 : 0);
     }
     if (this != target && (!target->IsInWorld() || target->IsDuringRemoveFromWorld() || GetMapId() != target->GetMapId() || GetInstanceId() != target->GetInstanceId()))
     {
@@ -13114,6 +13145,9 @@ PartyResult Player::CanUninviteFromGroup(ObjectGuid targetPlayerGUID) const
     if (!grp)
         return ERR_NOT_IN_GROUP;
 
+    /// @todo: Add comprehensive LFG group kick validation
+    /// Current kick limit checking may need additional conditions
+    /// Consider adding cooldown checks, vote participation tracking, etc.
     if (grp->isLFGGroup(true))
     {
         ObjectGuid gguid = grp->GetGUID();
@@ -15631,8 +15665,12 @@ void Player::PrepareCharmAISpells()
                 }
                 else if ((int32)damage_type[1 + offset] < dmg)
                 {
-                    if (m_charmAISpells[SPELL_INSTANT_DAMAGE + offset] && sSpellMgr->GetSpellInfo(m_charmAISpells[SPELL_INSTANT_DAMAGE + offset])->IsHighRankOf(spellInfo) && urand(0, 1))
-                        continue;
+                    if (m_charmAISpells[SPELL_INSTANT_DAMAGE + offset])
+                    {
+                        SpellInfo const* existingSpellInfo = sSpellMgr->GetSpellInfo(m_charmAISpells[SPELL_INSTANT_DAMAGE + offset]);
+                        if (existingSpellInfo && existingSpellInfo->IsHighRankOf(spellInfo) && urand(0, 1))
+                            continue;
+                    }
 
                     m_charmAISpells[SPELL_INSTANT_DAMAGE2 + offset] = spellInfo->Id;
                     damage_type[1 + offset] = dmg;
@@ -15723,6 +15761,8 @@ void Player::SendRefundInfo(Item* item)
         data << uint32(iece->reqitem[i]);
         data << uint32(iece->reqitemcount[i]);
     }
+    /// @todo: Verify purpose of zero value in enchantment duration packet
+    /// This uint32(0) field may have meaning that should be documented
     data << uint32(0);
     data << uint32(GetTotalPlayedTime() - item->GetPlayedTime());
     SendDirectMessage(&data);

@@ -170,7 +170,9 @@ void BattlegroundAV::HandleQuestComplete(uint32 questid, Player* player)
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;//maybe we should log this, cause this must be a cheater or a big bug
     TeamId teamId = player->GetTeamId();
-    //TODO add reputation, events (including quest not available anymore, next quest availabe, go/npc de/spawning)and maybe honor
+    /// @todo: Implement comprehensive AV quest completion rewards
+    /// Missing: reputation gains, related events, follow-up quest triggers,
+    /// gameobject/NPC spawning changes, and honor rewards
     LOG_DEBUG("bg.battleground", "BG_AV Quest {} completed", questid);
     switch (questid)
     {
@@ -335,7 +337,9 @@ Creature* BattlegroundAV::AddAVCreature(uint16 cinfoid, uint16 type)
     if (!creature)
         return nullptr;
     if (creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_A_CAPTAIN] || creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_H_CAPTAIN])
-        creature->SetRespawnDelay(RESPAWN_ONE_DAY); /// @todo: look if this can be done by database + also add this for the wingcommanders
+        /// @todo: Move respawn delay configuration to database
+        /// Captains and wing commanders should have their respawn delays set via creature_template
+        creature->SetRespawnDelay(RESPAWN_ONE_DAY);
 
     if (creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_A_TOWERDEFENSE] || creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_H_TOWERDEFENSE])
         creature->SetUnitFlag(UNIT_FLAG_DISABLE_MOVE);
@@ -354,8 +358,9 @@ Creature* BattlegroundAV::AddAVCreature(uint16 cinfoid, uint16 type)
         creature->GetMotionMaster()->Initialize();
         creature->setDeathState(DeathState::JustDied);
         creature->Respawn();
-        //TODO: find a way to add a motionmaster without killing the creature (i
-        //just copied this code from a gm-command
+        /// @todo: Refactor MotionMaster initialization to avoid death/respawn cycle
+        /// This code is copied from GM commands - should be able to reinitialize movement
+        /// without forcing creature through death state
     }
 
     uint32 triggerSpawnID = 0;
@@ -423,19 +428,23 @@ void BattlegroundAV::PostUpdateImpl(uint32 diff)
                         YellToAll(creature, creatureText.c_str(), LANG_COMMON);
                     }
                 }
-                else
-                {
-                    CastSpellOnTeam(AV_BUFF_H_CAPTAIN, TEAM_HORDE);
-                    Creature* creature = GetBGCreature(AV_CPLACE_MAX + 59); //TODO: make the captains a dynamic creature
-                    if (creature)
+            else
+            {
+                CastSpellOnTeam(AV_BUFF_H_CAPTAIN, TEAM_HORDE);
+                /// @todo: Convert captains to use dynamic creature spawning system
+                /// Currently uses hardcoded slot index - should use dynamic spawn system
+                Creature* creature = GetBGCreature(AV_CPLACE_MAX + 59);
+                if (creature)
                     {
                         std::string creatureText = sCreatureTextMgr->GetLocalizedChatString(creature->GetEntry(), creature->getGender(), 2, 0, DEFAULT_LOCALE);
-                        YellToAll(creature, creatureText.c_str(), LANG_ORCISH);
-                    }
+                    YellToAll(creature, creatureText.c_str(), LANG_ORCISH);
                 }
-                m_CaptainBuffTimer[i] = 120000 + urand(0, 4) * 60000; //as far as i could see, the buff is randomly so i make 2minutes (thats the duration of the buff itself) + 0-4minutes TODO get the right times
             }
+            /// @todo: Verify retail captain buff timing
+            /// Current: 2 min base + 0-4 min random. Need to confirm exact retail timing
+            m_CaptainBuffTimer[i] = 120000 + urand(0, 4) * 60000;
         }
+    }
         //add points from mine owning, and look if he neutral team wanrts to reclaim the mine
         m_Mine_Timer -= diff;
         for (uint8 mine = 0; mine < 2; mine++)
@@ -562,13 +571,15 @@ void BattlegroundAV::EndBattleground(TeamId winnerTeamId)
             RewardHonorToTeam(GetBonusHonorFromKill(kills[iTeamId]), iTeamId);
     }
 
-    //TODO add enterevademode for all attacking creatures
+    /// @todo: Make all attacking creatures enter evade mode on battleground end
+    /// Creatures should stop combat and return to spawn positions when battle ends
     Battleground::EndBattleground(winnerTeamId);
 }
 
 void BattlegroundAV::RemovePlayer(Player* player)
 {
-    //TODO search more buffs
+    /// @todo: Remove all AV-specific buffs on player leave
+    /// Current list may be incomplete - verify all AV buff spells are removed
     player->RemoveAurasDueToSpell(AV_BUFF_ARMOR);
     player->RemoveAurasDueToSpell(AV_BUFF_A_CAPTAIN);
     player->RemoveAurasDueToSpell(AV_BUFF_H_CAPTAIN);
@@ -696,6 +707,8 @@ void BattlegroundAV::ChangeMineOwner(uint8 mine, TeamId teamId, bool initial)
     ASSERT(mine == AV_NORTH_MINE || mine == AV_SOUTH_MINE);
     if (teamId == TEAM_ALLIANCE || teamId == TEAM_HORDE)
         PlaySoundToAll((teamId == TEAM_ALLIANCE) ? AV_SOUND_ALLIANCE_GOOD : AV_SOUND_HORDE_GOOD);
+    /// @todo: Add neutral team mine capture sound if it exists in retail
+    /// Currently only plays sounds for Alliance/Horde captures, not neutral
 
     if (m_Mine_Owner[mine] == teamId && !initial)
         return;
