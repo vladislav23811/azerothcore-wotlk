@@ -293,21 +293,14 @@ bool nsNpcTel::IsValidData(const uint32 &cat,   const Flag &flag,
 
 void nsNpcTel::LoadNpcTele()
 {
-    const char *Table[] =
-    {
-        "custom_npc_tele_category",
-        "custom_npc_tele_destination",
-        "custom_npc_tele_association",
-    };
-
     QueryResult result = WorldDatabase.Query(
         "SELECT `flag`, `data0`, `data1`, `cat_id`, C.`name` `namecat`, D.`name` `namedest`, "
         //      0        1        2        3                  4                   5
                "`pos_X`, `pos_Y`, `pos_Z`, `orientation`, `map`, `level`, `cost` "
         //      6        7        8        9              10     11       12
-        "FROM `%s` C, `%s` D, `%s` A "
+        "FROM `custom_npc_tele_category` C, `custom_npc_tele_destination` D, `custom_npc_tele_association` A "
         "WHERE C.`id` = `cat_id` AND D.`id` = `dest_id` "
-        "ORDER BY `namecat`, `cat_id`, `namedest`", Table[0], Table[1], Table[2]);
+        "ORDER BY `namecat`, `cat_id`, `namedest`");
 
     nsNpcTel::TabCatDest.clear();
 

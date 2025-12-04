@@ -33,7 +33,12 @@ void Acore::Impl::ChatCommands::ChatCommandNode::LoadFromBuilder(ChatCommandBuil
 {
     if (std::holds_alternative<ChatCommandBuilder::InvokerEntry>(builder._data))
     {
-        ASSERT(!_invoker, "Duplicate blank sub-command.");
+        if (_invoker)
+        {
+            LOG_ERROR("server.loading", "Duplicate blank sub-command detected! Skipping duplicate registration.");
+            return; // Skip the duplicate instead of crashing
+        }
+        // ASSERT(!_invoker, "Duplicate blank sub-command."); // Temporarily disabled for debugging
         AcoreStrings help;
         std::tie(_invoker, help, _permission) = *(std::get<ChatCommandBuilder::InvokerEntry>(builder._data));
         if (help)

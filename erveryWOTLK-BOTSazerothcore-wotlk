@@ -1,0 +1,22 @@
+[1mdiff --git a/modules/mod-transmog/src/cs_transmog.cpp b/modules/mod-transmog/src/cs_transmog.cpp[m
+[1mindex fbd72629c..a87fe3c7d 100644[m
+[1m--- a/modules/mod-transmog/src/cs_transmog.cpp[m
+[1m+++ b/modules/mod-transmog/src/cs_transmog.cpp[m
+[36m@@ -35,14 +35,14 @@[m [mpublic:[m
+     {[m
+         static ChatCommandTable addCollectionTable =[m
+         {[m
+[31m-            { "set", HandleAddTransmogItemSet,    SEC_MODERATOR, Console::Yes },[m
+[31m-            { "",    HandleAddTransmogItem,       SEC_MODERATOR, Console::Yes },[m
+[32m+[m[32m            { "set",  HandleAddTransmogItemSet,    SEC_MODERATOR, Console::Yes },[m
+[32m+[m[32m            { "item", HandleAddTransmogItem,       SEC_MODERATOR, Console::Yes },[m
+         };[m
+ [m
+         static ChatCommandTable transmogTable =[m
+         {[m
+             { "add",       addCollectionTable                                        },[m
+[31m-            { "",          HandleDisableTransMogVisual,   SEC_PLAYER,    Console::No },[m
+[32m+[m[32m            { "disable",   HandleDisableTransMogVisual,   SEC_PLAYER,    Console::No },[m
+             { "sync",      HandleSyncTransMogCommand,     SEC_PLAYER,    Console::No },[m
+             { "portable",  HandleTransmogPortableCommand, SEC_PLAYER,    Console::No },[m
+             { "interface", HandleInterfaceOption,         SEC_PLAYER,    Console::No }[m
