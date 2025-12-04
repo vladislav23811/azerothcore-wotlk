@@ -35,14 +35,14 @@ public:
     {
         static ChatCommandTable addCollectionTable =
         {
-            { "set", HandleAddTransmogItemSet,    SEC_MODERATOR, Console::Yes },
-            { "",    HandleAddTransmogItem,       SEC_MODERATOR, Console::Yes },
+            { "set",  HandleAddTransmogItemSet,    SEC_MODERATOR, Console::Yes },
+            { "item", HandleAddTransmogItem,       SEC_MODERATOR, Console::Yes },
         };
 
         static ChatCommandTable transmogTable =
         {
             { "add",       addCollectionTable                                        },
-            { "",          HandleDisableTransMogVisual,   SEC_PLAYER,    Console::No },
+            { "disable",   HandleDisableTransMogVisual,   SEC_PLAYER,    Console::No },
             { "sync",      HandleSyncTransMogCommand,     SEC_PLAYER,    Console::No },
             { "portable",  HandleTransmogPortableCommand, SEC_PLAYER,    Console::No },
             { "interface", HandleInterfaceOption,         SEC_PLAYER,    Console::No }
