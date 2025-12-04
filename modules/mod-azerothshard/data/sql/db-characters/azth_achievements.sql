@@ -28,6 +28,9 @@ CREATE TABLE IF NOT EXISTS `azth_achievements` (
   `Description` text,
   `reward` int(11) DEFAULT '0',
   `rewardCount` int(11) DEFAULT '0',
+  `killCredit` int(11) DEFAULT '0',
+  `specialLevelReq` int(11) DEFAULT '0',
+  `reqDimension` int(11) DEFAULT '0',
   PRIMARY KEY (`achievement`,`criteria`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
