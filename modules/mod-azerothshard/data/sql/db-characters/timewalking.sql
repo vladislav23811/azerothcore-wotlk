@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS `timewalking_levels` (
 -- Dump dei dati della tabella extra.timewalking_levels: ~4.960 rows (circa)
 DELETE FROM `timewalking_levels`;
 /*!40000 ALTER TABLE `timewalking_levels` DISABLE KEYS */;
-INSERT INTO `timewalking_levels` (`level`, `race`, `class`, `strength_pct`, `agility_pct`, `stamina_pct`, `intellect_pct`, `spirit_pct`, `damage_pct`, `heal_pct`) VALUES
+INSERT INTO `timewalking_levels` (`level`, `race`, `class`, `strength_pct`, `agility_pct`, `stamina_pct`, `intellect_pct`, `spirit_pct`, `dodge_pct`, `parry_pct`, `block_pct`, `crit_pct`, `armor_pen_pct`, `health_pct`, `resistance_pct`, `power_cost_pct`, `stat_pct`, `damage_pct`, `heal_pct`) VALUES
 	(1, 1, 1, 88, 83, 87, 45, 67, 89, 89),
 	(1, 1, 2, 88, 78, 87, 80, 81, 99, 99),
 	(1, 1, 4, 82, 88, 81, 54, 72, 90, 90),

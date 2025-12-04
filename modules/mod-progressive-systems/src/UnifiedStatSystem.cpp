@@ -94,7 +94,9 @@ UnifiedStatSystem::StatBreakdown UnifiedStatSystem::GetStatBreakdown(Player* pla
             breakdown.baseValue = player->GetBaseSpellPowerBonus();
             break;
         case StatType::HEALTH:
-            breakdown.baseValue = player->GetMaxHealth();
+            // DISABLED: Don't read current health, it might be wrong
+            // breakdown.baseValue = player->GetMaxHealth();
+            breakdown.baseValue = 0.0f; // Disabled to prevent feedback loop
             break;
         case StatType::ARMOR:
             breakdown.baseValue = player->GetArmor();
@@ -279,8 +281,9 @@ void UnifiedStatSystem::ApplyStatToPlayer(Player* player, StatType statType, flo
             player->ApplySpellPowerBonus(static_cast<int32>(value), true);
             break;
         case StatType::HEALTH:
-            player->HandleStatFlatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, value, true);
-            player->UpdateMaxHealth();
+            // DISABLED: This was causing 1 HP bug by overwriting health with wrong values
+            // player->HandleStatFlatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, value, true);
+            // player->UpdateMaxHealth();
             break;
         case StatType::ARMOR:
             player->HandleStatFlatModifier(UNIT_MOD_ARMOR, TOTAL_VALUE, value, true);
