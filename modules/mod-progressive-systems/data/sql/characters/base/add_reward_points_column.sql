@@ -1,8 +1,19 @@
 -- Add reward_points column to characters table if it doesn't exist
 -- This is used by many Lua scripts
 
-ALTER TABLE `characters` 
-ADD COLUMN IF NOT EXISTS `reward_points` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Progression/reward points for player';
+SET @col_exists = 0;
+SELECT COUNT(*) INTO @col_exists 
+FROM information_schema.COLUMNS 
+WHERE TABLE_SCHEMA = DATABASE() 
+  AND TABLE_NAME = 'characters' 
+  AND COLUMN_NAME = 'reward_points';
+
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE `characters` ADD COLUMN `reward_points` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT ''Progression/reward points for player''',
+    'SELECT ''Column reward_points already exists'' AS message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- Add shirt tier tracking if it doesn't exist
 CREATE TABLE IF NOT EXISTS `character_shirt_tiers` (

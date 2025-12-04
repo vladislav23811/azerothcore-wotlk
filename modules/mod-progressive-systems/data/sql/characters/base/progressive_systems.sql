@@ -36,9 +36,38 @@ CREATE TABLE `item_upgrades` (
   `stat_bonus_percent` FLOAT NOT NULL DEFAULT 0.0 COMMENT 'Total stat bonus percentage',
   `upgrade_cost_progression_points` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Total points spent on this item',
   `last_upgrade_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`item_guid`),
-  CONSTRAINT `fk_item_upgrades_guid` FOREIGN KEY (`item_guid`) REFERENCES `item_instance` (`guid`) ON DELETE CASCADE
+  PRIMARY KEY (`item_guid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Item upgrade tracking';
+
+-- Add foreign key if item_instance table exists and column types are compatible
+SET @fk_exists = 0;
+SELECT COUNT(*) INTO @fk_exists 
+FROM information_schema.TABLE_CONSTRAINTS 
+WHERE TABLE_SCHEMA = DATABASE() 
+  AND TABLE_NAME = 'item_upgrades' 
+  AND CONSTRAINT_NAME = 'fk_item_upgrades_guid'
+  AND CONSTRAINT_TYPE = 'FOREIGN KEY';
+
+SET @table_exists = 0;
+SELECT COUNT(*) INTO @table_exists
+FROM information_schema.TABLES 
+WHERE TABLE_SCHEMA = DATABASE() 
+  AND TABLE_NAME = 'item_instance';
+
+SET @col_type_match = 0;
+SELECT COUNT(*) INTO @col_type_match
+FROM information_schema.COLUMNS c1
+JOIN information_schema.COLUMNS c2 ON c1.DATA_TYPE = c2.DATA_TYPE 
+  AND c1.COLUMN_TYPE = c2.COLUMN_TYPE
+WHERE c1.TABLE_SCHEMA = DATABASE() AND c1.TABLE_NAME = 'item_upgrades' AND c1.COLUMN_NAME = 'item_guid'
+  AND c2.TABLE_SCHEMA = DATABASE() AND c2.TABLE_NAME = 'item_instance' AND c2.COLUMN_NAME = 'guid';
+
+SET @sql = IF(@fk_exists = 0 AND @table_exists > 0 AND @col_type_match > 0,
+    'ALTER TABLE `item_upgrades` ADD CONSTRAINT `fk_item_upgrades_guid` FOREIGN KEY (`item_guid`) REFERENCES `item_instance` (`guid`) ON DELETE CASCADE',
+    'SELECT ''Foreign key already exists, item_instance table not found, or column types incompatible'' AS message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 DROP TABLE IF EXISTS `character_stat_enhancements`;
 CREATE TABLE `character_stat_enhancements` (

@@ -30,13 +30,6 @@ INSERT IGNORE INTO `enhanced_glyphs` (`glyph_id`, `spell_id`, `name`, `descripti
 (90003, 0, 'Glyph of Haste', 'Reduces all cooldowns by 10%', 0, 80, 3, 0, 0.0, 0.10, 0.0, 0.0, 0.0, 1),
 (90004, 0, 'Glyph of Efficiency', 'Reduces all spell costs by 15%', 1, 80, 2, 0, 0.0, 0.0, 0.15, 0.0, 0.0, 1);
 
-CREATE TABLE IF NOT EXISTS `character_enhanced_glyphs` (
-  `guid` INT UNSIGNED NOT NULL,
-  `glyph_id` INT UNSIGNED NOT NULL,
-  `slot` TINYINT UNSIGNED NOT NULL COMMENT 'Glyph slot (0-5)',
-  `applied_date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`guid`, `slot`),
-  CONSTRAINT `fk_char_enhanced_glyphs_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE,
-  CONSTRAINT `fk_char_enhanced_glyphs_id` FOREIGN KEY (`glyph_id`) REFERENCES `enhanced_glyphs` (`glyph_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Player applied enhanced glyphs';
+-- Note: character_enhanced_glyphs table is created in the characters database
+-- See: modules/mod-progressive-systems/data/sql/characters/base/00_AUTO_SETUP_ALL.sql
 

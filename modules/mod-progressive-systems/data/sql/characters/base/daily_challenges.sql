@@ -1,6 +1,9 @@
 -- Daily and Weekly Challenges System
 -- Provides rotating challenges for players to complete
 
+-- Drop dependent table first to avoid foreign key constraint issues
+DROP TABLE IF EXISTS `character_challenge_progress`;
+
 DROP TABLE IF EXISTS `daily_challenges`;
 CREATE TABLE `daily_challenges` (
   `challenge_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -19,8 +22,6 @@ CREATE TABLE `daily_challenges` (
   INDEX `idx_type_active` (`challenge_type`, `is_active`),
   INDEX `idx_dates` (`start_date`, `end_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Daily and weekly challenges';
-
-DROP TABLE IF EXISTS `character_challenge_progress`;
 CREATE TABLE `character_challenge_progress` (
   `guid` INT UNSIGNED NOT NULL,
   `challenge_id` INT UNSIGNED NOT NULL,

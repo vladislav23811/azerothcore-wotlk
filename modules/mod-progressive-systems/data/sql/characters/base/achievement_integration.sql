@@ -1,6 +1,9 @@
 -- Achievement Integration
 -- Links progressive systems with achievements
 
+-- Drop dependent table first to avoid foreign key constraint issues
+DROP TABLE IF EXISTS `character_progressive_achievements`;
+
 DROP TABLE IF EXISTS `progressive_achievements`;
 CREATE TABLE `progressive_achievements` (
   `achievement_id` INT UNSIGNED NOT NULL COMMENT 'Achievement entry ID',
@@ -11,8 +14,6 @@ CREATE TABLE `progressive_achievements` (
   PRIMARY KEY (`achievement_id`),
   INDEX `idx_type` (`achievement_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Progressive system achievements';
-
-DROP TABLE IF EXISTS `character_progressive_achievements`;
 CREATE TABLE `character_progressive_achievements` (
   `guid` INT UNSIGNED NOT NULL,
   `achievement_id` INT UNSIGNED NOT NULL,
