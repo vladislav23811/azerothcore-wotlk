@@ -29,3 +29,10 @@ ChallengeMode.noReward.deltaLevelLower = 0
 
 ChallengeMode.noReward.startLevelHigher = 0
 ChallengeMode.noReward.startLevelLower = 0
+
+#
+# Enable drop multipliers for AzerothShard content
+# default: 0 (disabled)
+#
+
+Azth.Multiplies.Drop.Enable = 0

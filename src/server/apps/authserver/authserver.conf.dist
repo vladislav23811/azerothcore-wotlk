@@ -75,6 +75,14 @@ BindIP = "0.0.0.0"
 EnableProxyProtocol = 0
 
 #
+#    Network.UseSocketActivation
+#        Description: Enable socket activation (systemd socket activation on Linux).
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+#
+Network.UseSocketActivation = 0
+
+#
 #    PidFile
 #        Description: Auth server PID file.
 #        Example:     "./authserver.pid"  - (Enabled)

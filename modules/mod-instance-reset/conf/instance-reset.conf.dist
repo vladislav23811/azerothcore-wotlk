@@ -17,3 +17,45 @@ InstanceReset.Enable = 0
 
 # Announce the module when the player logs in?
 InstanceReset.Announce = 0
+
+#
+#    instanceReset.Enable
+#        Description: Enable instance reset functionality
+#        Default:     1 - (Enabled)
+#
+instanceReset.Enable = 1
+
+#
+#    instanceReset.TransactionType
+#        Description: Transaction type (0=Token, 1=Money, 2=Both)
+#        Default:     0 - (Token)
+#
+instanceReset.TransactionType = 0
+
+#
+#    instanceReset.TokenID
+#        Description: Item ID for reset token
+#        Default:     49426
+#
+instanceReset.TokenID = 49426
+
+#
+#    instanceReset.TokenCount
+#        Description: Number of tokens required
+#        Default:     26
+#
+instanceReset.TokenCount = 26
+
+#
+#    instanceReset.MoneyCount
+#        Description: Amount of money required (in copper)
+#        Default:     10000000 (1000 gold)
+#
+instanceReset.MoneyCount = 10000000
+
+#
+#    instanceReset.Announcer
+#        Description: Announce instance resets to players
+#        Default:     1 - (Enabled)
+#
+instanceReset.Announcer = 1
