@@ -12,9 +12,14 @@
 #include "ParagonSystem.h"
 #include "InfiniteDungeonSystem.h"
 #include "VisualEnchantmentSystem.h"
+#include "RewardDistributionSystem.h"
+#include "DailyChallengeSystem.h"
+#include "SeasonalSystem.h"
 #include "UnifiedStatSystem.h"
 #include "ProgressiveSystemsCommands.h"
 #include "ProgressiveSystemsPlayerScript.h"
+#include "ProgressiveSystemsWorldScript.h"
+#include "ProgressiveSystemsMapScript.h"
 #include "ScriptMgr.h"
 #include "World.h"
 #include "Log.h"
@@ -26,6 +31,9 @@ void AddSC_ProgressiveSystemsAddonScript();
 void AddSC_progressive_systems_commands();
 void AddSC_progressive_systems_npcs();
 void AddSC_progressive_systems_player_script();
+void AddSC_progressive_systems_world_script();
+void AddSC_progressive_systems_map_script();
+// Note: Daily Challenge and Seasonal NPCs are handled in ProgressiveSystemsNPCs
 
 // Configuration validation
 static bool ValidateProgressiveSystemsConfig()
@@ -111,6 +119,9 @@ void Addmod_progressive_systemsScripts()
     sParagonSystem->Initialize();
     sInfiniteDungeonSystem->Initialize();
     sVisualEnchantmentSystem->Initialize();
+    sRewardDistributionSystem->Initialize();
+    sDailyChallengeSystem->Initialize();
+    sSeasonalSystem->Initialize();
     
     LOG_INFO("module", "Progressive Systems subsystems initialized.");
     
@@ -120,6 +131,8 @@ void Addmod_progressive_systemsScripts()
     AddSC_progressive_systems_commands();        // Commands (.ps upgrade, etc.)
     AddSC_progressive_systems_npcs();            // NPC scripts
     AddSC_progressive_systems_player_script();    // Player event hooks
+    AddSC_progressive_systems_world_script();     // World update hooks
+    AddSC_progressive_systems_map_script();       // Map/instance event hooks
     
     LOG_INFO("module", "Progressive Systems Module: All scripts registered successfully!");
 }

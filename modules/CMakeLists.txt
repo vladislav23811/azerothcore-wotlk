@@ -78,7 +78,9 @@ foreach(SOURCE_MODULE ${MODULES_MODULE_LIST})
   endif()
 
   # Use only static for mod-eluna (formerly mod-ale)
+  # Force static to prevent DLL linkage issues in core libraries
   if (SOURCE_MODULE MATCHES "mod-eluna" OR SOURCE_MODULE MATCHES "mod-ale")
+    set(${MODULE_MODULE_VARIABLE} "static")
     ConfigureALEModule(${SOURCE_MODULE})
   endif()
 

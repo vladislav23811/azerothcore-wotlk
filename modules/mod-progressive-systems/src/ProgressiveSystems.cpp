@@ -8,6 +8,8 @@
 #include "ProgressiveSystemsCache.h"
 #include "ProgressiveSystemsHelpers.h"
 #include "UnifiedStatSystem.h"
+#include "DailyChallengeSystem.h"
+#include "SeasonalSystem.h"
 #include "DatabaseEnv.h"
 #include "ObjectMgr.h"
 #include "ScriptMgr.h"
@@ -19,7 +21,7 @@
 #include <cmath>
 #include <stdexcept>
 
-using namespace ProgressiveSystems;
+using namespace ProgressiveSystemsHelpers;
 
 ProgressiveSystems* ProgressiveSystems::instance()
 {
@@ -49,12 +51,11 @@ uint8 ProgressiveSystems::GetDifficultyTier(Player* player, Map* map)
 
     // Fallback to player's default difficulty tier
     uint32 guid = player->GetGUID().GetCounter();
-    std::string query = Acore::StringFormat("SELECT difficulty_tier FROM character_progression_unified WHERE guid = {}", guid);
-    auto result = DatabaseHelper::SafeQuery(CharacterDatabase, query);
+    QueryResult result = CharacterDatabase.Query("SELECT difficulty_tier FROM character_progression_unified WHERE guid = {}", guid);
     
-    if (result.has_value() && result.value())
+    if (result)
     {
-        Field* fields = result.value()->Fetch();
+        Field* fields = result->Fetch();
         return fields[0].Get<uint8>();
     }
 
@@ -66,12 +67,11 @@ uint8 ProgressiveSystems::GetDifficultyTierByInstanceId(uint32 instanceId)
     if (instanceId == 0)
         return DIFFICULTY_NORMAL;
 
-    std::string query = Acore::StringFormat("SELECT difficulty_tier FROM instance_difficulty_tracking WHERE instance_id = {}", instanceId);
-    auto result = DatabaseHelper::SafeQuery(CharacterDatabase, query);
+    QueryResult result = CharacterDatabase.Query("SELECT difficulty_tier FROM instance_difficulty_tracking WHERE instance_id = {}", instanceId);
     
-    if (result.has_value() && result.value())
+    if (result)
     {
-        Field* fields = result.value()->Fetch();
+        Field* fields = result->Fetch();
         return fields[0].Get<uint8>();
     }
 
@@ -83,8 +83,11 @@ void ProgressiveSystems::SetDifficultyTier(Player* player, Map* map, uint8 tier)
     if (!ValidationHelper::ValidatePlayer(player, "SetDifficultyTier") || !map)
         return;
     
-    if (!ValidationHelper::ValidateDifficultyTier(tier))
+    if (tier > MAX_DIFFICULTY_TIER)
+    {
+        LOG_WARN("module", "ProgressiveSystems::SetDifficultyTier - Invalid tier: {} (max: {})", tier, MAX_DIFFICULTY_TIER);
         return;
+    }
 
     // If in an instance, set per-instance difficulty (Mythic+)
     if (map->IsDungeon() || map->IsRaid())
@@ -93,16 +96,15 @@ void ProgressiveSystems::SetDifficultyTier(Player* player, Map* map, uint8 tier)
         if (instanceId > 0)
         {
             SetDifficultyTierByInstanceId(instanceId, map->GetId(), player->GetGUID().GetCounter(), tier);
-            LogHelper::LogPlayerAction(player, "SetDifficultyTier", Acore::StringFormat("Tier: {}", tier));
+            LOG_INFO("module", "ProgressiveSystems::SetDifficultyTier - Player {} set tier to {} in instance {}", player->GetName(), tier, instanceId);
             return;
         }
     }
 
     // Otherwise, set as player's default difficulty tier
     uint32 guid = player->GetGUID().GetCounter();
-    std::string query = Acore::StringFormat("INSERT INTO character_progression_unified (guid, difficulty_tier) VALUES ({}, {}) ON DUPLICATE KEY UPDATE difficulty_tier = {}", guid, tier, tier);
-    bool success = DatabaseHelper::SafeExecute(CharacterDatabase, query);
-    LogHelper::LogDBOperation("SetDifficultyTier", success, Acore::StringFormat("Player: {}, Tier: {}", guid, tier));
+    CharacterDatabase.Execute("INSERT INTO character_progression_unified (guid, difficulty_tier) VALUES ({}, {}) ON DUPLICATE KEY UPDATE difficulty_tier = {}", guid, tier, tier);
+    LOG_INFO("module", "ProgressiveSystems::SetDifficultyTier - Player {} tier set to {}", guid, tier);
 }
 
 void ProgressiveSystems::SetDifficultyTierByInstanceId(uint32 instanceId, uint32 mapId, uint32 playerGuid, uint8 tier)
@@ -110,14 +112,12 @@ void ProgressiveSystems::SetDifficultyTierByInstanceId(uint32 instanceId, uint32
     if (instanceId == 0 || !ValidationHelper::ValidateDifficultyTier(tier))
         return;
 
-    std::string query = Acore::StringFormat(
+    CharacterDatabase.Execute(
         "INSERT INTO instance_difficulty_tracking (instance_id, map_id, difficulty_tier, set_by_guid) "
         "VALUES ({}, {}, {}, {}) "
         "ON DUPLICATE KEY UPDATE difficulty_tier = {}, set_by_guid = {}, set_time = CURRENT_TIMESTAMP",
         instanceId, mapId, tier, playerGuid, tier, playerGuid);
-    
-    bool success = DatabaseHelper::SafeExecute(CharacterDatabase, query);
-    LogHelper::LogDBOperation("SetDifficultyTierByInstanceId", success, Acore::StringFormat("Instance: {}, Tier: {}", instanceId, tier));
+    LOG_INFO("module", "ProgressiveSystems::SetDifficultyTierByInstanceId - Instance {} tier set to {}", instanceId, tier);
 }
 
 float ProgressiveSystems::GetHealthMultiplier(uint32 mapId, uint8 difficultyTier)
@@ -125,12 +125,11 @@ float ProgressiveSystems::GetHealthMultiplier(uint32 mapId, uint8 difficultyTier
     if (difficultyTier == 0)
         return 1.0f;
 
-    std::string query = Acore::StringFormat("SELECT health_multiplier FROM custom_difficulty_scaling WHERE map_id = {} AND difficulty_tier = {}", mapId, difficultyTier);
-    auto result = DatabaseHelper::SafeQuery(WorldDatabase, query);
+    QueryResult result = WorldDatabase.Query("SELECT health_multiplier FROM custom_difficulty_scaling WHERE map_id = {} AND difficulty_tier = {}", mapId, difficultyTier);
     
-    if (result.has_value() && result.value())
+    if (result)
     {
-        Field* fields = result.value()->Fetch();
+        Field* fields = result->Fetch();
         return fields[0].Get<float>();
     }
 
@@ -143,12 +142,11 @@ float ProgressiveSystems::GetDamageMultiplier(uint32 mapId, uint8 difficultyTier
     if (difficultyTier == 0)
         return 1.0f;
 
-    std::string query = Acore::StringFormat("SELECT damage_multiplier FROM custom_difficulty_scaling WHERE map_id = {} AND difficulty_tier = {}", mapId, difficultyTier);
-    auto result = DatabaseHelper::SafeQuery(WorldDatabase, query);
+    QueryResult result = WorldDatabase.Query("SELECT damage_multiplier FROM custom_difficulty_scaling WHERE map_id = {} AND difficulty_tier = {}", mapId, difficultyTier);
     
-    if (result.has_value() && result.value())
+    if (result)
     {
-        Field* fields = result.value()->Fetch();
+        Field* fields = result->Fetch();
         return fields[0].Get<float>();
     }
 
@@ -158,12 +156,11 @@ float ProgressiveSystems::GetDamageMultiplier(uint32 mapId, uint8 difficultyTier
 
 uint32 ProgressiveSystems::GetRequiredItemLevel(uint32 mapId, uint8 difficultyTier)
 {
-    std::string query = Acore::StringFormat("SELECT required_item_level FROM custom_difficulty_scaling WHERE map_id = {} AND difficulty_tier = {}", mapId, difficultyTier);
-    auto result = DatabaseHelper::SafeQuery(WorldDatabase, query);
+    QueryResult result = WorldDatabase.Query("SELECT required_item_level FROM custom_difficulty_scaling WHERE map_id = {} AND difficulty_tier = {}", mapId, difficultyTier);
     
-    if (result.has_value() && result.value())
+    if (result)
     {
-        Field* fields = result.value()->Fetch();
+        Field* fields = result->Fetch();
         return fields[0].Get<uint32>();
     }
 
@@ -172,12 +169,11 @@ uint32 ProgressiveSystems::GetRequiredItemLevel(uint32 mapId, uint8 difficultyTi
 
 uint32 ProgressiveSystems::GetRewardPoints(uint32 mapId, uint8 difficultyTier)
 {
-    std::string query = Acore::StringFormat("SELECT reward_points FROM custom_difficulty_scaling WHERE map_id = {} AND difficulty_tier = {}", mapId, difficultyTier);
-    auto result = DatabaseHelper::SafeQuery(WorldDatabase, query);
+    QueryResult result = WorldDatabase.Query("SELECT reward_points FROM custom_difficulty_scaling WHERE map_id = {} AND difficulty_tier = {}", mapId, difficultyTier);
     
-    if (result.has_value() && result.value())
+    if (result)
     {
-        Field* fields = result.value()->Fetch();
+        Field* fields = result->Fetch();
         return fields[0].Get<uint32>();
     }
 
@@ -193,12 +189,11 @@ void ProgressiveSystems::AddProgressionPoints(Player* player, uint32 points)
     uint32 guid = player->GetGUID().GetCounter();
     
     // Get current tier for multiplier
-    std::string tierQuery = Acore::StringFormat("SELECT current_tier FROM character_progression_unified WHERE guid = {}", guid);
-    auto tierResult = DatabaseHelper::SafeQuery(CharacterDatabase, tierQuery);
+    QueryResult tierResult = CharacterDatabase.Query("SELECT current_tier FROM character_progression_unified WHERE guid = {}", guid);
     uint8 tier = 1;
-    if (tierResult.has_value() && tierResult.value())
+    if (tierResult)
     {
-        tier = tierResult.value()->Fetch()[0].Get<uint8>();
+        tier = tierResult->Fetch()[0].Get<uint8>();
     }
     
     // Apply tier multiplier (5x, 15x, 30x, etc.)
@@ -211,21 +206,22 @@ void ProgressiveSystems::AddProgressionPoints(Player* player, uint32 points)
     
     uint32 finalPoints = static_cast<uint32>(points * multiplier);
     
-    // Use DatabaseHelper for atomic operation
-    if (DatabaseHelper::AddProgressionPoints(guid, finalPoints))
-    {
-        // Also update characters.reward_points (legacy support)
-        std::string rewardQuery = Acore::StringFormat("UPDATE characters SET reward_points = COALESCE(reward_points, 0) + {} WHERE guid = {}", finalPoints, guid);
-        DatabaseHelper::SafeExecute(CharacterDatabase, rewardQuery);
+    // Add progression points atomically
+    CharacterDatabase.Execute(
+        "INSERT INTO character_progression_unified (guid, progression_points, total_progression_points_earned) "
+        "VALUES ({}, {}, {}) "
+        "ON DUPLICATE KEY UPDATE progression_points = progression_points + {}, total_progression_points_earned = COALESCE(total_progression_points_earned, 0) + {}",
+        guid, finalPoints, finalPoints, finalPoints, finalPoints);
 
-        // Invalidate cache
+    // Also update characters.reward_points (legacy support)
+    CharacterDatabase.Execute("UPDATE characters SET reward_points = COALESCE(reward_points, 0) + {} WHERE guid = {}", finalPoints, guid);
+
+    // Invalidate cache
+    if (sProgressiveSystemsCache)
         sProgressiveSystemsCache->InvalidateCache(guid);
 
-        // Update power level
-        UpdatePowerLevel(player);
-
-        // Log action
-        LogHelper::LogPlayerAction(player, "AddProgressionPoints", Acore::StringFormat("Points: {} (multiplier: {:.1f}x)", finalPoints, multiplier));
+    // Log action
+    LOG_INFO("module", "ProgressiveSystems::AddProgressionPoints - Player {} earned {} points (multiplier: {:.1f}x)", player->GetName(), finalPoints, multiplier);
 
         // Notify player
         if (player->GetSession())
@@ -239,18 +235,13 @@ void ProgressiveSystems::AddProgressionPoints(Player* player, uint32 points)
         sProgressiveSystemsAddon->SendPointsUpdate(player, newTotal);
         
         // Get updated kill count
-        std::string killQuery = Acore::StringFormat("SELECT total_kills FROM character_progression_unified WHERE guid = {}", guid);
-        auto killResult = DatabaseHelper::SafeQuery(CharacterDatabase, killQuery);
-        if (killResult.has_value() && killResult.value())
+        QueryResult killResult = CharacterDatabase.Query("SELECT total_kills FROM character_progression_unified WHERE guid = {}", guid);
+        if (killResult)
         {
-            uint32 totalKills = killResult.value()->Fetch()[0].Get<uint32>();
-            sProgressiveSystemsAddon->SendKillUpdate(player, totalKills);
+            uint32 totalKills = killResult->Fetch()[0].Get<uint32>();
+            if (sProgressiveSystemsAddon)
+                sProgressiveSystemsAddon->SendKillUpdate(player, totalKills);
         }
-    }
-    else
-    {
-        LogHelper::LogError("ProgressiveSystems", Acore::StringFormat("Failed to add progression points for player {} ({})", player->GetName(), guid));
-    }
 }
 
 bool ProgressiveSystems::SpendProgressionPoints(Player* player, uint32 points)
@@ -260,29 +251,34 @@ bool ProgressiveSystems::SpendProgressionPoints(Player* player, uint32 points)
 
     uint32 guid = player->GetGUID().GetCounter();
     
-    // Use DatabaseHelper for atomic spend operation
-    if (DatabaseHelper::SpendProgressionPoints(guid, points))
+    // Check if player has enough points
+    uint64 currentPoints = GetProgressionPoints(player);
+    if (currentPoints < points)
     {
-        // Also update characters.reward_points (legacy support)
-        std::string rewardQuery = Acore::StringFormat("UPDATE characters SET reward_points = GREATEST(COALESCE(reward_points, 0) - {}, 0) WHERE guid = {}", points, guid);
-        DatabaseHelper::SafeExecute(CharacterDatabase, rewardQuery);
-
-        // Invalidate cache
-        sProgressiveSystemsCache->InvalidateCache(guid);
-
-        // Log action
-        LogHelper::LogPlayerAction(player, "SpendProgressionPoints", Acore::StringFormat("Points: {}", points));
-
-        // Send addon update
-        sProgressiveSystemsAddon->SendPointsUpdate(player, GetProgressionPoints(player));
-
-        return true;
-    }
-    else
-    {
-        LogHelper::LogWarning("ProgressiveSystems", Acore::StringFormat("Failed to spend progression points for player {} ({}): Insufficient points or DB error", player->GetName(), guid));
+        LOG_WARN("module", "ProgressiveSystems::SpendProgressionPoints - Player {} has insufficient points (has: {}, needs: {})", player->GetName(), currentPoints, points);
         return false;
     }
+    
+    // Spend progression points atomically
+    CharacterDatabase.Execute(
+        "UPDATE character_progression_unified SET progression_points = GREATEST(progression_points - {}, 0) WHERE guid = {} AND progression_points >= {}",
+        points, guid, points);
+
+    // Also update characters.reward_points (legacy support)
+    CharacterDatabase.Execute("UPDATE characters SET reward_points = GREATEST(COALESCE(reward_points, 0) - {}, 0) WHERE guid = {}", points, guid);
+
+    // Invalidate cache
+    if (sProgressiveSystemsCache)
+        sProgressiveSystemsCache->InvalidateCache(guid);
+
+    // Log action
+    LOG_INFO("module", "ProgressiveSystems::SpendProgressionPoints - Player {} spent {} points", player->GetName(), points);
+
+    // Send addon update
+    if (sProgressiveSystemsAddon)
+        sProgressiveSystemsAddon->SendPointsUpdate(player, GetProgressionPoints(player));
+
+    return true;
 }
 
 uint64 ProgressiveSystems::GetProgressionPoints(Player* player)
@@ -299,15 +295,15 @@ uint64 ProgressiveSystems::GetProgressionPoints(Player* player)
         return cachedData.progressionPoints;
     }
     
-    // Query database using helper
-    uint64 points = 0;
-    uint32 tier = 0, prestige = 0;
-    if (DatabaseHelper::GetPlayerProgression(guid, points, tier, prestige))
+    // Query database
+    QueryResult result = CharacterDatabase.Query("SELECT progression_points FROM character_progression_unified WHERE guid = {}", guid);
+    if (result)
     {
+        uint64 points = result->Fetch()[0].Get<uint64>();
         // Update cache
         cachedData.progressionPoints = points;
-        sProgressiveSystemsCache->UpdateProgressionData(guid, cachedData);
-        
+        if (sProgressiveSystemsCache)
+            sProgressiveSystemsCache->UpdateProgressionData(guid, cachedData);
         return points;
     }
 
@@ -321,18 +317,16 @@ void ProgressiveSystems::UpdateProgressionPoints(Player* player)
         return;
     
     uint32 guid = player->GetGUID().GetCounter();
-    std::string query = Acore::StringFormat("SELECT progression_points FROM character_progression_unified WHERE guid = {}", guid);
-    auto result = DatabaseHelper::SafeQuery(CharacterDatabase, query);
-    if (result.has_value() && result.value())
+    QueryResult result = CharacterDatabase.Query("SELECT progression_points FROM character_progression_unified WHERE guid = {}", guid);
+    if (result)
     {
         // Data is already in database, this is just a refresh call
         return;
     }
     
     // Initialize if doesn't exist
-    std::string initQuery = Acore::StringFormat("INSERT INTO character_progression_unified (guid, progression_points) VALUES ({}, 0)", guid);
-    bool success = DatabaseHelper::SafeExecute(CharacterDatabase, initQuery);
-    LogHelper::LogDBOperation("UpdateProgressionPoints", success, Acore::StringFormat("Initialized progression for player {}", guid));
+    CharacterDatabase.Execute("INSERT INTO character_progression_unified (guid, progression_points) VALUES ({}, 0)", guid);
+    LOG_INFO("module", "ProgressiveSystems::UpdateProgressionPoints - Initialized progression for player {}", guid);
 }
 
 // Item Upgrades
@@ -342,12 +336,11 @@ uint32 ProgressiveSystems::GetItemUpgradeLevel(Item* item)
         return 0;
 
     uint64 itemGuid = item->GetGUID().GetCounter();
-    std::string query = Acore::StringFormat("SELECT upgrade_level FROM item_upgrades WHERE item_guid = {}", itemGuid);
-    auto result = DatabaseHelper::SafeQuery(CharacterDatabase, query);
+    QueryResult result = CharacterDatabase.Query("SELECT upgrade_level FROM item_upgrades WHERE item_guid = {}", itemGuid);
     
-    if (result.has_value() && result.value())
+    if (result)
     {
-        Field* fields = result.value()->Fetch();
+        Field* fields = result->Fetch();
         return fields[0].Get<uint32>();
     }
 
@@ -384,11 +377,9 @@ bool ProgressiveSystems::UpgradeItem(Player* player, Item* item)
         // Reload stat bonuses from database (includes item upgrades)
         sUnifiedStatSystem->LoadPlayerStatBonuses(player);
         
-        // Update power level
-        UpdatePowerLevel(player);
-        
         // Send addon update
-        sProgressiveSystemsAddon->SendItemUpgradeData(player);
+        if (sProgressiveSystemsAddon)
+            sProgressiveSystemsAddon->SendItemUpgradeData(player);
 
         if (player->GetSession())
         {
@@ -425,11 +416,10 @@ uint32 ProgressiveSystems::GetPrestigeLevel(Player* player)
         return 0;
 
     uint32 guid = player->GetGUID().GetCounter();
-    uint64 points = 0;
-    uint32 tier = 0, prestige = 0;
-    if (DatabaseHelper::GetPlayerProgression(guid, points, tier, prestige))
+    QueryResult result = CharacterDatabase.Query("SELECT prestige_level FROM character_progression_unified WHERE guid = {}", guid);
+    if (result)
     {
-        return prestige;
+        return result->Fetch()[0].Get<uint32>();
     }
 
     return 0;
@@ -441,64 +431,54 @@ bool ProgressiveSystems::PrestigeCharacter(Player* player)
         return false;
 
     // Check requirements (e.g., level 80, certain progression points)
-    uint32 minLevel = ConfigHelper::GetPrestigeMinLevel();
+    uint32 minLevel = sConfigMgr->GetOption<uint32>("ProgressiveSystems.Prestige.MinLevel", 80);
     if (player->GetLevel() < minLevel)
     {
-        LogHelper::LogWarning("ProgressiveSystems", Acore::StringFormat("Player {} attempted prestige at level {} (min: {})", player->GetName(), player->GetLevel(), minLevel));
+        LOG_WARN("module", "ProgressiveSystems::PrestigeCharacter - Player {} attempted prestige at level {} (min: {})", player->GetName(), player->GetLevel(), minLevel);
         return false;
     }
 
     uint32 guid = player->GetGUID().GetCounter();
-    uint64 points = 0;
-    uint32 tier = 0, currentPrestige = 0;
-    if (!DatabaseHelper::GetPlayerProgression(guid, points, tier, currentPrestige))
+    QueryResult result = CharacterDatabase.Query("SELECT prestige_level FROM character_progression_unified WHERE guid = {}", guid);
+    uint32 currentPrestige = 0;
+    if (result)
     {
-        LogHelper::LogError("ProgressiveSystems", Acore::StringFormat("Failed to get progression data for prestige: {}", guid));
-        return false;
+        currentPrestige = result->Fetch()[0].Get<uint32>();
     }
 
     if (currentPrestige >= MAX_PRESTIGE_LEVEL)
     {
-        LogHelper::LogWarning("ProgressiveSystems", Acore::StringFormat("Player {} already at max prestige level", player->GetName()));
+        LOG_WARN("module", "ProgressiveSystems::PrestigeCharacter - Player {} already at max prestige level", player->GetName());
         return false;
     }
 
     uint32 newPrestige = currentPrestige + 1;
     
     // Update prestige
-    std::string query = Acore::StringFormat(
+    CharacterDatabase.Execute(
         "INSERT INTO character_progression_unified (guid, prestige_level) VALUES ({}, {}) "
         "ON DUPLICATE KEY UPDATE prestige_level = {}",
         guid, newPrestige, newPrestige);
     
-    bool success = DatabaseHelper::SafeExecute(CharacterDatabase, query);
-    if (success)
+    LOG_INFO("module", "ProgressiveSystems::PrestigeCharacter - Player {} reached prestige level {}", player->GetName(), newPrestige);
+    if (player->GetSession())
     {
-        LogHelper::LogPlayerAction(player, "PrestigeCharacter", Acore::StringFormat("New Prestige: {}", newPrestige));
-        if (player->GetSession())
-        {
-            ChatHandler(player->GetSession()).PSendSysMessage("Congratulations! You reached Prestige Level %u!", newPrestige);
-        }
-        return true;
+        ChatHandler(player->GetSession()).PSendSysMessage("Congratulations! You reached Prestige Level %u!", newPrestige);
     }
-    else
-    {
-        LogHelper::LogError("ProgressiveSystems", Acore::StringFormat("Failed to update prestige for player {}", guid));
-        return false;
-    }
+    return true;
 }
 
 float ProgressiveSystems::GetPrestigeStatBonus(Player* player)
 {
     uint32 prestige = GetPrestigeLevel(player);
-    float bonusPerLevel = ConfigHelper::GetPrestigeStatBonusPerLevel();
+    float bonusPerLevel = sConfigMgr->GetOption<float>("ProgressiveSystems.Prestige.StatBonusPerLevel", PRESTIGE_STAT_BONUS_PER_LEVEL);
     return 1.0f + (prestige * bonusPerLevel);
 }
 
 float ProgressiveSystems::GetPrestigeLootBonus(Player* player)
 {
     uint32 prestige = GetPrestigeLevel(player);
-    float bonusPerLevel = ConfigHelper::GetPrestigeLootBonusPerLevel();
+    float bonusPerLevel = sConfigMgr->GetOption<float>("ProgressiveSystems.Prestige.LootBonusPerLevel", PRESTIGE_LOOT_BONUS_PER_LEVEL);
     return 1.0f + (prestige * bonusPerLevel);
 }
 
@@ -616,12 +596,11 @@ uint32 ProgressiveSystems::GetCurrentFloor(Player* player)
         return 1;
 
     uint32 guid = player->GetGUID().GetCounter();
-    std::string query = Acore::StringFormat("SELECT current_floor FROM infinite_dungeon_progress WHERE guid = {}", guid);
-    auto result = DatabaseHelper::SafeQuery(CharacterDatabase, query);
+    QueryResult result = CharacterDatabase.Query("SELECT current_floor FROM infinite_dungeon_progress WHERE guid = {}", guid);
     
-    if (result.has_value() && result.value())
+    if (result)
     {
-        Field* fields = result.value()->Fetch();
+        Field* fields = result->Fetch();
         return fields[0].Get<uint32>();
     }
 
@@ -634,12 +613,11 @@ uint32 ProgressiveSystems::GetHighestFloor(Player* player)
         return 1;
 
     uint32 guid = player->GetGUID().GetCounter();
-    std::string query = Acore::StringFormat("SELECT highest_floor FROM infinite_dungeon_progress WHERE guid = {}", guid);
-    auto result = DatabaseHelper::SafeQuery(CharacterDatabase, query);
+    QueryResult result = CharacterDatabase.Query("SELECT highest_floor FROM infinite_dungeon_progress WHERE guid = {}", guid);
     
-    if (result.has_value() && result.value())
+    if (result)
     {
-        Field* fields = result.value()->Fetch();
+        Field* fields = result->Fetch();
         return fields[0].Get<uint32>();
     }
 
@@ -652,13 +630,11 @@ void ProgressiveSystems::SetCurrentFloor(Player* player, uint32 floor)
         return;
 
     uint32 guid = player->GetGUID().GetCounter();
-    std::string query = Acore::StringFormat(
+    CharacterDatabase.Execute(
         "INSERT INTO infinite_dungeon_progress (guid, current_floor) VALUES ({}, {}) "
         "ON DUPLICATE KEY UPDATE current_floor = {}",
         guid, floor, floor);
-    
-    bool success = DatabaseHelper::SafeExecute(CharacterDatabase, query);
-    LogHelper::LogDBOperation("SetCurrentFloor", success, Acore::StringFormat("Player: {}, Floor: {}", guid, floor));
+    LOG_INFO("module", "ProgressiveSystems::SetCurrentFloor - Player {} floor set to {}", guid, floor);
 }
 
 void ProgressiveSystems::AdvanceFloor(Player* player)
@@ -689,9 +665,8 @@ uint32 ProgressiveSystems::GetCurrentSeason()
 void ProgressiveSystems::ResetSeason(uint32 newSeasonId)
 {
     // Reset seasonal progress for all players
-    std::string query = Acore::StringFormat("UPDATE seasonal_progress SET seasonal_level = 0, seasonal_points = 0 WHERE season_id < {}", newSeasonId);
-    bool success = DatabaseHelper::SafeExecute(CharacterDatabase, query);
-    LogHelper::LogDBOperation("ResetSeason", success, Acore::StringFormat("New Season ID: {}", newSeasonId));
+    CharacterDatabase.Execute("UPDATE seasonal_progress SET seasonal_level = 0, seasonal_points = 0 WHERE season_id < {}", newSeasonId);
+    LOG_INFO("module", "ProgressiveSystems::ResetSeason - New season ID: {}", newSeasonId);
 }
 
 // Addon data getters
@@ -701,12 +676,11 @@ uint32 ProgressiveSystems::GetTotalKills(Player* player)
         return 0;
     
     uint32 guid = player->GetGUID().GetCounter();
-    std::string query = Acore::StringFormat("SELECT total_kills FROM character_progression_unified WHERE guid = {}", guid);
-    auto result = DatabaseHelper::SafeQuery(CharacterDatabase, query);
+    QueryResult result = CharacterDatabase.Query("SELECT total_kills FROM character_progression_unified WHERE guid = {}", guid);
     
-    if (result.has_value() && result.value())
+    if (result)
     {
-        Field* fields = result.value()->Fetch();
+        Field* fields = result->Fetch();
         return fields[0].Get<uint32>();
     }
     
@@ -719,11 +693,10 @@ uint8 ProgressiveSystems::GetCurrentProgressionTier(Player* player)
         return 1;
     
     uint32 guid = player->GetGUID().GetCounter();
-    uint64 points = 0;
-    uint32 tier = 0, prestige = 0;
-    if (DatabaseHelper::GetPlayerProgression(guid, points, tier, prestige))
+    QueryResult result = CharacterDatabase.Query("SELECT current_tier FROM character_progression_unified WHERE guid = {}", guid);
+    if (result)
     {
-        return static_cast<uint8>(tier);
+        return static_cast<uint8>(result->Fetch()[0].Get<uint32>());
     }
     
     return 1;
@@ -742,14 +715,14 @@ void ProgressiveSystems::OnCreatureKilled(Player* player, Creature* creature)
     // (e.g., InfiniteDungeonSystem, which is called from PlayerScript)
     
     // Award progression points based on creature type
-    uint32 basePoints = ConfigHelper::GetNormalKillPoints();
+    uint32 basePoints = sConfigMgr->GetOption<uint32>("ProgressiveSystems.Points.NormalKill", 10);
     
     if (creature->isWorldBoss())
-        basePoints = ConfigHelper::GetWorldBossKillPoints();
+        basePoints = sConfigMgr->GetOption<uint32>("ProgressiveSystems.Points.WorldBossKill", 5000);
     else if (creature->IsDungeonBoss())
-        basePoints = ConfigHelper::GetBossKillPoints();
+        basePoints = sConfigMgr->GetOption<uint32>("ProgressiveSystems.Points.BossKill", 500);
     else if (creature->isElite())
-        basePoints = ConfigHelper::GetEliteKillPoints();
+        basePoints = sConfigMgr->GetOption<uint32>("ProgressiveSystems.Points.EliteKill", 50);
     
     // Apply difficulty multiplier
     Map* map = player->GetMap();
@@ -766,15 +739,21 @@ void ProgressiveSystems::OnCreatureKilled(Player* player, Creature* creature)
         }
     }
     
+    // Apply seasonal bonus
+    if (auto* seasonalSystem = SeasonalSystem::instance())
+    {
+        float bonus = seasonalSystem->GetProgressionBonus(player);
+        basePoints = static_cast<uint32>(basePoints * bonus);
+    }
+    
     AddProgressionPoints(player, basePoints);
     
     // Update total kills
     uint32 guid = player->GetGUID().GetCounter();
-    std::string killQuery = Acore::StringFormat(
+    CharacterDatabase.Execute(
         "INSERT INTO character_progression_unified (guid, total_kills) VALUES ({}, 1) "
         "ON DUPLICATE KEY UPDATE total_kills = total_kills + 1",
         guid);
-    DatabaseHelper::SafeExecute(CharacterDatabase, killQuery);
     
     // Update power level
     UpdatePowerLevel(player);
@@ -783,11 +762,18 @@ void ProgressiveSystems::OnCreatureKilled(Player* player, Creature* creature)
 // Instance Completion
 void ProgressiveSystems::OnInstanceComplete(Player* player, Map* map, uint8 difficultyTier)
 {
-    if (!player || !map || !map->IsDungeon() && !map->IsRaid())
+    if (!player || !map || (!map->IsDungeon() && !map->IsRaid()))
         return;
 
     uint32 mapId = map->GetId();
     uint32 rewardPoints = GetRewardPoints(mapId, difficultyTier);
+    
+    // Apply seasonal bonus
+    if (auto* seasonalSystem = SeasonalSystem::instance())
+    {
+        float bonus = seasonalSystem->GetProgressionBonus(player);
+        rewardPoints = static_cast<uint32>(rewardPoints * bonus);
+    }
     
     if (rewardPoints > 0)
     {
@@ -799,13 +785,30 @@ void ProgressiveSystems::OnInstanceComplete(Player* player, Map* map, uint8 diff
         if (map->IsRaid())
         {
             CharacterDatabase.Execute(
-                "INSERT INTO character_progression (guid, total_mythic_plus_completed) VALUES ({}, 1) "
+                "INSERT INTO character_progression_unified (guid, total_mythic_plus_completed) VALUES ({}, 1) "
                 "ON DUPLICATE KEY UPDATE total_mythic_plus_completed = total_mythic_plus_completed + 1",
                 guid);
         }
+        else
+        {
+            // Update dungeon completion for daily challenges
+            if (auto* challengeSystem = DailyChallengeSystem::instance())
+            {
+                challengeSystem->UpdateChallengeProgress(player, 1, mapId, 1); // Type 1 = Dungeons
+            }
+        }
+        
+        // Update seasonal score
+        if (auto* seasonalSystem = SeasonalSystem::instance())
+        {
+            seasonalSystem->UpdatePlayerScore(player, rewardPoints);
+        }
         
         // Notify player
-        ChatHandler(player->GetSession()).PSendSysMessage(
-            "|cFF00FF00Instance Complete!|r You earned %u progression points!", rewardPoints);
+        if (player->GetSession())
+        {
+            ChatHandler(player->GetSession()).PSendSysMessage(
+                "|cFF00FF00Instance Complete!|r You earned %u progression points!", rewardPoints);
+        }
     }
 }

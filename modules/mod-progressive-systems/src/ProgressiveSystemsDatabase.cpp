@@ -240,8 +240,8 @@ void ProgressiveSystemsDatabase::ExecuteCharacterSQL()
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     )");
     
-    // Create daily challenges
-    CharacterDatabase.DirectExecute(R"(
+    // Create daily challenges (in world database - shared across all characters)
+    WorldDatabase.DirectExecute(R"(
         CREATE TABLE IF NOT EXISTS `daily_challenges` (
           `challenge_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
           `challenge_type` TINYINT UNSIGNED NOT NULL,
@@ -270,8 +270,8 @@ void ProgressiveSystemsDatabase::ExecuteCharacterSQL()
           `completed_date` TIMESTAMP NULL DEFAULT NULL,
           `reward_claimed` TINYINT UNSIGNED NOT NULL DEFAULT 0,
           PRIMARY KEY (`guid`, `challenge_id`),
-          CONSTRAINT `fk_challenge_progress_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE,
-          CONSTRAINT `fk_challenge_progress_challenge` FOREIGN KEY (`challenge_id`) REFERENCES `daily_challenges` (`challenge_id`) ON DELETE CASCADE
+          CONSTRAINT `fk_challenge_progress_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE
+          -- Note: Cannot reference daily_challenges (WorldDatabase) from CharacterDatabase with foreign key
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     )");
     
@@ -314,6 +314,37 @@ void ProgressiveSystemsDatabase::ExecuteCharacterSQL()
           `total_invested_points` BIGINT UNSIGNED NOT NULL DEFAULT 0,
           PRIMARY KEY (`guid`, `stat_type`),
           CONSTRAINT `fk_stat_enhancements_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    )");
+    
+    // Create seasons table (world database - shared across all characters)
+    WorldDatabase.DirectExecute(R"(
+        CREATE TABLE IF NOT EXISTS `seasons` (
+          `season_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+          `season_name` VARCHAR(255) NOT NULL,
+          `start_time` BIGINT UNSIGNED NOT NULL,
+          `end_time` BIGINT UNSIGNED NOT NULL,
+          `exp_bonus` FLOAT NOT NULL DEFAULT 1.0,
+          `loot_bonus` FLOAT NOT NULL DEFAULT 1.0,
+          `progression_bonus` FLOAT NOT NULL DEFAULT 1.0,
+          `is_active` TINYINT UNSIGNED NOT NULL DEFAULT 1,
+          PRIMARY KEY (`season_id`),
+          INDEX `idx_active` (`is_active`),
+          INDEX `idx_time` (`start_time`, `end_time`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    )");
+    
+    CharacterDatabase.DirectExecute(R"(
+        CREATE TABLE IF NOT EXISTS `character_seasonal_stats` (
+          `guid` INT UNSIGNED NOT NULL,
+          `season_id` INT UNSIGNED NOT NULL,
+          `score` INT UNSIGNED NOT NULL DEFAULT 0,
+          `kills` INT UNSIGNED NOT NULL DEFAULT 0,
+          `dungeons_completed` INT UNSIGNED NOT NULL DEFAULT 0,
+          `floors_cleared` INT UNSIGNED NOT NULL DEFAULT 0,
+          `prestige_level` INT UNSIGNED NOT NULL DEFAULT 0,
+          PRIMARY KEY (`guid`, `season_id`),
+          CONSTRAINT `fk_seasonal_stats_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     )");
     

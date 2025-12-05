@@ -23,7 +23,7 @@ class ProgressiveSystemsCommandScript : public CommandScript
 public:
     ProgressiveSystemsCommandScript() : CommandScript("ProgressiveSystemsCommandScript") { }
 
-    ChatCommandTable GetCommands() override
+    std::vector<Acore::ChatCommands::ChatCommandBuilder> GetCommands() const override
     {
         static ChatCommandTable progressiveSystemsCommandTable =
         {
@@ -43,19 +43,39 @@ public:
         return commandTable;
     }
     
-    // .ps upgrade <itemlink> [levels]
-    static bool HandleItemUpgradeCommand(ChatHandler* handler, Item* item, Optional<uint32> levels)
+    // .ps upgrade <itemlink or itemId> [levels]
+    static bool HandleItemUpgradeCommand(ChatHandler* handler, Variant<Hyperlink<item>, uint32> itemArg, Optional<uint32> levels)
     {
-        if (!item)
-        {
-            handler->PSendSysMessage("|cFFFF0000Usage: .ps upgrade <itemlink> [levels]|r");
-            handler->PSendSysMessage("|cFFFFFF00Example: .ps upgrade [item:12345:0:0:0:0:0:0:0] 5|r");
-            return false;
-        }
-        
         Player* player = handler->GetSession()->GetPlayer();
         if (!player)
             return false;
+        
+        // Get item entry from argument
+        uint32 itemEntry = 0;
+        if (itemArg.holds_alternative<Hyperlink<item>>())
+        {
+            itemEntry = itemArg.get<Hyperlink<item>>()->Item->ItemId;
+        }
+        else
+        {
+            itemEntry = itemArg.get<uint32>();
+        }
+        
+        if (!itemEntry)
+        {
+            handler->PSendSysMessage("|cFFFF0000Usage: .ps upgrade <itemlink or itemId> [levels]|r");
+            handler->PSendSysMessage("|cFFFFFF00Example: .ps upgrade [item:12345:0:0:0:0:0:0:0] 5|r");
+            handler->PSendSysMessage("|cFFFFFF00Example: .ps upgrade 12345 5|r");
+            return false;
+        }
+        
+        // Find the item in player's inventory
+        Item* item = player->GetItemByEntry(itemEntry);
+        if (!item)
+        {
+            handler->PSendSysMessage("|cFFFF0000Item not found in your inventory!|r");
+            return false;
+        }
         
         uint32 upgradeLevels = levels.value_or(1);
         
@@ -162,7 +182,9 @@ public:
         
         if (action.value() == "start")
         {
-            if (sInfiniteDungeonSystem->StartDungeon(player))
+            // Default to Deadmines (map 36) if no map specified
+            uint32 defaultMapId = 36;
+            if (sInfiniteDungeonSystem->StartDungeon(player, defaultMapId, 1))
             {
                 handler->PSendSysMessage("|cFF00FF00Infinite Dungeon started!|r");
             }
