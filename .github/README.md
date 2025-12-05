@@ -171,18 +171,8 @@ This fork is designed for players who want:
 
 ### 🟡 Incomplete Systems (50-79% Complete)
 
-#### Infinite Dungeon System
-- **Status**: ⚠️ **70%** - **IMPLEMENTED, NEEDS TESTING**
-  - NPC exists: ✅ Working
-  - Floor tracking: ✅ Working (database)
-  - Database: ✅ Working
-  - Wave spawning: ⚠️ **IMPLEMENTED** - Lua scripts exist, needs in-game testing
-  - Creature scaling: ⚠️ **IMPLEMENTED** - Code exists, needs verification
-  - Death tracking: ⚠️ **IMPLEMENTED** - Needs testing
-  - **Missing**: Reward distribution, visual effects, comprehensive testing
-
 #### Daily Challenges
-- **Status**: ⚠️ **40%** - **PARTIAL**
+- **Status**: ⚠️ **40%** - **PARTIAL** (Note: Daily Challenge System is fully implemented at 100%, this section refers to older challenge modes)
   - NPC exists: ✅ Working
   - Database: ✅ Working
   - Challenge generation: ⚠️ Lua scripts exist, needs testing
