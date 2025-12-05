@@ -1,220 +1,252 @@
 /*
- * Progressive Systems Debug Commands Implementation
+ * Progressive Systems Commands
+ * In-game commands for all systems
  */
 
 #include "ProgressiveSystemsCommands.h"
 #include "ProgressiveSystems.h"
-#include "ProgressiveSystemsCache.h"
+#include "ItemUpgradeSystem.h"
+#include "ParagonSystem.h"
+#include "InfiniteDungeonSystem.h"
 #include "UnifiedStatSystem.h"
+#include "ProgressiveSystemsAddon.h"
 #include "Chat.h"
 #include "Player.h"
-#include "Config.h"
-#include "Log.h"
-#include "ScriptMgr.h"
-#include "ChatCommands/ChatCommand.h"
-#include "DatabaseEnv.h"
+#include "Item.h"
+#include "ItemTemplate.h"
+#include <sstream>
 
-bool ProgressiveSystemsCommands::HandleProgressiveSystemsInfoCommand(ChatHandler* handler)
-{
-    if (!handler->GetSession() || !handler->GetSession()->GetPlayer())
-    {
-        handler->PSendSysMessage("This command can only be used by a player.");
-        return false;
-    }
-    
-    Player* player = handler->GetSession()->GetPlayer();
-    uint32 guid = player->GetGUID().GetCounter();
-    
-    // Get progression data
-    uint64 points = sProgressiveSystems->GetProgressionPoints(player);
-    uint32 kills = sProgressiveSystems->GetTotalKills(player);
-    uint8 tier = sProgressiveSystems->GetCurrentProgressionTier(player);
-    uint8 difficultyTier = sProgressiveSystems->GetDifficultyTier(player, player->GetMap());
-    uint32 prestige = sProgressiveSystems->GetPrestigeLevel(player);
-    uint32 powerLevel = sProgressiveSystems->CalculatePowerLevel(player);
-    
-    handler->PSendSysMessage("=== Progressive Systems Info ===");
-    handler->PSendSysMessage("Progression Points: %llu", points);
-    handler->PSendSysMessage("Total Kills: %u", kills);
-    handler->PSendSysMessage("Current Tier: %u", tier);
-    handler->PSendSysMessage("Difficulty Tier: %u", difficultyTier);
-    handler->PSendSysMessage("Prestige Level: %u", prestige);
-    handler->PSendSysMessage("Power Level: %u", powerLevel);
-    
-    // Configuration info
-    bool debug = sConfigMgr->GetOption<bool>("ProgressiveSystems.Debug", false);
-    bool enabled = sConfigMgr->GetOption<bool>("ProgressiveSystems.Enable", true);
-    handler->PSendSysMessage("Module Enabled: %s", enabled ? "Yes" : "No");
-    handler->PSendSysMessage("Debug Mode: %s", debug ? "Yes" : "No");
-    
-    return true;
-}
+using namespace Acore::ChatCommands;
 
-bool ProgressiveSystemsCommands::HandleProgressiveSystemsPointsCommand(ChatHandler* handler, Optional<uint32> points)
-{
-    if (!handler->GetSession() || !handler->GetSession()->GetPlayer())
-    {
-        handler->PSendSysMessage("This command can only be used by a player.");
-        return false;
-    }
-    
-    if (!points || *points == 0 || *points > 1000000)
-    {
-        handler->PSendSysMessage("Invalid point amount. Must be between 1 and 1,000,000.");
-        handler->PSendSysMessage("Usage: .ps points <amount>");
-        return false;
-    }
-    
-    Player* player = handler->GetSession()->GetPlayer();
-    sProgressiveSystems->AddProgressionPoints(player, *points);
-    handler->PSendSysMessage("Added %u progression points to %s.", *points, player->GetName().c_str());
-    
-    return true;
-}
-
-bool ProgressiveSystemsCommands::HandleProgressiveSystemsTierCommand(ChatHandler* handler, Optional<uint8> tier)
-{
-    if (!handler->GetSession() || !handler->GetSession()->GetPlayer())
-    {
-        handler->PSendSysMessage("This command can only be used by a player.");
-        return false;
-    }
-    
-    if (!tier || *tier == 0 || *tier > 100)
-    {
-        handler->PSendSysMessage("Invalid tier. Must be between 1 and 100.");
-        handler->PSendSysMessage("Usage: .ps tier <tier>");
-        return false;
-    }
-    
-    Player* player = handler->GetSession()->GetPlayer();
-    Map* map = player->GetMap();
-    
-    if (map && (map->IsDungeon() || map->IsRaid()))
-    {
-        sProgressiveSystems->SetDifficultyTier(player, map, *tier);
-        handler->PSendSysMessage("Set difficulty tier to %u for current instance.", *tier);
-    }
-    else
-    {
-        handler->PSendSysMessage("You must be in a dungeon or raid to set difficulty tier.");
-        return false;
-    }
-    
-    return true;
-}
-
-bool ProgressiveSystemsCommands::HandleProgressiveSystemsResetCommand(ChatHandler* handler)
-{
-    if (!handler->GetSession() || !handler->GetSession()->GetPlayer())
-    {
-        handler->PSendSysMessage("This command can only be used by a player.");
-        return false;
-    }
-    
-    Player* player = handler->GetSession()->GetPlayer();
-    uint32 guid = player->GetGUID().GetCounter();
-    
-    // Reset progression data (keep prestige)
-    CharacterDatabase.Execute(
-        "UPDATE character_progression_unified SET "
-        "total_kills = 0, "
-        "claimed_milestone = 0, "
-        "difficulty_tier = 1, "
-        "current_tier = 1, "
-        "total_power_level = 0, "
-        "progression_points = 0 "
-        "WHERE guid = {}", guid);
-    
-    // Invalidate cache
-    sProgressiveSystemsCache->InvalidateCache(guid);
-    
-    handler->PSendSysMessage("Reset progression data for %s (prestige level preserved).", player->GetName().c_str());
-    
-    return true;
-}
-
-bool ProgressiveSystemsCommands::HandleProgressiveSystemsDebugCommand(ChatHandler* handler, Optional<bool> enable)
-{
-    // This would require a runtime config change, which is complex
-    // For now, just inform the user
-    bool currentDebug = sConfigMgr->GetOption<bool>("ProgressiveSystems.Debug", false);
-    handler->PSendSysMessage("Current debug mode: %s", currentDebug ? "ENABLED" : "DISABLED");
-    handler->PSendSysMessage("Debug mode can be changed in mod-progressive-systems.conf");
-    if (enable)
-    {
-        handler->PSendSysMessage("Set ProgressiveSystems.Debug = %d and reload config.", *enable ? 1 : 0);
-    }
-    
-    return true;
-}
-
-bool ProgressiveSystemsCommands::HandleProgressiveSystemsCacheCommand(ChatHandler* handler)
-{
-    // Show cache statistics (if we had them)
-    handler->PSendSysMessage("Cache cleared. (Statistics not yet implemented)");
-    sProgressiveSystemsCache->ClearCache();
-    
-    return true;
-}
-
-bool ProgressiveSystemsCommands::HandleProgressiveSystemsReloadStatsCommand(ChatHandler* handler)
-{
-    if (!handler->GetSession() || !handler->GetSession()->GetPlayer())
-    {
-        handler->PSendSysMessage("This command can only be used by a player.");
-        return false;
-    }
-    
-    Player* player = handler->GetSession()->GetPlayer();
-    
-    // Reload all stat bonuses
-    sUnifiedStatSystem->LoadPlayerStatBonuses(player);
-    sUnifiedStatSystem->LoadParagonStatBonuses(player);
-    sUnifiedStatSystem->LoadItemUpgradeBonuses(player);
-    sUnifiedStatSystem->LoadPrestigeBonuses(player);
-    
-    // Update all stats
-    sUnifiedStatSystem->UpdateAllStats(player);
-    
-    handler->PSendSysMessage("Stats reloaded for %s.", player->GetName().c_str());
-    
-    return true;
-}
-
-// Command script registration
 class ProgressiveSystemsCommandScript : public CommandScript
 {
 public:
     ProgressiveSystemsCommandScript() : CommandScript("ProgressiveSystemsCommandScript") { }
 
-    std::vector<Acore::ChatCommands::ChatCommandBuilder> GetCommands() const override
+    ChatCommandTable GetCommands() override
     {
-        using namespace Acore::ChatCommands;
-        
         static ChatCommandTable progressiveSystemsCommandTable =
         {
-            { "info",     ProgressiveSystemsCommands::HandleProgressiveSystemsInfoCommand,     SEC_PLAYER,     Console::No },
-            { "points",   ProgressiveSystemsCommands::HandleProgressiveSystemsPointsCommand,   SEC_ADMINISTRATOR, Console::No },
-            { "tier",     ProgressiveSystemsCommands::HandleProgressiveSystemsTierCommand,     SEC_ADMINISTRATOR, Console::No },
-            { "reset",    ProgressiveSystemsCommands::HandleProgressiveSystemsResetCommand,    SEC_ADMINISTRATOR, Console::No },
-            { "debug",    ProgressiveSystemsCommands::HandleProgressiveSystemsDebugCommand,    SEC_PLAYER,     Console::No },
-            { "cache",    ProgressiveSystemsCommands::HandleProgressiveSystemsCacheCommand,    SEC_ADMINISTRATOR, Console::No },
-            { "reloadstats", ProgressiveSystemsCommands::HandleProgressiveSystemsReloadStatsCommand, SEC_PLAYER, Console::No },
+            { "upgrade", HandleItemUpgradeCommand, SEC_PLAYER, Console::No },
+            { "paragon", HandleParagonCommand, SEC_PLAYER, Console::No },
+            { "dungeon", HandleDungeonCommand, SEC_PLAYER, Console::No },
+            { "stats", HandleStatsCommand, SEC_PLAYER, Console::No },
+            { "progression", HandleProgressionCommand, SEC_PLAYER, Console::No },
         };
         
         static ChatCommandTable commandTable =
         {
-            { "ps",       progressiveSystemsCommandTable },
+            { "ps", progressiveSystemsCommandTable },
             { "progressive", progressiveSystemsCommandTable },
         };
         
         return commandTable;
     }
+    
+    // .ps upgrade <itemlink> [levels]
+    static bool HandleItemUpgradeCommand(ChatHandler* handler, Item* item, Optional<uint32> levels)
+    {
+        if (!item)
+        {
+            handler->PSendSysMessage("|cFFFF0000Usage: .ps upgrade <itemlink> [levels]|r");
+            handler->PSendSysMessage("|cFFFFFF00Example: .ps upgrade [item:12345:0:0:0:0:0:0:0] 5|r");
+            return false;
+        }
+        
+        Player* player = handler->GetSession()->GetPlayer();
+        if (!player)
+            return false;
+        
+        uint32 upgradeLevels = levels.value_or(1);
+        
+        if (sItemUpgradeSystem->UpgradeItem(player, item, upgradeLevels))
+        {
+            handler->PSendSysMessage("|cFF00FF00Item upgraded successfully!|r");
+            
+            // Send update to addon
+            sProgressiveSystemsAddon->SendItemUpgradeData(player);
+        }
+        else
+        {
+            handler->PSendSysMessage("|cFFFF0000Failed to upgrade item!|r");
+        }
+        
+        return true;
+    }
+    
+    // .ps paragon [allocate <statId> <points>|reset]
+    static bool HandleParagonCommand(ChatHandler* handler, Optional<std::string> action, Optional<uint32> statId, Optional<uint32> points)
+    {
+        Player* player = handler->GetSession()->GetPlayer();
+        if (!player)
+            return false;
+        
+        if (!action.has_value())
+        {
+            // Show paragon info
+            uint32 available = sParagonSystem->GetAvailableParagonPoints(player);
+            uint32 total = sParagonSystem->GetTotalAllocatedPoints(player);
+            uint32 level = sParagonSystem->GetParagonLevel(player);
+            
+            handler->PSendSysMessage("|cFF00FFFF=== Paragon System ===|r");
+            handler->PSendSysMessage("|cFF00FF00Paragon Level:|r %u", level);
+            handler->PSendSysMessage("|cFF00FF00Available Points:|r %u", available);
+            handler->PSendSysMessage("|cFF00FF00Total Allocated:|r %u", total);
+            handler->PSendSysMessage("|cFFFFFF00Use .ps paragon allocate <statId> <points> to allocate points|r");
+            handler->PSendSysMessage("|cFFFFFF00Use .ps paragon reset to reset all points|r");
+            
+            // Send data to addon
+            sProgressiveSystemsAddon->SendParagonData(player);
+            
+            return true;
+        }
+        
+        if (action.value() == "allocate")
+        {
+            if (!statId.has_value() || !points.has_value())
+            {
+                handler->PSendSysMessage("|cFFFF0000Usage: .ps paragon allocate <statId> <points>|r");
+                return false;
+            }
+            
+            if (sParagonSystem->AllocateParagonPoint(player, statId.value(), points.value()))
+            {
+                handler->PSendSysMessage("|cFF00FF00Paragon points allocated!|r");
+                sProgressiveSystemsAddon->SendParagonData(player);
+            }
+            else
+            {
+                handler->PSendSysMessage("|cFFFF0000Failed to allocate paragon points!|r");
+            }
+        }
+        else if (action.value() == "reset")
+        {
+            if (sParagonSystem->ResetParagonPoints(player))
+            {
+                handler->PSendSysMessage("|cFF00FF00Paragon points reset!|r");
+                sProgressiveSystemsAddon->SendParagonData(player);
+            }
+            else
+            {
+                handler->PSendSysMessage("|cFFFF0000Failed to reset paragon points!|r");
+            }
+        }
+        
+        return true;
+    }
+    
+    // .ps dungeon [start|end|status]
+    static bool HandleDungeonCommand(ChatHandler* handler, Optional<std::string> action)
+    {
+        Player* player = handler->GetSession()->GetPlayer();
+        if (!player)
+            return false;
+        
+        if (!action.has_value())
+        {
+            if (sInfiniteDungeonSystem->IsPlayerInDungeon(player))
+            {
+                auto session = sInfiniteDungeonSystem->GetDungeonSession(player);
+                handler->PSendSysMessage("|cFF00FFFF=== Infinite Dungeon ===|r");
+                handler->PSendSysMessage("|cFF00FF00Floor:|r %u", session.currentFloor);
+                handler->PSendSysMessage("|cFF00FF00Wave:|r %u", session.currentWave);
+                handler->PSendSysMessage("|cFF00FF00Kills:|r %u", session.totalKills);
+            }
+            else
+            {
+                handler->PSendSysMessage("|cFFFFFF00You are not in an Infinite Dungeon.|r");
+                handler->PSendSysMessage("|cFFFFFF00Use .ps dungeon start to begin|r");
+            }
+            return true;
+        }
+        
+        if (action.value() == "start")
+        {
+            if (sInfiniteDungeonSystem->StartDungeon(player))
+            {
+                handler->PSendSysMessage("|cFF00FF00Infinite Dungeon started!|r");
+            }
+            else
+            {
+                handler->PSendSysMessage("|cFFFF0000Failed to start Infinite Dungeon!|r");
+            }
+        }
+        else if (action.value() == "end")
+        {
+            sInfiniteDungeonSystem->EndDungeon(player);
+            handler->PSendSysMessage("|cFF00FF00Infinite Dungeon ended!|r");
+        }
+        
+        return true;
+    }
+    
+    // .ps stats
+    static bool HandleStatsCommand(ChatHandler* handler)
+    {
+        Player* player = handler->GetSession()->GetPlayer();
+        if (!player)
+            return false;
+        
+        handler->PSendSysMessage("|cFF00FFFF=== Stat Breakdown ===|r");
+        
+        // Show key stats
+        float strength = sUnifiedStatSystem->GetStatValue(player, StatType::STRENGTH);
+        float agility = sUnifiedStatSystem->GetStatValue(player, StatType::AGILITY);
+        float stamina = sUnifiedStatSystem->GetStatValue(player, StatType::STAMINA);
+        float intellect = sUnifiedStatSystem->GetStatValue(player, StatType::INTELLECT);
+        float spirit = sUnifiedStatSystem->GetStatValue(player, StatType::SPIRIT);
+        
+        handler->PSendSysMessage("|cFF00FF00Strength:|r %.0f", strength);
+        handler->PSendSysMessage("|cFF00FF00Agility:|r %.0f", agility);
+        handler->PSendSysMessage("|cFF00FF00Stamina:|r %.0f", stamina);
+        handler->PSendSysMessage("|cFF00FF00Intellect:|r %.0f", intellect);
+        handler->PSendSysMessage("|cFF00FF00Spirit:|r %.0f", spirit);
+        
+        handler->PSendSysMessage("|cFFFFFF00Use addon UI for detailed breakdown|r");
+        
+        return true;
+    }
+    
+    // .ps progression
+    static bool HandleProgressionCommand(ChatHandler* handler)
+    {
+        Player* player = handler->GetSession()->GetPlayer();
+        if (!player)
+            return false;
+        
+        uint32 guid = player->GetGUID().GetCounter();
+        QueryResult result = CharacterDatabase.Query(
+            "SELECT total_kills, current_tier, progression_points, prestige_level, total_power_level "
+            "FROM character_progression_unified WHERE guid = {}", guid);
+        
+        if (!result)
+        {
+            handler->PSendSysMessage("|cFFFF0000No progression data found!|r");
+            return false;
+        }
+        
+        Field* fields = result->Fetch();
+        uint32 kills = fields[0].Get<uint32>();
+        uint8 tier = fields[1].Get<uint8>();
+        uint64 points = fields[2].Get<uint64>();
+        uint32 prestige = fields[3].Get<uint32>();
+        uint32 power = fields[4].Get<uint32>();
+        
+        handler->PSendSysMessage("|cFF00FFFF=== Progression Status ===|r");
+        handler->PSendSysMessage("|cFF00FF00Total Kills:|r %u", kills);
+        handler->PSendSysMessage("|cFF00FF00Current Tier:|r %u", tier);
+        handler->PSendSysMessage("|cFF00FF00Progression Points:|r %llu", points);
+        handler->PSendSysMessage("|cFF00FF00Prestige Level:|r %u", prestige);
+        handler->PSendSysMessage("|cFF00FF00Power Level:|r %u", power);
+        
+        // Send data to addon
+        sProgressiveSystemsAddon->SendProgressionData(player);
+        
+        return true;
+    }
 };
 
-void AddSC_ProgressiveSystemsCommands()
+void AddSC_progressive_systems_commands()
 {
     new ProgressiveSystemsCommandScript();
 }
-

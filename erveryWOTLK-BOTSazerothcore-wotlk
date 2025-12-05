@@ -1,22 +1,55 @@
-[1mdiff --git a/modules/mod-transmog/src/cs_transmog.cpp b/modules/mod-transmog/src/cs_transmog.cpp[m
-[1mindex fbd72629c..a87fe3c7d 100644[m
-[1m--- a/modules/mod-transmog/src/cs_transmog.cpp[m
-[1m+++ b/modules/mod-transmog/src/cs_transmog.cpp[m
-[36m@@ -35,14 +35,14 @@[m [mpublic:[m
-     {[m
-         static ChatCommandTable addCollectionTable =[m
-         {[m
-[31m-            { "set", HandleAddTransmogItemSet,    SEC_MODERATOR, Console::Yes },[m
-[31m-            { "",    HandleAddTransmogItem,       SEC_MODERATOR, Console::Yes },[m
-[32m+[m[32m            { "set",  HandleAddTransmogItemSet,    SEC_MODERATOR, Console::Yes },[m
-[32m+[m[32m            { "item", HandleAddTransmogItem,       SEC_MODERATOR, Console::Yes },[m
-         };[m
- [m
-         static ChatCommandTable transmogTable =[m
-         {[m
-             { "add",       addCollectionTable                                        },[m
-[31m-            { "",          HandleDisableTransMogVisual,   SEC_PLAYER,    Console::No },[m
-[32m+[m[32m            { "disable",   HandleDisableTransMogVisual,   SEC_PLAYER,    Console::No },[m
-             { "sync",      HandleSyncTransMogCommand,     SEC_PLAYER,    Console::No },[m
-             { "portable",  HandleTransmogPortableCommand, SEC_PLAYER,    Console::No },[m
-             { "interface", HandleInterfaceOption,         SEC_PLAYER,    Console::No }[m
+warning: in the working copy of 'modules/CMakeFiles/CMakeConfigureLog.yaml', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'modules/CMakeFiles/cmake.check_cache', CRLF will be replaced by LF the next time Git touches it
+M	modules/CMakeCache.txt
+M	modules/CMakeFiles/CMakeConfigureLog.yaml
+M	modules/mod-azerothshard/modules/mod-timewalking/src/scripts/TimeWalking.cpp
+M	modules/mod-azerothshard/src/Playerstats/AzthAchievement.cpp
+M	modules/mod-azerothshard/src/Playerstats/AzthAchievement.h
+M	modules/mod-azerothshard/src/Timewalking/TimeWalking.cpp
+D	modules/mod-progressive-systems/ADDON_INSTANCE_RESET_INTEGRATION.md
+D	modules/mod-progressive-systems/AUTO_SETUP.md
+D	modules/mod-progressive-systems/AUTO_SETUP_COMPLETE.md
+D	modules/mod-progressive-systems/CHANGELOG.md
+D	modules/mod-progressive-systems/COMPLETED.md
+D	modules/mod-progressive-systems/COMPLETE_SOLUTION_SUMMARY.md
+D	modules/mod-progressive-systems/COMPLETE_STATUS.md
+D	modules/mod-progressive-systems/COMPLETION_SUMMARY.md
+D	modules/mod-progressive-systems/FINAL_STATUS.md
+D	modules/mod-progressive-systems/FIXES_APPLIED.md
+D	modules/mod-progressive-systems/INSTALLATION.md
+D	modules/mod-progressive-systems/INSTALLATION_COMPLETE.md
+D	modules/mod-progressive-systems/INSTANCE_RESET_GUIDE.md
+D	modules/mod-progressive-systems/ISSUES_FIXED.md
+D	modules/mod-progressive-systems/ITEM_HOT_RELOAD_GUIDE.md
+D	modules/mod-progressive-systems/ITEM_ICON_GUIDE.md
+D	modules/mod-progressive-systems/MODERNIZATION_PLAN.md
+D	modules/mod-progressive-systems/MY_OPINION_AND_ROADMAP.md
+D	modules/mod-progressive-systems/NEW_SYSTEMS.md
+D	modules/mod-progressive-systems/NEXT_STEPS.md
+D	modules/mod-progressive-systems/PROGRESSIVE_SERVER_CONFIG.conf
+D	modules/mod-progressive-systems/REVIEW_SUMMARY.md
+D	modules/mod-progressive-systems/SERVER_OVERVIEW.md
+D	modules/mod-progressive-systems/SQL_INSTALLATION_ORDER.md
+D	modules/mod-progressive-systems/SUMMARY_NEW_SYSTEMS.md
+D	modules/mod-progressive-systems/data/sql/characters/base/ALL_PROGRESSIVE_SYSTEMS.sql
+M	modules/mod-progressive-systems/data/sql/characters/base/paragon_system.sql
+D	modules/mod-progressive-systems/data/sql/characters/base/progressive_systems.sql
+M	modules/mod-progressive-systems/data/sql/world/base/00_AUTO_SETUP_ALL.sql
+D	modules/mod-progressive-systems/lua_scripts/00_init.lua
+D	modules/mod-progressive-systems/lua_scripts/config.lua
+D	modules/mod-progressive-systems/lua_scripts/daily_challenge_generator.lua
+D	modules/mod-progressive-systems/lua_scripts/daily_challenges_npc.lua
+D	modules/mod-progressive-systems/lua_scripts/infinite_dungeon_npc.lua
+D	modules/mod-progressive-systems/lua_scripts/infinite_dungeon_waves.lua
+D	modules/mod-progressive-systems/lua_scripts/instance_reset_npc.lua
+D	modules/mod-progressive-systems/lua_scripts/item_upgrade_npc.lua
+D	modules/mod-progressive-systems/lua_scripts/main_menu_npc.lua
+D	modules/mod-progressive-systems/lua_scripts/paragon_npc.lua
+D	modules/mod-progressive-systems/lua_scripts/progressive_items_npc.lua
+D	modules/mod-progressive-systems/lua_scripts/progressive_systems_core.lua
+D	modules/mod-progressive-systems/lua_scripts/reward_shop_npc.lua
+M	modules/mod-progressive-systems/src/ProgressiveSystems.cpp
+M	modules/mod-progressive-systems/src/ProgressiveSystems.h
+M	modules/mod-progressive-systems/src/ProgressiveSystemsCommands.cpp
+M	modules/mod-progressive-systems/src/ProgressiveSystemsCommands.h
+M	modules/mod-progressive-systems/src/ProgressiveSystemsLoader.cpp

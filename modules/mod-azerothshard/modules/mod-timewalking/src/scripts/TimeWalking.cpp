@@ -197,7 +197,7 @@ public:
 
             azthAchievementList[azthAchievement_field[1].GetUInt32()] = AzthAchievement(
                 // achievement                                criteria                           Points                                 category                           parentCategory                    difficulty
-                azthAchievement_field[0].GetUInt32(), azthAchievement_field[1].GetUInt32(), azthAchievement_field[2].GetUInt32(), azthAchievement_field[3].GetUInt32(), azthAchievement_field[4].GetUInt32(), azthAchievement_field[5].GetUInt32(),
+                azthAchievement_field[0].GetUInt32(), azthAchievement_field[1].GetUInt32(), azthAchievement_field[2].GetUInt32(), azthAchievement_field[3].GetUInt32(), azthAchievement_field[4].GetInt32(), azthAchievement_field[5].GetFloat(),
                 // levelMax                                 levelMin                                    level                              originalPoints                        Name                              Description
                 azthAchievement_field[6].GetUInt32(), azthAchievement_field[7].GetUInt32(), azthAchievement_field[8].GetUInt32(), azthAchievement_field[9].GetUInt32(), azthAchievement_field[10].GetString(), azthAchievement_field[11].GetString(),
                 //reward                                        rewardCount                             killcredit                      specialLevelReq                         reqDimension

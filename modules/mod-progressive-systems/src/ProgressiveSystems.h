@@ -90,6 +90,9 @@ public:
     uint32 GetCurrentSeason();
     void ResetSeason(uint32 newSeasonId);
     
+    // Creature kill handling
+    void OnCreatureKilled(Player* player, Creature* creature);
+    
     // Addon data getters
     uint32 GetTotalKills(Player* player);
     uint8 GetCurrentProgressionTier(Player* player);

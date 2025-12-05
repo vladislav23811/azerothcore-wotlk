@@ -7,6 +7,14 @@
 #include "ProgressiveSystemsDatabase.h"
 #include "DifficultyScaling.h"
 #include "ProgressiveSystemsAddonScript.h"
+#include "ProgressiveSystemsNPCs.h"
+#include "ItemUpgradeSystem.h"
+#include "ParagonSystem.h"
+#include "InfiniteDungeonSystem.h"
+#include "VisualEnchantmentSystem.h"
+#include "UnifiedStatSystem.h"
+#include "ProgressiveSystemsCommands.h"
+#include "ProgressiveSystemsPlayerScript.h"
 #include "ScriptMgr.h"
 #include "World.h"
 #include "Log.h"
@@ -15,7 +23,9 @@
 // Forward declarations
 void AddSC_ProgressiveSystemsDifficultyScaling();
 void AddSC_ProgressiveSystemsAddonScript();
-void AddSC_ProgressiveSystemsCommands();
+void AddSC_progressive_systems_commands();
+void AddSC_progressive_systems_npcs();
+void AddSC_progressive_systems_player_script();
 
 // Configuration validation
 static bool ValidateProgressiveSystemsConfig()
@@ -93,8 +103,23 @@ void Addmod_progressive_systemsScripts()
     // Validate configuration first
     ValidateProgressiveSystemsConfig();
     
+    // Initialize core systems
+    LOG_INFO("module", "Initializing Progressive Systems subsystems...");
+    
+    sUnifiedStatSystem->Initialize();
+    sItemUpgradeSystem->Initialize();
+    sParagonSystem->Initialize();
+    sInfiniteDungeonSystem->Initialize();
+    sVisualEnchantmentSystem->Initialize();
+    
+    LOG_INFO("module", "Progressive Systems subsystems initialized.");
+    
     // Register scripts
     AddSC_ProgressiveSystemsDifficultyScaling();
-    AddSC_ProgressiveSystemsAddonScript(); // Add addon message handler script
-    AddSC_ProgressiveSystemsCommands();    // Add debug commands
+    AddSC_ProgressiveSystemsAddonScript();        // Addon message handler
+    AddSC_progressive_systems_commands();        // Commands (.ps upgrade, etc.)
+    AddSC_progressive_systems_npcs();            // NPC scripts
+    AddSC_progressive_systems_player_script();    // Player event hooks
+    
+    LOG_INFO("module", "Progressive Systems Module: All scripts registered successfully!");
 }

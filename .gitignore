@@ -85,6 +85,20 @@ cmake-build-*/*
 coverage-report/
 .vs
 
+#
+# CMake build artifacts
+#
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.vcxproj
+*.vcxproj.filters
+*.sln
+*.dir/
+_deps/
+revision.h
+x64/
+
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json

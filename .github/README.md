@@ -686,11 +686,11 @@ For detailed configuration guides, see:
 - [MODULE_CONFIGURATION_GUIDE.md](../modules/MODULE_CONFIGURATION_GUIDE.md) - Module configuration guide
 
 ### Technical Reports
-- [SERVER_ARCHITECTURE_ANALYSIS.md](../docs/SERVER_ARCHITECTURE_ANALYSIS.md) - Server architecture overview
-- [SPELL_SYSTEM_ANALYSIS.md](../docs/SPELL_SYSTEM_ANALYSIS.md) - Spell system implementation details
-- [PLAYER_SYSTEM_ANALYSIS.md](../docs/PLAYER_SYSTEM_ANALYSIS.md) - Player system implementation details
-- [PERFORMANCE_ANALYSIS_REPORT.md](../docs/PERFORMANCE_ANALYSIS_REPORT.md) - Performance analysis and optimization
-- [SECURITY_AUDIT_REPORT.md](../docs/SECURITY_AUDIT_REPORT.md) - Security audit findings
+- [SERVER_ARCHITECTURE_ANALYSIS.md](../session-logs/SERVER_ARCHITECTURE_ANALYSIS.md) - Server architecture overview
+- [SPELL_SYSTEM_ANALYSIS.md](../session-logs/SPELL_SYSTEM_ANALYSIS.md) - Spell system implementation details
+- [PLAYER_SYSTEM_ANALYSIS.md](../session-logs/PLAYER_SYSTEM_ANALYSIS.md) - Player system implementation details
+- [PERFORMANCE_ANALYSIS_REPORT.md](../session-logs/PERFORMANCE_ANALYSIS_REPORT.md) - Performance analysis and optimization
+- [SECURITY_AUDIT_REPORT.md](../session-logs/SECURITY_AUDIT_REPORT.md) - Security audit findings
 
 ## 🤝 Contributing
 

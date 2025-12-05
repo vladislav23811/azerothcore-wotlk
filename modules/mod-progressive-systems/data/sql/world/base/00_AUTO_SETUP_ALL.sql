@@ -310,25 +310,9 @@ INSERT IGNORE INTO `paragon_stat_definitions` (`stat_type`, `stat_name`, `stat_d
 (3, 'Resource Regeneration', 'Increases mana/energy/rage regeneration', 0, 50, 0.5, 5);
 
 -- ============================================================
--- 9. NPC CREATURE TEMPLATES
+-- NOTE: NPC CREATURE TEMPLATES
 -- ============================================================
--- Note: These NPCs need to be created in creature_template
--- They are included here for reference, but should be added manually
--- or via a separate SQL file that runs after base setup
-
--- Main Menu NPC (190000)
-INSERT IGNORE INTO `creature_template` (`entry`, `name`, `subname`, `IconName`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `faction`, `npcflag`, `speed_walk`, `speed_run`, `scale`, `rank`, `dmgschool`, `BaseAttackTime`, `RangeAttackTime`, `BaseVariance`, `RangeVariance`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `type`, `type_flags`, `lootid`, `pickpocketloot`, `skinloot`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `HoverHeight`, `HealthModifier`, `ManaModifier`, `ArmorModifier`, `ExperienceModifier`, `RacialLeader`, `movementId`, `RegenHealth`, `mechanic_immune_mask`, `spell_school_immune_mask`, `flags_extra`, `ScriptName`, `VerifiedBuild`) VALUES
-(190000, 'Progression Master', 'Progressive Systems', 'Speak', 0, 80, 80, 0, 35, 1, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
-(190001, 'Item Upgrader', 'Upgrade Your Items', 'Speak', 0, 80, 80, 0, 35, 128, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
-(190002, 'Prestige Master', 'Reset for Power', 'Speak', 0, 80, 80, 0, 35, 1, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
-(190003, 'Difficulty Selector', 'Choose Your Challenge', 'Speak', 0, 80, 80, 0, 35, 1, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
-(190004, 'Reward Shop', 'Spend Your Points', 'Speak', 0, 80, 80, 0, 35, 128, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
-(190005, 'Infinite Dungeon', 'Endless Challenge', 'Speak', 0, 80, 80, 0, 35, 1, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
-(190006, 'Progressive Items', 'Tiered Gear Vendor', 'Speak', 0, 80, 80, 0, 35, 128, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
-(190007, 'Daily Challenges', 'Daily & Weekly Tasks', 'Speak', 0, 80, 80, 0, 35, 1, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0),
-(190020, 'Paragon Master', 'Unlimited Progression', 'Speak', 0, 80, 80, 0, 35, 1, 1, 1.14286, 1, 0, 0, 2000, 2000, 1, 1, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, '', 0);
-
--- ============================================================
--- COMPLETE!
+-- NPCs are defined in PROGRESSIVE_NPCS_COMPLETE_SETUP.sql
+-- This file only contains table definitions and data
 -- ============================================================
 
