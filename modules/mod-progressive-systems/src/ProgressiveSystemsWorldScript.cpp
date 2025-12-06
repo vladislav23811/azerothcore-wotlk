@@ -29,22 +29,25 @@ public:
             // Reload custom items and generate DBC entries
             sDBCGenerator->ReloadCustomItems();
             
+            // Get paths from config
+            std::string dbcDir = sConfigMgr->GetOption<std::string>("ProgressiveSystems.DBC.OutputDir", "dbc/custom");
+            std::string outputMPQ = sConfigMgr->GetOption<std::string>("ProgressiveSystems.DBC.MPQOutput", "patches/patch-Z.MPQ");
+            
             // Write DBC files
-            std::string dbcDir = "dbc/custom";
             if (sDBCGenerator->WriteDBCFiles(dbcDir))
             {
                 LOG_INFO("module", "Progressive Systems: DBC files written successfully to {}", dbcDir);
                 
                 // Generate MPQ patch (optional - can be done manually)
-                std::string outputMPQ = "patches/patch-Z.MPQ";
                 if (sDBCGenerator->GenerateMPQPatch(dbcDir, outputMPQ))
                 {
                     LOG_INFO("module", "Progressive Systems: MPQ patch generated: {}", outputMPQ);
-                    LOG_INFO("module", "Progressive Systems: Players can download patch from patches/ folder");
+                    LOG_INFO("module", "Progressive Systems: Patch ready for client distribution");
                 }
                 else
                 {
-                    LOG_WARN("module", "Progressive Systems: MPQ patch generation failed (this is optional - install pympq: pip install pympq)");
+                    LOG_INFO("module", "Progressive Systems: MPQ generation skipped (install pympq: pip install pympq)");
+                    LOG_INFO("module", "Progressive Systems: DBC CSV files available at: {}", dbcDir);
                 }
             }
             else

@@ -20,6 +20,7 @@
 #include "ProgressiveSystemsPlayerScript.h"
 #include "ProgressiveSystemsWorldScript.h"
 #include "ProgressiveSystemsMapScript.h"
+#include "DBCGenerator.h"
 #include "ScriptMgr.h"
 #include "World.h"
 #include "Log.h"
@@ -152,6 +153,9 @@ void Addmod_progressive_systemsScripts()
     sRewardDistributionSystem->Initialize();
     sDailyChallengeSystem->Initialize();
     sSeasonalSystem->Initialize();
+    
+    // Initialize DBC Generator (for auto-generating client patches)
+    sDBCGenerator->Initialize();
     
     LOG_INFO("module", "Progressive Systems subsystems initialized.");
     

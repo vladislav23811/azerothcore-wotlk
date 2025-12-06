@@ -15,3 +15,6 @@ ProgressiveSystemsData.lua
 InstanceResetUI.lua
 ProgressiveSystemsParagon.lua
 ProgressiveSystemsStats.lua
+
+## Optional: Auto-Patch System
+# ProgressiveSystemsAutoPatch.lua

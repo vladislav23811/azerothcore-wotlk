@@ -25,8 +25,10 @@ bool DBCGenerator::IsCustomItem(ItemTemplate const* item)
     if (!item)
         return false;
     
-    // Method 1: Entry range (custom items start at 99990)
-    if (item->ItemId >= 99990)
+    // Method 1: Entry range (configurable, default: 999000)
+    // This avoids conflicts with any existing items
+    uint32 customItemThreshold = sConfigMgr->GetOption<uint32>("ProgressiveSystems.DBC.CustomItemThreshold", 999000);
+    if (item->ItemId >= customItemThreshold)
         return true;
     
     // Method 2: Check custom_weapon_templates table
@@ -139,6 +141,14 @@ bool DBCGenerator::WriteDBCFiles(const std::string& outputDir)
 
 bool DBCGenerator::GenerateMPQPatch(const std::string& dbcDir, const std::string& outputMPQ)
 {
+    // Check if auto-generation is enabled
+    bool autoGenerate = sConfigMgr->GetOption<bool>("ProgressiveSystems.DBC.AutoGenerateMPQ", true);
+    if (!autoGenerate)
+    {
+        LOG_INFO("module", "DBCGenerator: MPQ auto-generation disabled in config");
+        return false;
+    }
+    
     // First, write DBC files
     if (!WriteDBCFiles(dbcDir))
     {
@@ -149,7 +159,20 @@ bool DBCGenerator::GenerateMPQPatch(const std::string& dbcDir, const std::string
     // Create MPQ using external tool (Python script)
     // This is simpler than implementing MPQ creation in C++
     std::string scriptPath = "tools/generate_patch.py";
-    std::string command = "python " + scriptPath + " " + dbcDir + " " + outputMPQ;
+    
+    // Get absolute paths
+    std::filesystem::path dbcPath(dbcDir);
+    std::filesystem::path mpqPath(outputMPQ);
+    
+    if (!dbcPath.is_absolute())
+        dbcPath = std::filesystem::current_path() / dbcPath;
+    if (!mpqPath.is_absolute())
+        mpqPath = std::filesystem::current_path() / mpqPath;
+    
+    // Create output directory if needed
+    std::filesystem::create_directories(mpqPath.parent_path());
+    
+    std::string command = "python \"" + scriptPath + "\" \"" + dbcPath.string() + "\" \"" + mpqPath.string() + "\"";
     
     LOG_INFO("module", "DBCGenerator: Generating MPQ patch via: {}", command);
     
@@ -157,7 +180,7 @@ bool DBCGenerator::GenerateMPQPatch(const std::string& dbcDir, const std::string
     
     if (result != 0)
     {
-        LOG_ERROR("module", "DBCGenerator: Failed to generate MPQ patch");
+        LOG_WARN("module", "DBCGenerator: Failed to generate MPQ patch (install pympq: pip install pympq)");
         return false;
     }
     
@@ -181,11 +204,15 @@ void DBCGenerator::ReloadCustomItems()
     // We'll process items that are already loaded
     // This is called after ObjectMgr::LoadItemTemplates()
     
+    // Get configurable threshold
+    uint32 customItemThreshold = sConfigMgr->GetOption<uint32>("ProgressiveSystems.DBC.CustomItemThreshold", 999000);
+    
     // Query all custom items from database
     QueryResult result = WorldDatabase.Query(
-        "SELECT entry FROM item_template WHERE entry >= 99990 "
+        "SELECT entry FROM item_template WHERE entry >= {} "
         "UNION "
-        "SELECT custom_entry FROM custom_weapon_templates WHERE custom_entry IS NOT NULL");
+        "SELECT custom_entry FROM custom_weapon_templates WHERE custom_entry IS NOT NULL",
+        customItemThreshold);
     
     if (!result)
     {
