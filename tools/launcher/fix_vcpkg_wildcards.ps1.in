@@ -1,0 +1,8 @@
+# Fix vcpkg wildcard patterns in .vcxproj file
+$vcxproj = '@VCXPROJ_FILE@'
+if (Test-Path $vcxproj) {
+    $content = Get-Content $vcxproj
+    $filtered = $content | Where-Object { $_ -notmatch 'libcrypto-\*' -and $_ -notmatch 'libssl-\*' }
+    $filtered | Set-Content $vcxproj
+}
+

@@ -261,15 +261,11 @@ if(CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}" AND WIN32)
     set(VCXPROJ_FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj")
     # Use file(GENERATE) to create a script that runs after configure
     # This ensures the fix runs every time CMake configures
-    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/fix_vcpkg_wildcards_$<CONFIG>.ps1"
-        CONTENT "# Fix vcpkg wildcard patterns in .vcxproj file
-$$vcxproj = '${VCXPROJ_FILE}'
-if (Test-Path $$vcxproj) {
-    $$content = Get-Content $$vcxproj
-    $$filtered = $$content | Where-Object { $$_ -notmatch 'libcrypto-\\*' -and $$_ -notmatch 'libssl-\\*' }
-    $$filtered | Set-Content $$vcxproj
-}
-"
+    # Generate PowerShell script to fix vcpkg wildcards using template file
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/fix_vcpkg_wildcards.ps1.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/fix_vcpkg_wildcards_$<CONFIG>.ps1"
+        @ONLY
     )
     # Add a custom command that runs the fix script
     # This will be executed after CMake generates the project
