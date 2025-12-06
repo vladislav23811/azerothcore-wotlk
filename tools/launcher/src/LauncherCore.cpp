@@ -20,10 +20,6 @@ LauncherCore::LauncherCore(QObject *parent)
     setupConnections();
 }
 
-LauncherCore::~LauncherCore()
-{
-}
-
 void LauncherCore::setupConnections()
 {
     connect(m_downloadManager, &DownloadManager::downloadProgress, 
@@ -32,6 +28,10 @@ void LauncherCore::setupConnections()
             this, &LauncherCore::onDownloadFinished);
     connect(m_downloadManager, &DownloadManager::downloadError, 
             this, &LauncherCore::onDownloadError);
+}
+
+LauncherCore::~LauncherCore()
+{
 }
 
 void LauncherCore::loadConfig()

@@ -3,6 +3,7 @@
 #include <QFileDialog>
 #include <QSettings>
 #include <QTimer>
+#include <QTime>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
