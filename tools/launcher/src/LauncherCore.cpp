@@ -343,6 +343,24 @@ void LauncherCore::installGame()
 {
     emit statusUpdated("Starting game installation from server folder...");
     
+    // Check if game path is set
+    if (m_gamePath.isEmpty()) {
+        emit errorOccurred("Game installation path not set. Please select a folder.");
+        emit statusUpdated("Installation cancelled: No path selected");
+        return;
+    }
+    
+    // Create installation directory if it doesn't exist
+    QDir installDir(m_gamePath);
+    if (!installDir.exists()) {
+        if (!installDir.mkpath(".")) {
+            emit errorOccurred(QString("Failed to create installation directory: %1").arg(m_gamePath));
+            emit statusUpdated("Installation failed: Cannot create directory");
+            return;
+        }
+        emit statusUpdated(QString("Created installation directory: %1").arg(m_gamePath));
+    }
+    
     // Check if game is partially installed
     if (isGameInstalled() && !needsFullInstall()) {
         // Just download patches
@@ -350,6 +368,7 @@ void LauncherCore::installGame()
         downloadPatchesOnly();
     } else {
         // Full install
+        emit statusUpdated(QString("Installing to: %1").arg(m_gamePath));
         downloadGameFromFolder();
     }
 }
