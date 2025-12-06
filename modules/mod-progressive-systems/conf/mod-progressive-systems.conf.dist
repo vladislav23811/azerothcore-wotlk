@@ -161,21 +161,24 @@ ProgressiveSystems.Currency.ProgressionToken = 99997
 ProgressiveSystems.DBC.CustomItemThreshold = 999000
 
 # DBC Output Directory
-# Where to write generated DBC files
+# Where to write generated DBC files (CSV format)
 ProgressiveSystems.DBC.OutputDir = "dbc/custom"
 
-# MPQ Patch Output
-# Where to generate MPQ patch file
+# MPQ Patch Output (fallback if WebServerPath not set)
+# Where to generate MPQ patch file if WebServerPath is empty
+# If WebServerPath is set, patch is generated directly there instead
 ProgressiveSystems.DBC.MPQOutput = "patches/patch-Z.MPQ"
 
 # Auto-Generate MPQ
 # Automatically create MPQ patch on server startup (requires pympq)
 ProgressiveSystems.DBC.AutoGenerateMPQ = true
 
-# Web Server Path (for launcher auto-updates)
-# If set, patch will be copied to this path for web server distribution
+# Web Server Path (RECOMMENDED - for launcher auto-updates)
+# If set, patch will be generated DIRECTLY to this path (more efficient)
 # Example: "C:/xampp/htdocs" or "C:/nginx/html"
-# Leave empty to disable web server copying
-# This allows launcher to download patches automatically
-ProgressiveSystems.DBC.WebServerPath = ""
+# Patch will be generated to: {WebServerPath}/patches/patch-Z.MPQ
+# Also creates: {WebServerPath}/patches/latest/patch-Z.MPQ (for launcher)
+# Also creates: {WebServerPath}/patches/version.txt (for version checking)
+# Leave empty to use MPQOutput location instead
+ProgressiveSystems.DBC.WebServerPath = "C:/xampp/htdocs"
 

@@ -35,39 +35,51 @@ public:
             
             // Get paths from config
             std::string dbcDir = sConfigMgr->GetOption<std::string>("ProgressiveSystems.DBC.OutputDir", "dbc/custom");
-            std::string outputMPQ = sConfigMgr->GetOption<std::string>("ProgressiveSystems.DBC.MPQOutput", "patches/patch-Z.MPQ");
             std::string webServerPath = sConfigMgr->GetOption<std::string>("ProgressiveSystems.DBC.WebServerPath", "");
+            
+            // Determine where to generate the patch
+            // If web server path is configured, generate directly there (more efficient)
+            // Otherwise, use default location
+            std::string outputMPQ;
+            if (!webServerPath.empty())
+            {
+                // Generate directly to web server location
+                std::string webPatchesDir = webServerPath + "/patches";
+                std::filesystem::create_directories(webPatchesDir);
+                outputMPQ = webPatchesDir + "/patch-Z.MPQ";
+                LOG_INFO("module", "Progressive Systems: Generating patch directly to web server: {}", outputMPQ);
+            }
+            else
+            {
+                // Use default location
+                outputMPQ = sConfigMgr->GetOption<std::string>("ProgressiveSystems.DBC.MPQOutput", "patches/patch-Z.MPQ");
+                LOG_INFO("module", "Progressive Systems: Generating patch to default location: {}", outputMPQ);
+            }
             
             // Write DBC files
             if (sDBCGenerator->WriteDBCFiles(dbcDir))
             {
                 LOG_INFO("module", "Progressive Systems: DBC files written successfully to {}", dbcDir);
                 
-                // Generate MPQ patch (optional - can be done manually)
+                // Generate MPQ patch directly to web server (if configured) or default location
                 if (sDBCGenerator->GenerateMPQPatch(dbcDir, outputMPQ))
                 {
                     LOG_INFO("module", "Progressive Systems: MPQ patch generated: {}", outputMPQ);
                     
-                    // Copy to web server AFTER MPQ is generated
+                    // If generated to web server, also create latest/ symlink and update version
                     if (!webServerPath.empty() && std::filesystem::exists(outputMPQ))
                     {
-                        // Create patches directory
-                        std::string webPatchesDir = webServerPath + "/patches";
-                        std::string webLatestDir = webPatchesDir + "/latest";
+                        // Create latest directory
+                        std::string webLatestDir = webServerPath + "/patches/latest";
                         std::filesystem::create_directories(webLatestDir);
                         
-                        // Copy patch to web server
-                        std::string webPatchPath = webPatchesDir + "/patch-Z.MPQ";
-                        std::filesystem::copy_file(outputMPQ, webPatchPath, std::filesystem::copy_options::overwrite_existing);
-                        LOG_INFO("module", "Progressive Systems: Patch copied to web server: {}", webPatchPath);
-                        
-                        // Also copy to latest/ folder for launcher
+                        // Copy to latest/ folder for launcher (or create symlink on Linux)
                         std::string webLatestPath = webLatestDir + "/patch-Z.MPQ";
                         std::filesystem::copy_file(outputMPQ, webLatestPath, std::filesystem::copy_options::overwrite_existing);
-                        LOG_INFO("module", "Progressive Systems: Patch copied to latest folder: {}", webLatestPath);
+                        LOG_INFO("module", "Progressive Systems: Patch available at: {}", webLatestPath);
                         
                         // Update version.txt
-                        std::string versionPath = webPatchesDir + "/version.txt";
+                        std::string versionPath = webServerPath + "/patches/version.txt";
                         std::ofstream versionFile(versionPath);
                         if (versionFile.is_open())
                         {
