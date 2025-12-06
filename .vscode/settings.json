@@ -147,5 +147,8 @@
     "cmake.buildArgs":  [
                             "--config",
                             "RelWithDebInfo"
-                        ]
+                        ],
+    "cmake.cleanBeforeRebuild": false,
+    "cmake.buildBeforeRun": true,
+    "cmake.parallelJobs": 8
 }
