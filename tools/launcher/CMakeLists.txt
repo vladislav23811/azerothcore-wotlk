@@ -2,15 +2,16 @@ cmake_minimum_required(VERSION 3.15)
 
 # Check if this is being built as a subdirectory (from main CMakeLists.txt)
 # or standalone (from tools/launcher directory)
-get_directory_property(IS_SUBDIRECTORY PARENT_DIRECTORY)
-
-if(IS_SUBDIRECTORY)
-    # Being built as part of main project
-    project(WoWLauncher)
-else()
+# If CMAKE_SOURCE_DIR != CMAKE_CURRENT_SOURCE_DIR, we're a subdirectory
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     # Being built standalone
-    project(WoWLauncher)
+    set(IS_STANDALONE_BUILD TRUE)
+else()
+    # Being built as part of main project
+    set(IS_STANDALONE_BUILD FALSE)
 endif()
+
+project(WoWLauncher)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -27,7 +28,7 @@ else()
         set(QT_VERSION_MAJOR 5)
         message(STATUS "Launcher: Using Qt5")
     else()
-        if(IS_SUBDIRECTORY)
+        if(NOT IS_STANDALONE_BUILD)
             # If built as subdirectory and Qt not found, just skip (don't fail main build)
             message(WARNING "Launcher: Qt not found. Skipping launcher build.")
             message(WARNING "Launcher: Install Qt5 or Qt6 to build the launcher.")
@@ -111,7 +112,7 @@ if(WIN32)
 endif()
 
 # Set output directory to match server build structure when built as subdirectory
-if(IS_SUBDIRECTORY)
+if(NOT IS_STANDALONE_BUILD)
     # When built with server, put launcher in bin/RelWithDebInfo (or Release/Debug based on config)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>"
