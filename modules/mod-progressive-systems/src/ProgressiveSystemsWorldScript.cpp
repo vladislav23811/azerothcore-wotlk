@@ -36,28 +36,7 @@ public:
             // Get paths from config
             std::string dbcDir = sConfigMgr->GetOption<std::string>("ProgressiveSystems.DBC.OutputDir", "dbc/custom");
             std::string outputMPQ = sConfigMgr->GetOption<std::string>("ProgressiveSystems.DBC.MPQOutput", "patches/patch-Z.MPQ");
-            
-            // Also copy to web server if configured
             std::string webServerPath = sConfigMgr->GetOption<std::string>("ProgressiveSystems.DBC.WebServerPath", "");
-            if (!webServerPath.empty() && std::filesystem::exists(outputMPQ))
-            {
-                std::string webPatchPath = webServerPath + "/patches/patch-Z.MPQ";
-                std::filesystem::create_directories(std::filesystem::path(webPatchPath).parent_path());
-                std::filesystem::copy_file(outputMPQ, webPatchPath, std::filesystem::copy_options::overwrite_existing);
-                LOG_INFO("module", "Progressive Systems: Patch copied to web server: {}", webPatchPath);
-                
-                // Update version.txt
-                std::string versionPath = webServerPath + "/patches/version.txt";
-                std::ofstream versionFile(versionPath);
-                if (versionFile.is_open())
-                {
-                    auto now = std::chrono::system_clock::now();
-                    auto time = std::chrono::system_clock::to_time_t(now);
-                    versionFile << time;
-                    versionFile.close();
-                    LOG_INFO("module", "Progressive Systems: Version file updated: {}", versionPath);
-                }
-            }
             
             // Write DBC files
             if (sDBCGenerator->WriteDBCFiles(dbcDir))
@@ -68,6 +47,38 @@ public:
                 if (sDBCGenerator->GenerateMPQPatch(dbcDir, outputMPQ))
                 {
                     LOG_INFO("module", "Progressive Systems: MPQ patch generated: {}", outputMPQ);
+                    
+                    // Copy to web server AFTER MPQ is generated
+                    if (!webServerPath.empty() && std::filesystem::exists(outputMPQ))
+                    {
+                        // Create patches directory
+                        std::string webPatchesDir = webServerPath + "/patches";
+                        std::string webLatestDir = webPatchesDir + "/latest";
+                        std::filesystem::create_directories(webLatestDir);
+                        
+                        // Copy patch to web server
+                        std::string webPatchPath = webPatchesDir + "/patch-Z.MPQ";
+                        std::filesystem::copy_file(outputMPQ, webPatchPath, std::filesystem::copy_options::overwrite_existing);
+                        LOG_INFO("module", "Progressive Systems: Patch copied to web server: {}", webPatchPath);
+                        
+                        // Also copy to latest/ folder for launcher
+                        std::string webLatestPath = webLatestDir + "/patch-Z.MPQ";
+                        std::filesystem::copy_file(outputMPQ, webLatestPath, std::filesystem::copy_options::overwrite_existing);
+                        LOG_INFO("module", "Progressive Systems: Patch copied to latest folder: {}", webLatestPath);
+                        
+                        // Update version.txt
+                        std::string versionPath = webPatchesDir + "/version.txt";
+                        std::ofstream versionFile(versionPath);
+                        if (versionFile.is_open())
+                        {
+                            auto now = std::chrono::system_clock::now();
+                            auto time = std::chrono::system_clock::to_time_t(now);
+                            versionFile << time;
+                            versionFile.close();
+                            LOG_INFO("module", "Progressive Systems: Version file updated: {}", versionPath);
+                        }
+                    }
+                    
                     LOG_INFO("module", "Progressive Systems: Patch ready for client distribution");
                 }
                 else
