@@ -18,6 +18,31 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find Qt6 or Qt5
 # Try Qt6 first, then Qt5
+# If vcpkg is being used, try to find Qt5 from vcpkg first
+if(CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}")
+    # vcpkg toolchain is being used, try to find Qt5 in vcpkg
+    set(VCPKG_ROOT "")
+    # Try common vcpkg locations
+    if(EXISTS "C:/vcpkg")
+        set(VCPKG_ROOT "C:/vcpkg")
+    elseif(DEFINED ENV{VCPKG_ROOT})
+        set(VCPKG_ROOT "$ENV{VCPKG_ROOT}")
+    elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../../vcpkg")
+        set(VCPKG_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../vcpkg")
+    endif()
+    
+    if(VCPKG_ROOT)
+        # Qt5Config.cmake is typically in share/cmake/Qt5/ (not share/qt5/)
+        if(EXISTS "${VCPKG_ROOT}/installed/x64-windows/share/cmake/Qt5/Qt5Config.cmake")
+            set(Qt5_DIR "${VCPKG_ROOT}/installed/x64-windows/share/cmake/Qt5")
+            message(STATUS "Launcher: Found Qt5 in vcpkg at ${Qt5_DIR}")
+        elseif(EXISTS "${VCPKG_ROOT}/installed/x64-windows/share/qt5/Qt5Config.cmake")
+            set(Qt5_DIR "${VCPKG_ROOT}/installed/x64-windows/share/qt5")
+            message(STATUS "Launcher: Found Qt5 in vcpkg at ${Qt5_DIR}")
+        endif()
+    endif()
+endif()
+
 find_package(Qt6 QUIET COMPONENTS Core Widgets Network)
 if(Qt6_FOUND)
     set(QT_VERSION_MAJOR 6)
@@ -94,6 +119,12 @@ set(HEADERS
 
 # Create executable
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+
+# Enable Qt MOC (Meta-Object Compiler) for Q_OBJECT macros
+# AUTOMOC automatically processes Q_OBJECT macros
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    AUTOMOC ON
+)
 
 # Link Qt libraries
 if(QT_VERSION_MAJOR EQUAL 6)

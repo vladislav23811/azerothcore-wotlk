@@ -49,19 +49,20 @@ void DownloadManager::downloadFile(const QString &url, const QString &destinatio
     m_currentDestination = destination;
     
     // Create network request
-    QNetworkRequest request(QUrl(url));
+    QUrl urlObj(url);
+    QNetworkRequest request(urlObj);
     request.setRawHeader("User-Agent", "WoW-Launcher/1.0");
     
     // Start download
     m_currentReply = m_networkManager->get(request);
     
-    connect(m_currentReply, &QNetworkReply::downloadProgress, 
+    QObject::connect(m_currentReply, &QNetworkReply::downloadProgress, 
             this, &DownloadManager::onDownloadProgress);
-    connect(m_currentReply, &QNetworkReply::finished, 
+    QObject::connect(m_currentReply, &QNetworkReply::finished, 
             this, &DownloadManager::onDownloadFinished);
-    connect(m_currentReply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error),
+    QObject::connect(m_currentReply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error),
             this, &DownloadManager::onDownloadError);
-    connect(m_currentReply, &QNetworkReply::readyRead, 
+    QObject::connect(m_currentReply, &QNetworkReply::readyRead, 
             this, [this]() {
                 if (m_outputFile && m_currentReply) {
                     m_outputFile->write(m_currentReply->readAll());

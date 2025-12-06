@@ -14,6 +14,7 @@
 #include <QEventLoop>
 #include <QTimer>
 #include <QStringList>
+#include <QUrl>
 
 LauncherCore::LauncherCore(QObject *parent)
     : QObject(parent)
@@ -28,11 +29,11 @@ LauncherCore::LauncherCore(QObject *parent)
 
 void LauncherCore::setupConnections()
 {
-    connect(m_downloadManager, &DownloadManager::downloadProgress, 
+    QObject::connect(m_downloadManager, &DownloadManager::downloadProgress, 
             this, &LauncherCore::onDownloadProgress);
-    connect(m_downloadManager, &DownloadManager::downloadFinished, 
+    QObject::connect(m_downloadManager, &DownloadManager::downloadFinished, 
             this, &LauncherCore::onDownloadFinished);
-    connect(m_downloadManager, &DownloadManager::downloadError, 
+    QObject::connect(m_downloadManager, &DownloadManager::downloadError, 
             this, &LauncherCore::onDownloadError);
 }
 
@@ -210,7 +211,8 @@ QString LauncherCore::getServerPatchVersion() const
 {
     // Make synchronous HTTP request to get patch version
     QNetworkAccessManager manager;
-    QNetworkRequest request(QUrl(m_patchVersionUrl));
+    QUrl url(m_patchVersionUrl);
+    QNetworkRequest request(url);
     request.setRawHeader("User-Agent", "WoW-Launcher/1.0");
     
     QNetworkReply *reply = manager.get(request);
@@ -415,12 +417,13 @@ void LauncherCore::downloadPatchesOnly()
         emit statusUpdated(QString("Downloading patch: %1").arg(file));
         
         // Download file
-        QNetworkRequest fileRequest(QUrl(fileUrl));
+        QUrl fileUrlObj(fileUrl);
+        QNetworkRequest fileRequest(fileUrlObj);
         fileRequest.setRawHeader("User-Agent", "WoW-Launcher/1.0");
         QNetworkReply *fileReply = manager.get(fileRequest);
         
         QEventLoop fileLoop;
-        connect(fileReply, &QNetworkReply::finished, &fileLoop, &QEventLoop::quit);
+        QObject::connect(fileReply, &QNetworkReply::finished, &fileLoop, &QEventLoop::quit);
         fileLoop.exec();
         
         if (fileReply->error() == QNetworkReply::NoError) {
@@ -481,12 +484,13 @@ void LauncherCore::downloadGameFromFolder()
     // First, try to get file list from server
     QString fileListUrl = gameFolderUrl + "filelist.txt";
     QNetworkAccessManager manager;
-    QNetworkRequest request(QUrl(fileListUrl));
+    QUrl fileListUrlObj(fileListUrl);
+    QNetworkRequest request(fileListUrlObj);
     request.setRawHeader("User-Agent", "WoW-Launcher/1.0");
     
     QNetworkReply *reply = manager.get(request);
     QEventLoop loop;
-    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     QTimer::singleShot(10000, &loop, &QEventLoop::quit); // 10 second timeout
     loop.exec();
     
@@ -567,12 +571,13 @@ void LauncherCore::downloadGameFromFolder()
         emit statusUpdated(QString("Downloading: %1").arg(file));
         
         // Download file
-        QNetworkRequest fileRequest(QUrl(fileUrl));
+        QUrl fileUrlObj(fileUrl);
+        QNetworkRequest fileRequest(fileUrlObj);
         fileRequest.setRawHeader("User-Agent", "WoW-Launcher/1.0");
         QNetworkReply *fileReply = manager.get(fileRequest);
         
         QEventLoop fileLoop;
-        connect(fileReply, &QNetworkReply::finished, &fileLoop, &QEventLoop::quit);
+        QObject::connect(fileReply, &QNetworkReply::finished, &fileLoop, &QEventLoop::quit);
         fileLoop.exec();
         
         if (fileReply->error() == QNetworkReply::NoError) {

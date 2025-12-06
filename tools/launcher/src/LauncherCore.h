@@ -46,6 +46,7 @@ private slots:
     void onDownloadError(const QString &error);
 
 private:
+    void setupConnections();
     void loadConfig();
     void saveConfig();
     QString getLocalPatchVersion() const;
