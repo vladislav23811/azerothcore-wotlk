@@ -27,37 +27,35 @@ if (-not (Test-Path $patchesPath)) {
     Write-Host "✓ Patches directory exists: $patchesPath" -ForegroundColor Green
 }
 
-# Check for game ZIP (multiple possible locations)
-$possibleZips = @(
-    "$htdocsPath\WOTLKHD.zip",
-    "C:\xampp\htdocs\WOTLKHD.zip",
-    "WOTLKHD.zip"  # Current directory
-)
-
-$gameZip = $null
-foreach ($zip in $possibleZips) {
-    if (Test-Path $zip) {
-        $gameZip = $zip
-        Write-Host "✓ Game ZIP found: $zip" -ForegroundColor Green
-        
-        # If not in htdocs, offer to copy
-        if ($zip -ne "$htdocsPath\WOTLKHD.zip") {
-            Write-Host "  Game ZIP is not in htdocs folder" -ForegroundColor Yellow
-            $copy = Read-Host "  Copy to htdocs? (y/n)"
-            if ($copy -eq 'y') {
-                Copy-Item $zip "$htdocsPath\WOTLKHD.zip" -Force
-                Write-Host "  ✓ Copied to: $htdocsPath\WOTLKHD.zip" -ForegroundColor Green
-                $gameZip = "$htdocsPath\WOTLKHD.zip"
+# Check for extracted game folder
+$gameFolder = "$htdocsPath\WoW"
+if (Test-Path "$gameFolder\Wow.exe") {
+    Write-Host "✓ Extracted game folder found: $gameFolder" -ForegroundColor Green
+    Write-Host "  Game is ready for download at: http://localhost/WoW/" -ForegroundColor Cyan
+} else {
+    Write-Host "⚠ Extracted game folder not found: $gameFolder" -ForegroundColor Yellow
+    
+    # Check for ZIP to extract
+    $gameZip = "$htdocsPath\WOTLKHD.zip"
+    if (Test-Path $gameZip) {
+        Write-Host "  Game ZIP found: $gameZip" -ForegroundColor Yellow
+        $extract = Read-Host "  Extract to WoW folder? (y/n)"
+        if ($extract -eq 'y') {
+            Write-Host "  Running extraction script..." -ForegroundColor Cyan
+            $extractScript = Join-Path $PSScriptRoot "extract_game_to_htdocs.ps1"
+            if (Test-Path $extractScript) {
+                & $extractScript
+            } else {
+                Write-Host "  ⚠ Extraction script not found: $extractScript" -ForegroundColor Yellow
+                Write-Host "  Please run: .\tools\extract_game_to_htdocs.ps1 manually" -ForegroundColor Yellow
             }
         }
-        break
+    } else {
+        Write-Host "  Game ZIP not found: $gameZip" -ForegroundColor Yellow
+        Write-Host "  Please:" -ForegroundColor Yellow
+        Write-Host "    1. Place WOTLKHD.zip in: $htdocsPath" -ForegroundColor White
+        Write-Host "    2. Run: .\tools\extract_game_to_htdocs.ps1" -ForegroundColor White
     }
-}
-
-if (-not $gameZip) {
-    Write-Host "⚠ Game ZIP not found in common locations" -ForegroundColor Yellow
-    Write-Host "  Place WOTLKHD.zip in: $htdocsPath" -ForegroundColor Yellow
-    Write-Host "  Or update launcher_config.json to point to your ZIP location" -ForegroundColor Yellow
 }
 
 # Create version.txt file (placeholder)
@@ -112,12 +110,14 @@ if (Test-Path $patchFile) {
 
 Write-Host "`n=== Setup Complete ===" -ForegroundColor Green
 Write-Host "`nWeb Server URLs:" -ForegroundColor Cyan
-Write-Host "  Game ZIP: http://localhost/WOTLKHD.zip" -ForegroundColor White
+Write-Host "  Game Folder: http://localhost/WoW/" -ForegroundColor White
+Write-Host "  Game Executable: http://localhost/WoW/Wow.exe" -ForegroundColor White
 Write-Host "  Patch Version: http://localhost/patches/version.txt" -ForegroundColor White
 Write-Host "  Patch Download: http://localhost/patches/latest/patch-Z.MPQ" -ForegroundColor White
 Write-Host "`nNext Steps:" -ForegroundColor Cyan
-Write-Host "  1. Start XAMPP Apache server" -ForegroundColor White
-Write-Host "  2. Place WOTLKHD.zip in: $htdocsPath" -ForegroundColor White
-Write-Host "  3. Run launcher: python tools/wow_launcher.py" -ForegroundColor White
+Write-Host "  1. Extract game: .\tools\extract_game_to_htdocs.ps1" -ForegroundColor White
+Write-Host "  2. Start XAMPP Apache server" -ForegroundColor White
+Write-Host "  3. Configure server: ProgressiveSystems.DBC.WebServerPath = C:/xampp/htdocs" -ForegroundColor White
+Write-Host "  4. Run launcher: python tools/wow_launcher.py" -ForegroundColor White
 Write-Host "`nNote: Update server_url in launcher_config.json if not using localhost" -ForegroundColor Yellow
 
