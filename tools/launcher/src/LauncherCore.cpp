@@ -64,7 +64,8 @@ void LauncherCore::loadConfig()
     // Fallback to QSettings or defaults
     m_gamePath = m_settings->value("gamePath", "C:/WoW").toString();
     m_serverUrl = m_settings->value("serverUrl", "http://localhost").toString();
-    m_gameZipUrl = m_settings->value("gameZipUrl", m_serverUrl + "/WOTLKHD.zip").toString();
+    // Game is now in extracted folder, not ZIP
+    m_gameZipUrl = m_settings->value("gameZipUrl", m_serverUrl + "/WoW/").toString();
     m_patchVersionUrl = m_settings->value("patchVersionUrl", m_serverUrl + "/patches/version.txt").toString();
     m_patchDownloadUrl = m_settings->value("patchDownloadUrl", m_serverUrl + "/patches/latest/patch-Z.MPQ").toString();
 }
@@ -246,68 +247,98 @@ void LauncherCore::installGame()
 {
     emit statusUpdated("Starting game installation...");
     
-    // Check if ZIP exists locally first
-    QString localZip = "WOTLKHD.zip";
-    if (!QFileInfo::exists(localZip)) {
-        // Download from server
-        emit statusUpdated("Downloading game client...");
-        localZip = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/WOTLKHD.zip";
-        
-        m_isDownloading = true;
-        m_currentDownload = "game";
-        m_downloadManager->downloadFile(m_gameZipUrl, localZip);
-        
-        // Wait for download to complete (in real app, use signals)
-        // For now, we'll handle it in onDownloadFinished
-        return;
+    // Download from extracted folder on server
+    // Server should have game extracted at: http://server/WoW/
+    QString gameFolderUrl = m_serverUrl;
+    if (!gameFolderUrl.endsWith("/")) {
+        gameFolderUrl += "/";
     }
+    gameFolderUrl += "WoW/";
     
-    // Extract ZIP
-    extractGameZip(localZip);
+    emit statusUpdated("Downloading game files from server...");
+    emit progressUpdated(0, "Preparing download...");
+    
+    // Download game files from extracted folder
+    downloadGameFromFolder(gameFolderUrl);
 }
 
-void LauncherCore::extractGameZip(const QString &zipPath)
+void LauncherCore::downloadGameFromFolder(const QString &baseUrl)
 {
-    emit statusUpdated("Extracting game files...");
-    emit progressUpdated(0, "Extracting...");
+    // Create game directory
+    QDir gameDir(m_gamePath);
+    if (!gameDir.exists()) {
+        gameDir.mkpath(".");
+    }
     
-    // Use QZipReader or system unzip
-    // For simplicity, we'll use QProcess to call system unzip
-    // Or implement ZIP extraction using minizip or similar
+    emit statusUpdated("Downloading game files...");
     
-    QProcess *unzipProcess = new QProcess(this);
-    QStringList args;
+    // List of critical files to download
+    // In a real implementation, you'd get a file list from server
+    // For now, we'll download key files
+    QStringList criticalFiles = {
+        "Wow.exe",
+        "Data/enUS/patch-enUS.MPQ",
+        "Data/patch.MPQ"
+    };
     
-    // Try to use system unzip (Windows: PowerShell, Linux: unzip)
-#ifdef Q_OS_WIN
-    // Use PowerShell Expand-Archive
-    unzipProcess->setProgram("powershell");
-    args << "-Command" << QString("Expand-Archive -Path '%1' -DestinationPath '%2' -Force")
-        .arg(zipPath).arg(m_gamePath);
-#else
-    // Use unzip command
-    unzipProcess->setProgram("unzip");
-    args << "-o" << zipPath << "-d" << m_gamePath;
-#endif
+    // For simplicity, we'll download files one by one
+    // In production, you'd want to:
+    // 1. Get file list from server (filelist.txt or similar)
+    // 2. Download files in parallel
+    // 3. Show progress
     
-    unzipProcess->setArguments(args);
+    m_isDownloading = true;
+    m_currentDownload = "game";
     
-    connect(unzipProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            [this, unzipProcess](int exitCode, QProcess::ExitStatus status) {
-        if (exitCode == 0 && status == QProcess::NormalExit) {
-            emit statusUpdated("Game installation complete!");
-            emit progressUpdated(100, "Installation complete");
-        } else {
-            emit errorOccurred("Failed to extract game files: " + unzipProcess->errorString());
+    // Download critical files
+    int totalFiles = criticalFiles.size();
+    int downloaded = 0;
+    
+    for (const QString &file : criticalFiles) {
+        QString fileUrl = baseUrl + file;
+        QString localPath = m_gamePath + "/" + file;
+        
+        // Create directory if needed
+        QFileInfo fileInfo(localPath);
+        QDir dir = fileInfo.absoluteDir();
+        if (!dir.exists()) {
+            dir.mkpath(".");
         }
-        unzipProcess->deleteLater();
-    });
+        
+        emit statusUpdated(QString("Downloading: %1").arg(file));
+        
+        // Download file (synchronous for simplicity)
+        QNetworkAccessManager manager;
+        QNetworkRequest request(QUrl(fileUrl));
+        QNetworkReply *reply = manager.get(request);
+        
+        QEventLoop loop;
+        connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+        loop.exec();
+        
+        if (reply->error() == QNetworkReply::NoError) {
+            QFile outputFile(localPath);
+            if (outputFile.open(QIODevice::WriteOnly)) {
+                outputFile.write(reply->readAll());
+                outputFile.close();
+                downloaded++;
+                emit progressUpdated((downloaded * 100) / totalFiles, 
+                    QString("Downloaded %1/%2 files").arg(downloaded).arg(totalFiles));
+            }
+        } else {
+            emit errorOccurred(QString("Failed to download %1: %2").arg(file, reply->errorString()));
+        }
+        
+        reply->deleteLater();
+    }
     
-    unzipProcess->start();
+    m_isDownloading = false;
     
-    if (!unzipProcess->waitForStarted(3000)) {
-        emit errorOccurred("Failed to start extraction process. Make sure unzip is available.");
-        unzipProcess->deleteLater();
+    if (downloaded == totalFiles) {
+        emit statusUpdated("Game installation complete!");
+        emit progressUpdated(100, "Installation complete");
+    } else {
+        emit errorOccurred(QString("Only downloaded %1/%2 files").arg(downloaded).arg(totalFiles));
     }
 }
 
@@ -328,10 +359,8 @@ void LauncherCore::onDownloadFinished(const QString &filePath)
     emit statusUpdated("Download complete: " + filePath);
     emit progressUpdated(100, "Download complete");
     
-    // If we were downloading the game, extract it
-    if (m_currentDownload == "game") {
-        extractGameZip(filePath);
-    } else if (m_currentDownload == "patch") {
+    // If we were downloading the patch
+    if (m_currentDownload == "patch") {
         emit statusUpdated("Patch installed successfully!");
     }
     

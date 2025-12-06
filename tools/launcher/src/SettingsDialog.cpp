@@ -37,9 +37,9 @@ void SettingsDialog::setupUI()
     serverLayout->addWidget(serverUrlLabel);
     serverLayout->addWidget(m_serverUrlEdit);
     
-    QLabel *gameZipLabel = new QLabel("Game ZIP URL:", this);
+    QLabel *gameZipLabel = new QLabel("Game Folder URL:", this);
     m_gameZipUrlEdit = new QLineEdit(this);
-    m_gameZipUrlEdit->setPlaceholderText("http://localhost/WOTLKHD.zip");
+    m_gameZipUrlEdit->setPlaceholderText("http://localhost/WoW/");
     serverLayout->addWidget(gameZipLabel);
     serverLayout->addWidget(m_gameZipUrlEdit);
     

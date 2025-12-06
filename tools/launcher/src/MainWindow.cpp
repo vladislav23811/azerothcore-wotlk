@@ -187,7 +187,7 @@ void MainWindow::onSettingsClicked()
     
     // Set URLs based on server URL
     QString serverUrl = m_launcherCore->getServerUrl();
-    dialog.setGameZipUrl(serverUrl + "/WOTLKHD.zip");
+    dialog.setGameZipUrl(serverUrl + "/WoW/");
     dialog.setPatchVersionUrl(serverUrl + "/patches/version.txt");
     dialog.setPatchDownloadUrl(serverUrl + "/patches/latest/patch-Z.MPQ");
     

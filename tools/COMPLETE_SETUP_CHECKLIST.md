@@ -11,14 +11,21 @@ Follow this checklist to get everything working!
 .\tools\setup_web_server.ps1
 ```
 
-### 1.2 Verify Files
-- [ ] `C:\xampp\htdocs\WOTLKHD.zip` exists
+### 1.2 Extract Game
+```powershell
+.\tools\extract_game_to_htdocs.ps1
+```
+- [ ] Game extracted to `C:\xampp\htdocs\WoW\`
+- [ ] `Wow.exe` exists in extracted folder
+
+### 1.3 Verify Files
+- [ ] `C:\xampp\htdocs\WoW\Wow.exe` exists
 - [ ] `C:\xampp\htdocs\patches\` directory exists
 - [ ] Apache is running in XAMPP
 
-### 1.3 Test URLs
+### 1.4 Test URLs
 Open in browser:
-- [ ] `http://localhost/WOTLKHD.zip` (downloads)
+- [ ] `http://localhost/WoW/Wow.exe` (downloads)
 - [ ] `http://localhost/patches/version.txt` (shows number)
 - [ ] `http://localhost/patches/latest/patch-Z.MPQ` (downloads)
 
@@ -74,7 +81,7 @@ Check `launcher_config.json`:
 ```json
 {
     "server_url": "http://localhost",
-    "game_zip_url": "http://localhost/WOTLKHD.zip",
+    "game_zip_url": "http://localhost/WoW/",
     "patch_version_url": "http://localhost/patches/version.txt",
     "patch_download_url": "http://localhost/patches/latest/patch-Z.MPQ",
     "wow_path": "C:/WoW"
