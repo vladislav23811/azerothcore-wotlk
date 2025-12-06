@@ -37,11 +37,12 @@
 
 ## 🌟 Recent Highlights
 
-- ✅ **December 2025 - ALL COMPILATION ERRORS FIXED** - Complete build success, all systems compile and link!
+- ✅ **December 2025 - Launcher & Build System Complete** - Custom WoW launcher with game installation, Qt5 integration, and clean build output
+- ✅ **Repository Consolidation** - Consolidated to single `master` branch, all workflows updated
+- ✅ **ALL COMPILATION ERRORS FIXED** - Complete build success, all systems compile and link!
 - ✅ **Infinite Dungeon System** - Private instances, wave spawning, boss waves, and group support fully implemented
 - ✅ **Reward Distribution System** - Wave/floor rewards, progression points, and seasonal bonuses implemented
 - ✅ **Daily Challenge System** - Daily/weekly challenges with progress tracking and rewards
-- ✅ **Seasonal System** - Seasonal bonuses, leaderboards, and score tracking implemented
 - ✅ **Visual Enchantment System** - Visual effects for item upgrades, prestige, and difficulty tiers
 - ✅ **All Linker Errors Resolved** - All missing implementations added and integrated
 - ✅ **Auto-Import SQL** - All module databases auto-create and populate on first startup
@@ -83,6 +84,14 @@ This fork is designed for players who want:
 - **Enhanced Warnings**: Comprehensive compiler warnings for better code quality
 - **Static Analysis**: Built-in static analysis for catching bugs early
 - **Clean Builds**: Compiles successfully with zero errors
+- **IDE Integration**: VS Code CMake tools configured with Qt5 and vcpkg support
+
+### 🎮 Custom WoW Launcher
+- **Qt5-Based Interface**: Modern, cross-platform launcher built with Qt5
+- **Game Installation**: Automatic game installation with folder selection
+- **Update Checking**: Built-in update checking and download management
+- **Configuration Management**: Save and load game paths and settings
+- **Clean Build Output**: Organized launcher files in dedicated directory
 
 ### 🤖 Playerbots System
 - **AI Companions**: Intelligent bot companions that can tank, heal, and DPS
@@ -452,6 +461,15 @@ This fork is designed for players who want:
 
 ## 📝 Recent Updates
 
+### December 2025 - Launcher & Repository Consolidation 🚀
+- ✅ **Custom WoW Launcher** - Qt5-based launcher with game installation and update checking
+- ✅ **Launcher Build System** - Fixed PowerShell script escaping, Qt5 DLL copying, and output organization
+- ✅ **Repository Consolidation** - Consolidated all branches to single `master` branch
+- ✅ **GitHub Workflows Updated** - All CI/CD workflows now use `master` branch only
+- ✅ **IDE Configuration** - VS Code CMake integration properly configured with Qt5 and vcpkg
+- ✅ **Build Output Organization** - Launcher outputs to dedicated `wowlauncher` folder
+- ✅ **Game Installation Feature** - Launcher can prompt for and set game installation directory
+
 ### December 4, 2025 - Startup Errors FIXED - Zero Manual Setup! 🎉
 - ✅ **ALL SQL Errors Fixed** - Foreign keys, cross-database refs, syntax errors resolved
 - ✅ **Auto-Import Working** - All module SQL files auto-import on first startup
@@ -480,14 +498,15 @@ This fork is designed for players who want:
 ### Build Status
 - **All Workflows**: ✅ Passing
 - **Build Errors**: ✅ Zero (compilation)
-- **Startup Errors**: ✅ Zero (runtime) - **NEW!**
-- **SQL Auto-Import**: ✅ Working - **NEW!**
+- **Startup Errors**: ✅ Zero (runtime)
+- **SQL Auto-Import**: ✅ Working
 - **Code Quality**: ✅ C++20 Standard
+- **Launcher**: ✅ Building successfully with Qt5
 - **Status**: 🟢 Production Ready - Verified Stable
 
-**Last Updated**: December 4, 2025
+**Last Updated**: December 2025
 **Status**: ⚠️ Core systems operational - Clean startup verified! Progressive systems need in-game testing.
-**Latest Commit**: 0ddc6aa46 - All startup errors fixed
+**Latest Commit**: 7678572d6 - Repository consolidated to master branch, launcher fixes applied
 
 ## 📦 Installed Modules (22 Modules)
 
@@ -581,9 +600,20 @@ cp modules/mod-*/conf/*.conf.dist conf/
 
 ### Key Configuration Points
 - **C++20 Required**: Make sure your compiler supports C++20 (GCC 10+, Clang 10+, MSVC 2019+)
+- **Qt5 Required for Launcher**: Install Qt5 via vcpkg or system package manager
 - **Playerbots**: Configure in `playerbots.conf` - set bot counts, behavior, gear limits
 - **Progressive Systems**: Configure in `mod-progressive-systems.conf` - difficulty multipliers, costs
 - **All Other Modules**: Check individual `.conf` files in `env/dist/etc/`
+
+### Building the Launcher
+The custom WoW launcher is built automatically with the server. To build it separately:
+```bash
+# Windows (with vcpkg)
+cmake -B build -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake --build build --target WoWLauncher
+
+# Launcher output: build/bin/RelWithDebInfo/wowlauncher/WoWLauncher.exe
+```
 
 ---
 
@@ -595,6 +625,7 @@ cp modules/mod-*/conf/*.conf.dist conf/
 - C++20 compatible compiler (GCC 10+, Clang 10+, MSVC 2019+)
 - MySQL 5.7+ or MariaDB 10.3+
 - OpenSSL 1.0.x or 1.1.x
+- **For Launcher**: Qt5 (Core, Widgets, Network) - Install via vcpkg or system package manager
 
 ### Quick Start
 
@@ -696,9 +727,19 @@ Key settings in `conf/worldserver.conf`:
 - Solo-friendly settings (reduced durability loss, faster rest)
 - Addon channel enabled for Progressive Systems addon
 
+### Launcher Configuration
+The custom WoW launcher (`tools/launcher/`) provides:
+- **Game Path Management**: Save and load WoW installation directory
+- **Update Checking**: Automatic update detection and download
+- **Game Installation**: Guided installation process with folder selection
+- **Settings Persistence**: Configuration saved between sessions
+
+Launcher location: `build/bin/RelWithDebInfo/wowlauncher/WoWLauncher.exe` (Windows)
+
 For detailed configuration guides, see:
 - [PRODUCTION_READY_CONFIG.md](../session-logs/PRODUCTION_READY_CONFIG.md)
 - [PROGRESSIVE_SYSTEMS_GUIDE.md](../session-logs/PROGRESSIVE_SYSTEMS_GUIDE.md)
+- [README_LAUNCHER.md](../tools/README_LAUNCHER.md) - Launcher documentation
 
 ## 🎮 Gameplay Features
 
@@ -791,4 +832,4 @@ This fork maintains AzerothCore's core philosophy while adding specialized featu
 **Clone**: `git clone https://github.com/vladislav23811/azerothcore-wotlk.git` - Works perfectly! All features included on master branch.
 
 ---
-*Last updated: December 2025 - **ALL STARTUP ERRORS FIXED!** Zero manual SQL import needed. Clean first-run experience. Server verified stable with 229 active bots. **Progressive systems implemented but need comprehensive in-game testing.***
+*Last updated: December 2025 - **Repository consolidated to master branch!** Custom WoW launcher with Qt5 integration complete. All startup errors fixed - zero manual SQL import needed. Clean first-run experience. Server verified stable with 229 active bots. **Progressive systems implemented but need comprehensive in-game testing.***
