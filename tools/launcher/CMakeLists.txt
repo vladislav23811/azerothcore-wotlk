@@ -120,6 +120,10 @@ set(HEADERS
 # Create executable
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
+# Disable vcpkg's automatic DLL copying (it uses wildcards which break MSBuild)
+# We'll manually copy the DLLs we need instead
+# Note: vcpkg adds automatic dependency copying via .props files, which we'll clean up post-configure
+
 # Enable Qt MOC (Meta-Object Compiler) for Q_OBJECT macros
 # AUTOMOC automatically processes Q_OBJECT macros
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -138,6 +142,15 @@ else()
         Qt5::Core 
         Qt5::Widgets 
         Qt5::Network
+    )
+endif()
+
+# Disable vcpkg's automatic DLL copying AFTER linking (it uses wildcards which break MSBuild)
+# We'll manually copy the DLLs we need instead
+if(CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}")
+    # Remove vcpkg's automatic post-build step by clearing VS_USER_PROPS
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        VS_USER_PROPS ""
     )
 endif()
 
@@ -165,15 +178,64 @@ if(WIN32)
             COMMENT "Copying Qt6 DLLs to launcher folder..."
         )
     elseif(QT_VERSION_MAJOR EQUAL 5)
-        # For Qt5, manually copy DLLs (windeployqt can cause issues with wildcards)
+        # For Qt5, manually copy DLLs
+        # Get Qt5 DLL paths explicitly (no wildcards)
+        get_target_property(QT5_CORE_DLL Qt5::Core LOCATION)
+        get_target_property(QT5_WIDGETS_DLL Qt5::Widgets LOCATION)
+        get_target_property(QT5_NETWORK_DLL Qt5::Network LOCATION)
+        
+        # Get the directory where Qt5 DLLs are located
+        get_filename_component(QT5_BIN_DIR "${QT5_CORE_DLL}" DIRECTORY)
+        
+        # Try to find OpenSSL DLLs explicitly (if they exist, copy them)
+        # Qt5 from vcpkg may depend on OpenSSL, but we'll only copy if they exist
+        # Note: Qt5 can work without OpenSSL on Windows (uses Windows native SSL)
+        # Search for OpenSSL DLLs with explicit version numbers (no wildcards)
+        # Check both Qt5 bin dir and vcpkg bin dir
+        set(OPENSSL_DLLS "")
+        set(VCPKG_BIN_DIR "")
+        if(CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}")
+            # Try to find vcpkg bin directory
+            if(EXISTS "C:/vcpkg/installed/x64-windows/bin")
+                set(VCPKG_BIN_DIR "C:/vcpkg/installed/x64-windows/bin")
+            elseif(DEFINED ENV{VCPKG_ROOT})
+                set(VCPKG_BIN_DIR "$ENV{VCPKG_ROOT}/installed/x64-windows/bin")
+            endif()
+        endif()
+        
+        # Try common OpenSSL names in both locations
+        foreach(OSSLLIB crypto ssl)
+            foreach(BIN_DIR ${QT5_BIN_DIR} ${VCPKG_BIN_DIR})
+                if(BIN_DIR)
+                    # Try 3-x64 (OpenSSL 3.x - most recent)
+                    if(EXISTS "${BIN_DIR}/lib${OSSLLIB}-3-x64.dll")
+                        list(APPEND OPENSSL_DLLS "${BIN_DIR}/lib${OSSLLIB}-3-x64.dll")
+                        break()
+                    # Try 1_1-x64 (OpenSSL 1.1.x)
+                    elseif(EXISTS "${BIN_DIR}/lib${OSSLLIB}-1_1-x64.dll")
+                        list(APPEND OPENSSL_DLLS "${BIN_DIR}/lib${OSSLLIB}-1_1-x64.dll")
+                        break()
+                    # Try 1_0_2-x64 (older version)
+                    elseif(EXISTS "${BIN_DIR}/lib${OSSLLIB}-1_0_2-x64.dll")
+                        list(APPEND OPENSSL_DLLS "${BIN_DIR}/lib${OSSLLIB}-1_0_2-x64.dll")
+                        break()
+                    endif()
+                endif()
+            endforeach()
+        endforeach()
+        
+        # Copy Qt5 DLLs and OpenSSL DLLs together (if found)
+        set(ALL_DLLS "${QT5_CORE_DLL}" "${QT5_WIDGETS_DLL}" "${QT5_NETWORK_DLL}")
+        if(OPENSSL_DLLS)
+            list(APPEND ALL_DLLS ${OPENSSL_DLLS})
+        endif()
+        
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory "${LAUNCHER_OUTPUT_DIR}"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_FILE:Qt5::Core>
-                $<TARGET_FILE:Qt5::Widgets>
-                $<TARGET_FILE:Qt5::Network>
+                ${ALL_DLLS}
                 "${LAUNCHER_OUTPUT_DIR}/"
-            COMMENT "Copying Qt5 DLLs to launcher folder..."
+            COMMENT "Copying Qt5 and OpenSSL DLLs to launcher folder..."
         )
     endif()
 endif()
@@ -192,8 +254,35 @@ if(NOT IS_STANDALONE_BUILD)
     message(STATUS "Launcher: Output directory set to ${LAUNCHER_OUTPUT_DIR}")
 endif()
 
+# Fix vcpkg wildcard issue: Remove wildcard patterns from .vcxproj after generation
+# vcpkg adds automatic dependency copying with wildcards that break MSBuild
+# This runs automatically after CMake generates the project file
+if(CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}" AND WIN32)
+    set(VCXPROJ_FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj")
+    # Use file(GENERATE) to create a script that runs after configure
+    # This ensures the fix runs every time CMake configures
+    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/fix_vcpkg_wildcards_$<CONFIG>.ps1"
+        CONTENT "# Fix vcpkg wildcard patterns in .vcxproj file
+$$vcxproj = '${VCXPROJ_FILE}'
+if (Test-Path $$vcxproj) {
+    $$content = Get-Content $$vcxproj
+    $$filtered = $$content | Where-Object { $$_ -notmatch 'libcrypto-\\*' -and $$_ -notmatch 'libssl-\\*' }
+    $$filtered | Set-Content $$vcxproj
+}
+"
+    )
+    # Add a custom command that runs the fix script
+    # This will be executed after CMake generates the project
+    add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
+        COMMAND powershell -ExecutionPolicy Bypass -File "${CMAKE_CURRENT_BINARY_DIR}/fix_vcpkg_wildcards_$<CONFIG>.ps1"
+        COMMENT "Fixing vcpkg wildcard patterns in .vcxproj..."
+        VERBATIM
+    )
+endif()
+
 # Install
 install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION bin
 )
+
 

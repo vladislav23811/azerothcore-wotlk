@@ -40,28 +40,10 @@ void AddSC_progressive_systems_npcs(); // Defined in ProgressiveSystemsNPCs.cpp
 // are just placeholders to satisfy the loader. They don't create new instances.
 
 // Script registration functions - These must be defined (not just declared) for the linker
-void AddSC_progressive_systems_player_script()
-{
-    // Already registered in AddSC_ProgressiveSystemsDifficultyScaling()
-    // This function exists for compatibility with the loader
-    // Scripts are registered in DifficultyScaling.cpp
-    LOG_DEBUG("module", "AddSC_progressive_systems_player_script called (scripts already registered)");
-}
-
-void AddSC_progressive_systems_world_script()
-{
-    // Already registered in AddSC_ProgressiveSystemsDifficultyScaling()
-    // This function exists for compatibility with the loader
-    // Scripts are registered in DifficultyScaling.cpp
-    LOG_DEBUG("module", "AddSC_progressive_systems_world_script called (scripts already registered)");
-}
-
-void AddSC_progressive_systems_map_script()
-{
-    // Map script can be added here if needed
-    // Currently no map-specific script is implemented
-    LOG_DEBUG("module", "AddSC_progressive_systems_map_script called");
-}
+// AddSC_progressive_systems_player_script() is defined in DifficultyScaling.cpp via AddSC_ProgressiveSystemsDifficultyScaling()
+// AddSC_progressive_systems_world_script() is defined in ProgressiveSystemsWorldScript.cpp
+// AddSC_progressive_systems_map_script() is a placeholder for future implementation
+// No need for placeholder functions here - they're defined in their respective files
 
 // NPC script registration - Implementation is in ProgressiveSystemsNPCs.cpp
 // Forward declaration only - actual implementation is in ProgressiveSystemsNPCs.cpp
@@ -163,11 +145,11 @@ void Addmod_progressive_systemsScripts()
     AddSC_ProgressiveSystemsDifficultyScaling();  // This already registers PlayerScript and WorldScript
     AddSC_ProgressiveSystemsAddonScript();        // Addon message handler
     AddSC_progressive_systems_commands();        // Commands (.ps upgrade, etc.)
-    AddSC_progressive_systems_npcs();            // NPC scripts (placeholder)
-    AddSC_progressive_systems_player_script();    // Player event hooks (already registered, but function must exist)
+    AddSC_progressive_systems_npcs();            // NPC scripts
     // World script handles DBC generation after databases load
-    AddSC_progressive_systems_world_script();     // World update hooks (already registered, but function must exist)
-    AddSC_progressive_systems_map_script();       // Map/instance event hooks
+    AddSC_progressive_systems_world_script();     // Database script for DBC generation
+    // Note: PlayerScript and MapScript are registered via AddSC_ProgressiveSystemsDifficultyScaling()
+    // No need to call AddSC_progressive_systems_player_script() or AddSC_progressive_systems_map_script() separately
     
     LOG_INFO("module", "Progressive Systems Module: All scripts registered successfully!");
 }

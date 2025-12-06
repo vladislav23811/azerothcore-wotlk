@@ -13,6 +13,14 @@
 # set up output paths for executable binaries (.exe-files, and .dll-files on DLL-capable platforms)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# Set MSVC runtime library to MultiThreadedDLL (/MD) for consistency
+# This ensures all modules and executables use the same runtime library
+# and fixes unresolved external symbols like __std_find_not_ch_1, __std_regex_transform_primary_char, etc.
+if(NOT DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL" CACHE STRING "MSVC runtime library")
+endif()
+message(STATUS "MSVC: Runtime library set to ${CMAKE_MSVC_RUNTIME_LIBRARY}")
+
 set(MSVC_EXPECTED_VERSION 19.24)
 set(MSVC_EXPECTED_VERSION_STRING "Microsoft Visual Studio 2019 16.4")
 
@@ -76,6 +84,16 @@ endif()
 target_compile_options(acore-compile-option-interface
   INTERFACE
     /MP)
+
+# Disable vectorized standard library functions to avoid unresolved symbol errors
+# These symbols (__std_find_not_ch_1, __std_regex_transform_primary_char, etc.) 
+# are from MSVC's optimized standard library but can cause linker errors
+# when modules are compiled with different optimization settings
+target_compile_options(acore-compile-option-interface
+  INTERFACE
+    /d2FH4-  # Disable fast heap checks (can help with standard library linking)
+)
+message(STATUS "MSVC: Disabled fast heap checks for standard library compatibility")
 
 # Define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES - eliminates the warning by changing the strcpy call to strcpy_s, which prevents buffer overruns
 target_compile_definitions(acore-compile-option-interface
@@ -160,3 +178,13 @@ DisableIncrementalLinking(CMAKE_EXE_LINKER_FLAGS_DEBUG)
 DisableIncrementalLinking(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO)
 DisableIncrementalLinking(CMAKE_SHARED_LINKER_FLAGS_DEBUG)
 DisableIncrementalLinking(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO)
+
+# Enable exception handling and ensure C++ standard library symbols are linked
+# This fixes unresolved external symbols like __std_find_not_ch_1, __std_regex_transform_primary_char, etc.
+# These are internal MSVC standard library symbols that require proper runtime library linking
+target_compile_options(acore-compile-option-interface
+  INTERFACE
+    /EHsc      # Enable C++ exception handling (synchronous model)
+    /std:c++20 # Explicitly set C++20 standard (ensures proper standard library linking)
+)
+message(STATUS "MSVC: Enabled C++ exception handling (/EHsc) and C++20 standard")

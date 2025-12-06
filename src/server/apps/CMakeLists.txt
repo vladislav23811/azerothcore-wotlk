@@ -140,6 +140,14 @@ foreach(APPLICATION_NAME ${APPLICATIONS_BUILD_LIST})
         gsoap
         readline
         gperftools)
+    
+    # Explicitly link legacy_stdio_definitions.lib for MSVC standard library symbols
+    # This provides definitions for internal MSVC standard library functions
+    if(MSVC)
+        target_link_libraries(${APP_PROJECT_NAME}
+          PRIVATE
+            legacy_stdio_definitions.lib)
+    endif()
 
     if (UNIX AND NOT NOJEM)
       set(${APP_PROJECT_NAME}_LINK_FLAGS "-pthread -lncurses ${${APP_PROJECT_NAME}_LINK_FLAGS}")

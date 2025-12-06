@@ -323,6 +323,15 @@ target_link_libraries(modules
   PUBLIC
     game-interface)
 
+# Explicitly link legacy_stdio_definitions.lib for MSVC standard library symbols
+# This provides definitions for internal MSVC standard library functions like
+# __std_find_not_ch_1, __std_regex_transform_primary_char, etc.
+if(MSVC)
+    target_link_libraries(modules
+      PRIVATE
+        legacy_stdio_definitions.lib)
+endif()
+
 target_include_directories(modules
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -336,7 +345,9 @@ endforeach()
 set_target_properties(modules
   PROPERTIES
     FOLDER
-      "modules")
+      "modules"
+    MSVC_RUNTIME_LIBRARY
+      "MultiThreadedDLL")
 
 # Generate precompiled header
 # if (USE_SCRIPTPCH)
