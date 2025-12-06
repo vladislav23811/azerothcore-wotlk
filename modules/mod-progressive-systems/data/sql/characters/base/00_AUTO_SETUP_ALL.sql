@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS `character_progression_unified` (
   `difficulty_tier` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'Current difficulty tier (0=Easy, 1=Normal, etc.)',
   `current_tier` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'Current progression tier (affects point multipliers)',
   `total_power_level` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Calculated power level',
-  `progression_points` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Total progression points earned',
+  `progression_points` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Current progression points available',
+  `total_progression_points_earned` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Total progression points earned (lifetime)',
   `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT `fk_progression_unified_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE,
   INDEX `idx_prestige_level` (`prestige_level`),
@@ -285,7 +286,7 @@ CREATE TABLE IF NOT EXISTS `daily_challenges` (
   `challenge_type` TINYINT UNSIGNED NOT NULL COMMENT '0=Daily, 1=Weekly',
   `challenge_name` VARCHAR(255) NOT NULL COMMENT 'Challenge name',
   `challenge_description` TEXT COMMENT 'Challenge description',
-  `target_type` TINYINT UNSIGNED NOT NULL COMMENT '0=Kills, 1=Dungeons, 2=Raids, 3=PvP, 4=Quests',
+  `target_type` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '0=Kills, 1=Dungeons, 2=Raids, 3=PvP, 4=Quests',
   `target_value` INT UNSIGNED NOT NULL COMMENT 'Target value to complete',
   `reward_points` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Progression points reward',
   `reward_item` INT UNSIGNED DEFAULT NULL COMMENT 'Item reward entry',
@@ -535,6 +536,29 @@ CREATE TABLE IF NOT EXISTS `character_paragon_seasonal` (
   PRIMARY KEY (`guid`, `season_id`),
   CONSTRAINT `fk_paragon_seasonal_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Seasonal paragon progression';
+
+-- ============================================================
+-- 19. MIGRATION: Add total_progression_points_earned column (if missing)
+-- ============================================================
+-- This ensures existing databases get the new column
+SET @col_exists = 0;
+SELECT COUNT(*) INTO @col_exists 
+FROM information_schema.COLUMNS 
+WHERE TABLE_SCHEMA = DATABASE() 
+  AND TABLE_NAME = 'character_progression_unified' 
+  AND COLUMN_NAME = 'total_progression_points_earned';
+
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE `character_progression_unified` ADD COLUMN `total_progression_points_earned` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT ''Total progression points earned (lifetime)'' AFTER `progression_points`',
+    'SELECT ''Column total_progression_points_earned already exists'' AS message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Migrate existing data: set total_progression_points_earned = progression_points for existing rows
+UPDATE `character_progression_unified` 
+SET `total_progression_points_earned` = `progression_points` 
+WHERE `total_progression_points_earned` = 0 AND `progression_points` > 0;
 
 -- ============================================================
 -- COMPLETE!

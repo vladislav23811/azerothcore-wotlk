@@ -10,7 +10,7 @@ CREATE TABLE `daily_challenges` (
   `challenge_type` TINYINT UNSIGNED NOT NULL COMMENT '0=Daily, 1=Weekly',
   `challenge_name` VARCHAR(255) NOT NULL COMMENT 'Challenge name',
   `challenge_description` TEXT COMMENT 'Challenge description',
-  `target_type` TINYINT UNSIGNED NOT NULL COMMENT '0=Kills, 1=Dungeons, 2=Raids, 3=PvP, 4=Quests',
+  `target_type` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '0=Kills, 1=Dungeons, 2=Raids, 3=PvP, 4=Quests',
   `target_value` INT UNSIGNED NOT NULL COMMENT 'Target value to complete',
   `reward_points` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Progression points reward',
   `reward_item` INT UNSIGNED DEFAULT NULL COMMENT 'Item reward entry',

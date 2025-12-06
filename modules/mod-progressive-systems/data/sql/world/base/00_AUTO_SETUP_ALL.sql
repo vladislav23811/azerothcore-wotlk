@@ -310,9 +310,19 @@ INSERT IGNORE INTO `paragon_stat_definitions` (`stat_type`, `stat_name`, `stat_d
 (3, 'Resource Regeneration', 'Increases mana/energy/rage regeneration', 0, 50, 0.5, 5);
 
 -- ============================================================
--- NOTE: NPC CREATURE TEMPLATES
+-- 9. NPC SCRIPT ASSIGNMENTS
 -- ============================================================
--- NPCs are defined in PROGRESSIVE_NPCS_COMPLETE_SETUP.sql
--- This file only contains table definitions and data
+-- Assign C++ script names to creature template entries
+-- These scripts are registered in ProgressiveSystemsNPCs.cpp
+-- Note: NPCs must be spawned in-game using: .npc add <entry>
+UPDATE `creature_template` SET `ScriptName` = 'npc_progressive_main_menu' WHERE `entry` = 190000;
+UPDATE `creature_template` SET `ScriptName` = 'npc_item_upgrade' WHERE `entry` = 190001;
+UPDATE `creature_template` SET `ScriptName` = 'npc_prestige' WHERE `entry` = 190002;
+UPDATE `creature_template` SET `ScriptName` = 'npc_stat_enhancement' WHERE `entry` = 190003;
+UPDATE `creature_template` SET `ScriptName` = 'npc_infinite_dungeon' WHERE `entry` = 190005;
+UPDATE `creature_template` SET `ScriptName` = 'npc_progressive_items' WHERE `entry` = 190006;
+
+-- ============================================================
+-- COMPLETE!
 -- ============================================================
 

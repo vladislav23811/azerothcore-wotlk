@@ -209,8 +209,8 @@ void ProgressiveSystems::AddProgressionPoints(Player* player, uint32 points)
     // Add progression points atomically
     CharacterDatabase.Execute(
         "INSERT INTO character_progression_unified (guid, progression_points, total_progression_points_earned) "
-        "VALUES ({}, {}, {}) "
-        "ON DUPLICATE KEY UPDATE progression_points = progression_points + {}, total_progression_points_earned = COALESCE(total_progression_points_earned, 0) + {}",
+            "VALUES ({}, {}, {}) "
+            "ON DUPLICATE KEY UPDATE progression_points = progression_points + {}, total_progression_points_earned = COALESCE(total_progression_points_earned, 0) + {}",
         guid, finalPoints, finalPoints, finalPoints, finalPoints);
 
     // Also update characters.reward_points (legacy support)
