@@ -149,7 +149,7 @@ if(WIN32)
     
     # Copy Qt DLLs to launcher output directory (for distribution)
     if(NOT IS_STANDALONE_BUILD)
-        set(LAUNCHER_OUTPUT_DIR "${CMAKE_BINARY_DIR}/wowlauncher")
+        set(LAUNCHER_OUTPUT_DIR "${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/wowlauncher")
     else()
         set(LAUNCHER_OUTPUT_DIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
     endif()
@@ -180,19 +180,16 @@ endif()
 
 # Set output directory to dedicated launcher folder
 if(NOT IS_STANDALONE_BUILD)
-    # Output to build/wowlauncher/ for easy identification (no config subfolder)
-    set(LAUNCHER_OUTPUT_DIR "${CMAKE_BINARY_DIR}/wowlauncher")
+    # Output to build/bin/RelWithDebInfo/wowlauncher/ for easy identification
+    set(LAUNCHER_OUTPUT_DIR "${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/wowlauncher")
     set_target_properties(${PROJECT_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${LAUNCHER_OUTPUT_DIR}"
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${LAUNCHER_OUTPUT_DIR}"
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${LAUNCHER_OUTPUT_DIR}"
-        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${LAUNCHER_OUTPUT_DIR}"
-        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${LAUNCHER_OUTPUT_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/Debug/wowlauncher"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/Debug/wowlauncher"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release/wowlauncher"
+        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/wowlauncher"
+        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/bin/MinSizeRel/wowlauncher"
     )
     message(STATUS "Launcher: Output directory set to ${LAUNCHER_OUTPUT_DIR}")
-    
-    # Copy Qt DLLs and organize files in launcher folder
-    # Note: Visual Studio may still create a config subfolder, but we set all config paths to the same directory
 endif()
 
 # Install
