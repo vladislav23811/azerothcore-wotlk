@@ -360,6 +360,17 @@ SET `ScriptName` = 'npc_stat_enhancement',
     `faction` = 35
 WHERE `entry` = 190003;
 
+-- Reward Shop NPC (190004) - Vendor for currency items
+UPDATE `creature_template` 
+SET `ScriptName` = '',
+    `name` = 'Reward Shop',
+    `subname` = 'Spend Your Points',
+    `npcflag` = 129,  -- 128 (vendor) + 1 (gossip)
+    `minlevel` = 80,
+    `maxlevel` = 80,
+    `faction` = 35
+WHERE `entry` = 190004;
+
 -- Infinite Dungeon NPC (190005)
 UPDATE `creature_template` 
 SET `ScriptName` = 'npc_infinite_dungeon',
@@ -376,7 +387,7 @@ UPDATE `creature_template`
 SET `ScriptName` = 'npc_progressive_items',
     `name` = 'Progressive Items',
     `subname` = 'Tiered Cosmetics',
-    `npcflag` = 1,
+    `npcflag` = 129,  -- 128 (vendor) + 1 (gossip)
     `minlevel` = 80,
     `maxlevel` = 80,
     `faction` = 35
@@ -411,18 +422,14 @@ INSERT INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `Exte
 (190006, 9, 14623, 0, 0, 0);  -- Commoner's Gloves (Tier 10)
 
 -- Reward Shop Vendor (190004) - Currency Items
--- Note: Custom currency items (99997-99999) should be created in item_template
--- For now, we'll add existing currency items
+-- Custom currency items are created in create_custom_currency_items.sql
+-- This will use existing items if custom ones don't exist yet
 DELETE FROM `npc_vendor` WHERE `entry` = 190004;
 INSERT INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`) VALUES
 (190004, 0, 49426, 0, 0, 0),  -- Emblem of Frost (existing currency)
-(190004, 1, 41596, 0, 0, 0),  -- Emblem of Heroism (alternative currency)
-(190004, 2, 40752, 0, 0, 0),  -- Emblem of Valor (alternative currency)
-(190004, 3, 40753, 0, 0, 0);  -- Emblem of Conquest (alternative currency)
-
--- Note: Custom currency items (99997, 99998, 99999) need to be created in item_template
--- These are referenced in the config but don't exist by default
--- They should be added manually or via a separate SQL script if needed
+(190004, 1, 99997, 0, 0, 0),  -- Progression Token (custom - created in create_custom_currency_items.sql)
+(190004, 2, 99998, 0, 0, 0),  -- Celestial Token (custom - created in create_custom_currency_items.sql)
+(190004, 3, 99999, 0, 0, 0);  -- Bloody Token (custom - created in create_custom_currency_items.sql)
 
 -- ============================================================
 -- COMPLETE!
