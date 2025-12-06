@@ -1,0 +1,67 @@
+/*
+ * Progressive Systems Database Script
+ * Handles database loading events - generates DBC entries automatically
+ */
+
+#include "ProgressiveSystemsWorldScript.h"
+#include "DBCGenerator.h"
+#include "DatabaseScript.h"
+#include "ObjectMgr.h"
+#include "World.h"
+#include "ScriptMgr.h"
+#include "Log.h"
+
+class ProgressiveSystemsDatabaseScript : public DatabaseScript
+{
+public:
+    ProgressiveSystemsDatabaseScript() : DatabaseScript("ProgressiveSystemsDatabaseScript") {}
+
+    void OnAfterDatabasesLoaded(uint32 updateFlags) override
+    {
+        // This is called after all databases are loaded, including item templates
+        // Perfect place to generate DBC entries for custom items!
+        
+        LOG_INFO("module", "Progressive Systems: Databases loaded, generating DBC entries for custom items...");
+        
+        // Initialize DBC Generator if not already done
+        if (sDBCGenerator)
+        {
+            // Reload custom items and generate DBC entries
+            sDBCGenerator->ReloadCustomItems();
+            
+            // Write DBC files
+            std::string dbcDir = "dbc/custom";
+            if (sDBCGenerator->WriteDBCFiles(dbcDir))
+            {
+                LOG_INFO("module", "Progressive Systems: DBC files written successfully to {}", dbcDir);
+                
+                // Generate MPQ patch (optional - can be done manually)
+                std::string outputMPQ = "patches/patch-Z.MPQ";
+                if (sDBCGenerator->GenerateMPQPatch(dbcDir, outputMPQ))
+                {
+                    LOG_INFO("module", "Progressive Systems: MPQ patch generated: {}", outputMPQ);
+                    LOG_INFO("module", "Progressive Systems: Players can download patch from patches/ folder");
+                }
+                else
+                {
+                    LOG_WARN("module", "Progressive Systems: MPQ patch generation failed (this is optional - install pympq: pip install pympq)");
+                }
+            }
+            else
+            {
+                LOG_WARN("module", "Progressive Systems: Failed to write DBC files");
+            }
+        }
+        else
+        {
+            LOG_ERROR("module", "Progressive Systems: DBCGenerator not initialized!");
+        }
+    }
+};
+
+void AddSC_progressive_systems_world_script()
+{
+    // Register DatabaseScript for DBC generation
+    new ProgressiveSystemsDatabaseScript();
+}
+
