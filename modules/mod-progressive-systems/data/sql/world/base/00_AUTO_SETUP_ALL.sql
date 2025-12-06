@@ -387,37 +387,42 @@ WHERE `entry` = 190006;
 -- ============================================================
 -- Set up vendor NPCs with items
 -- Progressive Items NPC (190006) - sells tiered cosmetic items
+-- Reward Shop NPC (190004) - sells currency items
 
--- Ensure NPC has vendor flag (npcflag = 128 for vendor)
+-- Ensure NPCs have vendor flag (npcflag = 128 for vendor)
+-- Also ensure they have gossip flag (npcflag = 1 for gossip)
 UPDATE `creature_template` 
-SET `npcflag` = `npcflag` | 128 
-WHERE `entry` = 190006;
+SET `npcflag` = `npcflag` | 129  -- 128 (vendor) + 1 (gossip)
+WHERE `entry` IN (190004, 190006);
 
--- Add vendor items (tiered shirts - cosmetic items)
+-- Progressive Items Vendor (190006) - Tiered Cosmetic Items
 -- These items exist in item_template by default
-INSERT IGNORE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`) VALUES
-(190006, 0, 4334, 0, 0, 0),  -- White Shirt (Tier 1 - Free)
-(190006, 1, 4335, 0, 0, 0),  -- Red Shirt (Tier 2)
-(190006, 2, 4336, 0, 0, 0),  -- Black Shirt (Tier 3)
-(190006, 3, 14617, 0, 0, 0), -- Sagacious Shirt (Tier 4)
-(190006, 4, 14618, 0, 0, 0), -- Jester's Shirt (Tier 5)
-(190006, 5, 14619, 0, 0, 0), -- Commoner's Shirt (Tier 6)
-(190006, 6, 14620, 0, 0, 0), -- Commoner's Pants (Tier 7)
-(190006, 7, 14621, 0, 0, 0), -- Commoner's Shoes (Tier 8)
-(190006, 8, 14622, 0, 0, 0), -- Commoner's Vest (Tier 9)
-(190006, 9, 14623, 0, 0, 0); -- Commoner's Gloves (Tier 10)
+DELETE FROM `npc_vendor` WHERE `entry` = 190006;
+INSERT INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`) VALUES
+(190006, 0, 4334, 0, 0, 0),   -- White Shirt (Tier 1 - Free)
+(190006, 1, 4335, 0, 0, 0),   -- Red Shirt (Tier 2)
+(190006, 2, 4336, 0, 0, 0),   -- Black Shirt (Tier 3)
+(190006, 3, 14617, 0, 0, 0),  -- Sagacious Shirt (Tier 4)
+(190006, 4, 14618, 0, 0, 0),  -- Jester's Shirt (Tier 5)
+(190006, 5, 14619, 0, 0, 0),  -- Commoner's Shirt (Tier 6)
+(190006, 6, 14620, 0, 0, 0),  -- Commoner's Pants (Tier 7)
+(190006, 7, 14621, 0, 0, 0),  -- Commoner's Shoes (Tier 8)
+(190006, 8, 14622, 0, 0, 0),  -- Commoner's Vest (Tier 9)
+(190006, 9, 14623, 0, 0, 0);  -- Commoner's Gloves (Tier 10)
 
--- Reward Shop NPC (190004) - if it exists, set it up as vendor
-UPDATE `creature_template` 
-SET `npcflag` = `npcflag` | 128 
-WHERE `entry` = 190004;
-
--- Add reward shop items (currency items - these should exist in item_template)
-INSERT IGNORE INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`) VALUES
+-- Reward Shop Vendor (190004) - Currency Items
+-- Note: Custom currency items (99997-99999) should be created in item_template
+-- For now, we'll add existing currency items
+DELETE FROM `npc_vendor` WHERE `entry` = 190004;
+INSERT INTO `npc_vendor` (`entry`, `slot`, `item`, `maxcount`, `incrtime`, `ExtendedCost`) VALUES
 (190004, 0, 49426, 0, 0, 0),  -- Emblem of Frost (existing currency)
-(190004, 1, 99997, 0, 0, 0),  -- Progression Token (custom - needs to be created in item_template)
-(190004, 2, 99998, 0, 0, 0),  -- Celestial Token (custom - needs to be created in item_template)
-(190004, 3, 99999, 0, 0, 0);  -- Bloody Token (custom - needs to be created in item_template)
+(190004, 1, 41596, 0, 0, 0),  -- Emblem of Heroism (alternative currency)
+(190004, 2, 40752, 0, 0, 0),  -- Emblem of Valor (alternative currency)
+(190004, 3, 40753, 0, 0, 0);  -- Emblem of Conquest (alternative currency)
+
+-- Note: Custom currency items (99997, 99998, 99999) need to be created in item_template
+-- These are referenced in the config but don't exist by default
+-- They should be added manually or via a separate SQL script if needed
 
 -- ============================================================
 -- COMPLETE!

@@ -135,3 +135,6 @@ local.properties
 # ==================
 .cache
 compile_commands.json
+# Sensitive test files
+test_mysql*.ps1
+run_verification*.ps1
