@@ -2,7 +2,7 @@
 
 ## 📋 Overview
 
-The **server** (AzerothCore) and **launcher** (Qt application) are **separate projects** and need to be built separately.
+The **server** (AzerothCore) and **launcher** (Qt application) can be built together or separately. **Launcher is enabled by default** (`BUILD_LAUNCHER=ON`).
 
 ## 🔧 Building the Server (AzerothCore)
 
@@ -15,7 +15,7 @@ The **server** (AzerothCore) and **launcher** (Qt application) are **separate pr
 
 ### Build Steps
 
-#### Option 1: Server Only
+#### Option 1: Server + Launcher Together (Default)
 
 ```powershell
 # Navigate to project root
@@ -25,8 +25,34 @@ cd C:\servery\WOTLK-BOTS\azerothcore-wotlk
 mkdir build
 cd build
 
-# Configure (adjust paths as needed)
+# Configure (launcher is enabled by default)
 cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+# Build (both server and launcher)
+cmake --build . --config RelWithDebInfo
+
+# Outputs:
+# - build/bin/RelWithDebInfo/worldserver.exe
+# - build/bin/RelWithDebInfo/WoWLauncher.exe (if Qt found)
+```
+
+**Note**: 
+- Launcher is **enabled by default** (`BUILD_LAUNCHER=ON`)
+- If Qt is not found, the launcher build will be skipped automatically (server will still build)
+- To disable launcher: `cmake .. -DBUILD_LAUNCHER=OFF`
+
+#### Option 2: Server Only
+
+```powershell
+# Navigate to project root
+cd C:\servery\WOTLK-BOTS\azerothcore-wotlk
+
+# Create build directory
+mkdir build
+cd build
+
+# Configure with launcher disabled
+cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_LAUNCHER=OFF
 
 # Build
 cmake --build . --config RelWithDebInfo
@@ -34,28 +60,19 @@ cmake --build . --config RelWithDebInfo
 # Output: build/bin/RelWithDebInfo/worldserver.exe
 ```
 
-#### Option 2: Server + Launcher Together
+#### Installing Qt Automatically
+
+If Qt is not found, you can install it automatically:
 
 ```powershell
-# Navigate to project root
-cd C:\servery\WOTLK-BOTS\azerothcore-wotlk
-
-# Create build directory
-mkdir build
-cd build
-
-# Configure with launcher enabled (requires Qt)
-cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_LAUNCHER=ON
-
-# Build (both server and launcher)
-cmake --build . --config RelWithDebInfo
-
-# Outputs:
-# - build/bin/RelWithDebInfo/worldserver.exe
-# - build/bin/RelWithDebInfo/WoWLauncher.exe
+# Run Qt installation helper
+powershell -ExecutionPolicy Bypass -File tools/launcher/install_qt.ps1
 ```
 
-**Note**: If Qt is not found, the launcher build will be skipped automatically (server will still build).
+This script will:
+- Check for existing Qt installations
+- Install Qt via vcpkg (if available)
+- Provide download links and instructions
 
 ## 🎨 Building the Launcher (Qt Application)
 

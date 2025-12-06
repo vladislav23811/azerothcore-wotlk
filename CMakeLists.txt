@@ -143,13 +143,15 @@ if (BUILD_APPLICATION_WORLDSERVER)
   add_subdirectory(modules)
 endif()
 
-# Build launcher (Qt application) if enabled
+# Build launcher (Qt application) if enabled (default: ON)
 if (BUILD_LAUNCHER)
   if (EXISTS "${CMAKE_SOURCE_DIR}/tools/launcher/CMakeLists.txt")
     add_subdirectory(tools/launcher)
   else()
     message(WARNING "BUILD_LAUNCHER is enabled but tools/launcher/CMakeLists.txt not found")
   endif()
+else()
+  message(STATUS "Launcher: Build disabled (set BUILD_LAUNCHER=ON to enable)")
 endif()
 
 CU_RUN_HOOK("AFTER_SRC_LOAD")
