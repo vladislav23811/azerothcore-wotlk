@@ -3,6 +3,21 @@
 -- Creates custom currency items for Progressive Systems
 -- These items are referenced in the config and used as currency
 -- ============================================================
+-- 
+-- IMPORTANT: NO CLIENT PATCH REQUIRED!
+-- ============================================================
+-- We reuse existing display IDs (64062 = Emblem of Frost icon)
+-- This means ALL players can see these items correctly without
+-- any DBC file modifications or client patches!
+--
+-- Strategy:
+-- 1. Use existing display IDs from default game DBC files
+-- 2. Items will show familiar icons (Emblem of Frost)
+-- 3. Item names distinguish them, not icons
+-- 4. Optional addon can enhance tooltips (ProgressiveSystemsItemIcons.lua)
+--
+-- See: modules/mod-progressive-systems/docs/CUSTOM_ITEMS_GUIDE.md
+-- ============================================================
 
 USE w_world;
 
@@ -15,6 +30,7 @@ USE w_world;
 -- Quality 4 = Epic (purple)
 -- Flags 2048 = Currency Token
 -- Stackable = 2147483647 (unlimited stacking)
+-- Display ID = 64062 (Emblem of Frost - exists in default game!)
 
 -- Progression Token (99997)
 INSERT INTO `item_template` (
