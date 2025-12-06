@@ -256,28 +256,13 @@ endif()
 
 # Fix vcpkg wildcard issue: Remove wildcard patterns from .vcxproj after generation
 # vcpkg adds automatic dependency copying with wildcards that break MSBuild
-# This runs automatically after CMake generates the project file
+# This runs automatically before build
 if(CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}" AND WIN32)
     set(VCXPROJ_FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj")
-    # Use file(GENERATE) to create a script that runs after configure
-    # This ensures the fix runs every time CMake configures
-    # Generate PowerShell script to fix vcpkg wildcards
-    # Escape $ for PowerShell variables using \$ so CMake outputs literal $
-    # ${VCXPROJ_FILE} will be substituted by CMake
-    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/fix_vcpkg_wildcards_$<CONFIG>.ps1"
-        CONTENT "# Fix vcpkg wildcard patterns in .vcxproj file
-\\$vcxproj = '${VCXPROJ_FILE}'
-if (Test-Path \\$vcxproj) {
-    \\$content = Get-Content \\$vcxproj
-    \\$filtered = \\$content | Where-Object { \\$_ -notmatch 'libcrypto-\\\\*' -and \\$_ -notmatch 'libssl-\\\\*' }
-    \\$filtered | Set-Content \\$vcxproj
-}
-"
-    )
-    # Add a custom command that runs the fix script
-    # This will be executed after CMake generates the project
+    # Use inline PowerShell command to avoid file generation escaping issues
+    # This directly filters the .vcxproj file to remove wildcard patterns
     add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
-        COMMAND powershell -ExecutionPolicy Bypass -File "${CMAKE_CURRENT_BINARY_DIR}/fix_vcpkg_wildcards_$<CONFIG>.ps1"
+        COMMAND powershell -ExecutionPolicy Bypass -Command "if (Test-Path '${VCXPROJ_FILE}') { $content = Get-Content '${VCXPROJ_FILE}'; $filtered = $content | Where-Object { $_ -notmatch 'libcrypto-\\*' -and $_ -notmatch 'libssl-\\*' }; $filtered | Set-Content '${VCXPROJ_FILE}' }"
         COMMENT "Fixing vcpkg wildcard patterns in .vcxproj..."
         VERBATIM
     )
