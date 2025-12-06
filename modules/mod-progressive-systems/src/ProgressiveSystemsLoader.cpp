@@ -161,6 +161,7 @@ void Addmod_progressive_systemsScripts()
     AddSC_progressive_systems_commands();        // Commands (.ps upgrade, etc.)
     AddSC_progressive_systems_npcs();            // NPC scripts (placeholder)
     AddSC_progressive_systems_player_script();    // Player event hooks (already registered, but function must exist)
+    // World script handles DBC generation after databases load
     AddSC_progressive_systems_world_script();     // World update hooks (already registered, but function must exist)
     AddSC_progressive_systems_map_script();       // Map/instance event hooks
     

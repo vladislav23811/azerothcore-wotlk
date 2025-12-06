@@ -6,6 +6,7 @@
 #include "DatabaseEnv.h"
 #include "Log.h"
 #include "WorldDatabase.h"
+#include "ObjectMgr.h"
 #include <fstream>
 #include <sstream>
 #include <filesystem>
@@ -13,7 +14,10 @@
 void DBCGenerator::Initialize()
 {
     LOG_INFO("module", "DBCGenerator: Initializing...");
-    ReloadCustomItems();
+    
+    // Don't reload here - wait for items to be loaded first
+    // This will be called after ObjectMgr::LoadItemTemplates()
+    LOG_INFO("module", "DBCGenerator: Ready. Call ReloadCustomItems() after items are loaded.");
 }
 
 bool DBCGenerator::IsCustomItem(ItemTemplate const* item)
@@ -44,7 +48,12 @@ bool DBCGenerator::IsCustomItem(ItemTemplate const* item)
 bool DBCGenerator::GenerateItemDBCEntry(uint32 entry, ItemTemplate const* item)
 {
     if (!item)
-        return false;
+    {
+        // Try to get from ObjectMgr if item is null
+        item = sObjectMgr->GetItemTemplate(entry);
+        if (!item)
+            return false;
+    }
     
     ItemDBCEntry dbcEntry;
     dbcEntry.ID = entry;
@@ -75,12 +84,26 @@ bool DBCGenerator::GenerateDisplayInfoDBCEntry(uint32 displayId, ItemTemplate co
 
 bool DBCGenerator::WriteDBCFiles(const std::string& outputDir)
 {
-    // Create output directory if it doesn't exist
-    std::filesystem::create_directories(outputDir);
+    if (m_customItemDBC.empty())
+    {
+        LOG_INFO("module", "DBCGenerator: No custom items to write");
+        return true; // Not an error, just nothing to do
+    }
     
-    // Write Item.dbc
-    std::string itemDBCPath = outputDir + "/Item.dbc";
-    std::ofstream itemFile(itemDBCPath, std::ios::binary);
+    // Create output directory if it doesn't exist
+    try
+    {
+        std::filesystem::create_directories(outputDir);
+    }
+    catch (const std::exception& e)
+    {
+        LOG_ERROR("module", "DBCGenerator: Failed to create directory {}: {}", outputDir, e.what());
+        return false;
+    }
+    
+    // Write Item.dbc in CSV format (easier to convert to binary DBC later)
+    std::string itemDBCPath = outputDir + "/Item.dbc.csv";
+    std::ofstream itemFile(itemDBCPath);
     
     if (!itemFile.is_open())
     {
@@ -88,23 +111,21 @@ bool DBCGenerator::WriteDBCFiles(const std::string& outputDir)
         return false;
     }
     
-    // Write DBC header (simplified - real DBC has specific format)
-    // For MVP, we'll write a simple format that can be converted later
-    // Or use a DBC library if available
+    // Write CSV header
+    itemFile << "ID,ClassID,SubclassID,SoundOverrideSubclass,Material,DisplayInfoID,InventoryType,SheatheType\n";
     
     // Write entries
     for (const auto& pair : m_customItemDBC)
     {
         const ItemDBCEntry& entry = pair.second;
         
-        // Write in a simple text format (can be converted to binary DBC later)
-        itemFile << entry.ID << "\t"
-                 << entry.ClassID << "\t"
-                 << entry.SubclassID << "\t"
-                 << entry.SoundOverrideSubclass << "\t"
-                 << entry.Material << "\t"
-                 << entry.DisplayInfoID << "\t"
-                 << entry.InventoryType << "\t"
+        itemFile << entry.ID << ","
+                 << entry.ClassID << ","
+                 << entry.SubclassID << ","
+                 << entry.SoundOverrideSubclass << ","
+                 << entry.Material << ","
+                 << entry.DisplayInfoID << ","
+                 << entry.InventoryType << ","
                  << entry.SheatheType << "\n";
     }
     
@@ -156,26 +177,57 @@ void DBCGenerator::ReloadCustomItems()
 {
     m_customItemDBC.clear();
     
+    // Get ObjectMgr to access item templates
+    // We'll process items that are already loaded
+    // This is called after ObjectMgr::LoadItemTemplates()
+    
     // Query all custom items from database
     QueryResult result = WorldDatabase.Query(
         "SELECT entry FROM item_template WHERE entry >= 99990 "
         "UNION "
-        "SELECT custom_entry FROM custom_weapon_templates");
+        "SELECT custom_entry FROM custom_weapon_templates WHERE custom_entry IS NOT NULL");
     
     if (!result)
+    {
+        LOG_INFO("module", "DBCGenerator: No custom items found");
         return;
+    }
     
+    uint32 count = 0;
     do
     {
         uint32 entry = result->Fetch()[0].Get<uint32>();
         
-        // Get item template (should already be loaded)
-        // We'll need to access ObjectMgr here, or pass items to this function
-        // For now, this is a placeholder
+        // Get item template from ObjectMgr (already loaded)
+        // We need to include ObjectMgr.h for this
+        // For now, we'll generate DBC entry directly from database
         
-        LOG_DEBUG("module", "DBCGenerator: Found custom item {}", entry);
+        QueryResult itemResult = WorldDatabase.Query(
+            "SELECT entry, class, subclass, SoundOverrideSubclass, Material, displayid, "
+            "InventoryType, sheath FROM item_template WHERE entry = {}", entry);
+        
+        if (itemResult)
+        {
+            Field* fields = itemResult->Fetch();
+            ItemDBCEntry dbcEntry;
+            dbcEntry.ID = fields[0].Get<uint32>();
+            dbcEntry.ClassID = fields[1].Get<uint32>();
+            dbcEntry.SubclassID = fields[2].Get<uint32>();
+            dbcEntry.SoundOverrideSubclass = fields[3].Get<int32>();
+            dbcEntry.Material = fields[4].Get<uint32>();
+            dbcEntry.DisplayInfoID = fields[5].Get<uint32>();
+            dbcEntry.InventoryType = fields[6].Get<uint32>();
+            dbcEntry.SheatheType = fields[7].Get<uint32>();
+            
+            m_customItemDBC[entry] = dbcEntry;
+            count++;
+            
+            LOG_DEBUG("module", "DBCGenerator: Generated DBC entry for item {}", entry);
+        }
         
     } while (result->NextRow());
+    
+    LOG_INFO("module", "DBCGenerator: Processed {} custom items", count);
 }
 
 bool DBCGenerator::CreateMPQViaTool(const std::string& dbcDir, const std::string& outputMPQ)
