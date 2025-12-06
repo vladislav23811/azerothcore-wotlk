@@ -78,6 +78,13 @@ public:
                         std::filesystem::copy_file(outputMPQ, webLatestPath, std::filesystem::copy_options::overwrite_existing);
                         LOG_INFO("module", "Progressive Systems: Patch available at: {}", webLatestPath);
                         
+                        // Also copy to WoW/Data/ directory for direct download
+                        std::string wowDataDir = webServerPath + "/WoW/Data";
+                        std::filesystem::create_directories(wowDataDir);
+                        std::string wowDataPath = wowDataDir + "/patch-Z.MPQ";
+                        std::filesystem::copy_file(outputMPQ, wowDataPath, std::filesystem::copy_options::overwrite_existing);
+                        LOG_INFO("module", "Progressive Systems: Patch copied to WoW/Data: {}", wowDataPath);
+                        
                         // Update version.txt
                         std::string versionPath = webServerPath + "/patches/version.txt";
                         std::ofstream versionFile(versionPath);
