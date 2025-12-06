@@ -191,14 +191,8 @@ if(NOT IS_STANDALONE_BUILD)
     )
     message(STATUS "Launcher: Output directory set to ${LAUNCHER_OUTPUT_DIR}")
     
-    # Move files from config subfolder to main folder (VS sometimes creates subfolder anyway)
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${LAUNCHER_OUTPUT_DIR}"
-        COMMAND ${CMAKE_COMMAND} -E $<IF:$<EXISTS:${LAUNCHER_OUTPUT_DIR}/$<CONFIG>/WoWLauncher.exe>,copy_if_different,true>
-            "${LAUNCHER_OUTPUT_DIR}/$<CONFIG>/WoWLauncher.exe"
-            "${LAUNCHER_OUTPUT_DIR}/WoWLauncher.exe"
-        COMMENT "Organizing launcher files..."
-    )
+    # Copy Qt DLLs and organize files in launcher folder
+    # Note: Visual Studio may still create a config subfolder, but we set all config paths to the same directory
 endif()
 
 # Install
