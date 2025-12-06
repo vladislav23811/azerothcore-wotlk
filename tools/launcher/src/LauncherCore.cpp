@@ -13,6 +13,7 @@
 #include <QNetworkReply>
 #include <QEventLoop>
 #include <QTimer>
+#include <QStringList>
 
 LauncherCore::LauncherCore(QObject *parent)
     : QObject(parent)
@@ -52,7 +53,11 @@ void LauncherCore::loadConfig()
             QJsonObject obj = doc.object();
             m_gamePath = obj["wow_path"].toString();
             m_serverUrl = obj["server_url"].toString();
-            m_gameZipUrl = obj["game_zip_url"].toString();
+            // Support both old "game_zip_url" and new "game_folder_url"
+            m_gameZipUrl = obj["game_folder_url"].toString();
+            if (m_gameZipUrl.isEmpty()) {
+                m_gameZipUrl = obj["game_zip_url"].toString(); // Legacy support
+            }
             m_patchVersionUrl = obj["patch_version_url"].toString();
             m_patchDownloadUrl = obj["patch_download_url"].toString();
             configFile.close();
@@ -63,7 +68,8 @@ void LauncherCore::loadConfig()
     // Fallback to QSettings or defaults
     m_gamePath = m_settings->value("gamePath", "C:/WoW").toString();
     m_serverUrl = m_settings->value("serverUrl", "http://localhost").toString();
-    m_gameZipUrl = m_settings->value("gameZipUrl", m_serverUrl + "/WOTLKHD.zip").toString();
+    // Game folder URL (extracted game files)
+    m_gameZipUrl = m_settings->value("gameFolderUrl", m_serverUrl + "/WoW/").toString();
     m_patchVersionUrl = m_settings->value("patchVersionUrl", m_serverUrl + "/patches/version.txt").toString();
     m_patchDownloadUrl = m_settings->value("patchDownloadUrl", m_serverUrl + "/patches/latest/patch-Z.MPQ").toString();
 }
@@ -73,7 +79,7 @@ void LauncherCore::saveConfig()
     QJsonObject obj;
     obj["wow_path"] = m_gamePath;
     obj["server_url"] = m_serverUrl;
-    obj["game_zip_url"] = m_gameZipUrl;
+    obj["game_folder_url"] = m_gameZipUrl; // Now it's folder URL, not ZIP
     obj["patch_version_url"] = m_patchVersionUrl;
     obj["patch_download_url"] = m_patchDownloadUrl;
     
@@ -267,8 +273,136 @@ void LauncherCore::launchGame()
 
 void LauncherCore::installGame()
 {
-    // TODO: Implement game installation from ZIP
-    emit statusUpdated("Game installation not yet implemented.");
+    emit statusUpdated("Starting game installation from server folder...");
+    downloadGameFromFolder();
+}
+
+void LauncherCore::downloadGameFromFolder()
+{
+    // Get game folder URL
+    QString gameFolderUrl = m_gameZipUrl;
+    if (!gameFolderUrl.endsWith("/")) {
+        gameFolderUrl += "/";
+    }
+    
+    emit statusUpdated(QString("Downloading game from: %1").arg(gameFolderUrl));
+    emit progressUpdated(0, "Preparing download...");
+    
+    // Create game directory
+    QDir gameDir(m_gamePath);
+    if (!gameDir.exists()) {
+        gameDir.mkpath(".");
+        emit statusUpdated(QString("Created game directory: %1").arg(m_gamePath));
+    }
+    
+    // First, try to get file list from server
+    QString fileListUrl = gameFolderUrl + "filelist.txt";
+    QNetworkAccessManager manager;
+    QNetworkRequest request(QUrl(fileListUrl));
+    request.setRawHeader("User-Agent", "WoW-Launcher/1.0");
+    
+    QNetworkReply *reply = manager.get(request);
+    QEventLoop loop;
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    QTimer::singleShot(10000, &loop, &QEventLoop::quit); // 10 second timeout
+    loop.exec();
+    
+    QStringList filesToDownload;
+    
+    if (reply->error() == QNetworkReply::NoError) {
+        // Got file list from server
+        QString fileList = QString::fromUtf8(reply->readAll());
+        filesToDownload = fileList.split("\n", Qt::SkipEmptyParts);
+        emit statusUpdated(QString("Found %1 files to download").arg(filesToDownload.size()));
+    } else {
+        // No file list, download critical files only
+        emit statusUpdated("No file list found, downloading critical files only...");
+        filesToDownload = {
+            "Wow.exe",
+            "Data/enUS/patch-enUS.MPQ",
+            "Data/enUS/patch-enUS-2.MPQ",
+            "Data/enUS/patch-enUS-3.MPQ",
+            "Data/patch.MPQ",
+            "Data/patch-2.MPQ",
+            "Data/patch-3.MPQ"
+        };
+    }
+    reply->deleteLater();
+    
+    if (filesToDownload.isEmpty()) {
+        emit errorOccurred("No files to download!");
+        return;
+    }
+    
+    m_isDownloading = true;
+    m_currentDownload = "game";
+    
+    int totalFiles = filesToDownload.size();
+    int downloaded = 0;
+    int failed = 0;
+    
+    for (const QString &file : filesToDownload) {
+        QString fileUrl = gameFolderUrl + file;
+        QString localPath = m_gamePath + "/" + file;
+        
+        // Create directory if needed
+        QFileInfo fileInfo(localPath);
+        QDir dir = fileInfo.absoluteDir();
+        if (!dir.exists()) {
+            dir.mkpath(".");
+        }
+        
+        // Skip if file already exists and is recent (optional - can be made configurable)
+        if (QFileInfo::exists(localPath)) {
+            emit statusUpdated(QString("Skipping existing file: %1").arg(file));
+            downloaded++;
+            emit progressUpdated((downloaded * 100) / totalFiles, 
+                QString("Downloaded %1/%2 files").arg(downloaded).arg(totalFiles));
+            continue;
+        }
+        
+        emit statusUpdated(QString("Downloading: %1").arg(file));
+        
+        // Download file
+        QNetworkRequest fileRequest(QUrl(fileUrl));
+        fileRequest.setRawHeader("User-Agent", "WoW-Launcher/1.0");
+        QNetworkReply *fileReply = manager.get(fileRequest);
+        
+        QEventLoop fileLoop;
+        connect(fileReply, &QNetworkReply::finished, &fileLoop, &QEventLoop::quit);
+        fileLoop.exec();
+        
+        if (fileReply->error() == QNetworkReply::NoError) {
+            QFile outputFile(localPath);
+            if (outputFile.open(QIODevice::WriteOnly)) {
+                outputFile.write(fileReply->readAll());
+                outputFile.close();
+                downloaded++;
+                emit progressUpdated((downloaded * 100) / totalFiles, 
+                    QString("Downloaded %1/%2 files").arg(downloaded).arg(totalFiles));
+            } else {
+                emit errorOccurred(QString("Cannot write file: %1").arg(localPath));
+                failed++;
+            }
+        } else {
+            emit errorOccurred(QString("Failed to download %1: %2").arg(file, fileReply->errorString()));
+            failed++;
+        }
+        
+        fileReply->deleteLater();
+    }
+    
+    m_isDownloading = false;
+    
+    if (downloaded > 0) {
+        emit statusUpdated(QString("Downloaded %1/%2 files successfully").arg(downloaded).arg(totalFiles));
+        if (failed > 0) {
+            emit statusUpdated(QString("Warning: %1 files failed to download").arg(failed));
+        }
+        emit progressUpdated(100, "Installation complete");
+    } else {
+        emit errorOccurred("No files were downloaded!");
+    }
 }
 
 void LauncherCore::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
@@ -294,6 +428,9 @@ void LauncherCore::onDownloadFinished(const QString &filePath)
         // Update UI to show new version
         QString newVersion = getLocalPatchVersion();
         emit statusUpdated(QString("Patch version updated to: %1").arg(newVersion));
+    } else if (m_currentDownload == "game") {
+        emit statusUpdated("Game installation complete!");
+        emit statusUpdated("You can now launch the game.");
     }
     
     m_currentDownload = "";

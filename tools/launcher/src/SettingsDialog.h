@@ -19,14 +19,14 @@ public:
     // Getters
     QString getGamePath() const;
     QString getServerUrl() const;
-    QString getGameZipUrl() const;
+    QString getGameFolderUrl() const;
     QString getPatchVersionUrl() const;
     QString getPatchDownloadUrl() const;
     
     // Setters
     void setGamePath(const QString &path);
     void setServerUrl(const QString &url);
-    void setGameZipUrl(const QString &url);
+    void setGameFolderUrl(const QString &url);
     void setPatchVersionUrl(const QString &url);
     void setPatchDownloadUrl(const QString &url);
 

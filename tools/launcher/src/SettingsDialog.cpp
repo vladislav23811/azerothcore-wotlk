@@ -38,9 +38,9 @@ void SettingsDialog::setupUI()
     m_serverUrlEdit->setPlaceholderText("http://localhost");
     serverLayout->addWidget(m_serverUrlEdit);
     
-    serverLayout->addWidget(new QLabel("Game ZIP URL:", this));
+    serverLayout->addWidget(new QLabel("Game Folder URL:", this));
     m_gameZipUrlEdit = new QLineEdit(this);
-    m_gameZipUrlEdit->setPlaceholderText("http://localhost/WOTLKHD.zip");
+    m_gameZipUrlEdit->setPlaceholderText("http://localhost/WoW/");
     serverLayout->addWidget(m_gameZipUrlEdit);
     
     serverLayout->addWidget(new QLabel("Patch Version URL:", this));
@@ -92,7 +92,7 @@ void SettingsDialog::onServerUrlChanged()
     
     // Auto-update URLs based on server URL
     if (m_gameZipUrlEdit->text().isEmpty() || m_gameZipUrlEdit->text().contains("localhost")) {
-        m_gameZipUrlEdit->setText(serverUrl + "/WOTLKHD.zip");
+        m_gameZipUrlEdit->setText(serverUrl + "/WoW/");
     }
     if (m_patchVersionUrlEdit->text().isEmpty() || m_patchVersionUrlEdit->text().contains("localhost")) {
         m_patchVersionUrlEdit->setText(serverUrl + "/patches/version.txt");
@@ -123,12 +123,12 @@ void SettingsDialog::setServerUrl(const QString &url)
     onServerUrlChanged();
 }
 
-QString SettingsDialog::getGameZipUrl() const
+QString SettingsDialog::getGameFolderUrl() const
 {
     return m_gameZipUrlEdit->text();
 }
 
-void SettingsDialog::setGameZipUrl(const QString &url)
+void SettingsDialog::setGameFolderUrl(const QString &url)
 {
     m_gameZipUrlEdit->setText(url);
 }

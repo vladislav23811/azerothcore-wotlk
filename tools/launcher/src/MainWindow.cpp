@@ -158,8 +158,17 @@ void MainWindow::updateUI()
 void MainWindow::onLaunchClicked()
 {
     if (!m_launcherCore->isGameInstalled()) {
-        QMessageBox::warning(this, "Game Not Installed", 
-            "WoW is not installed. Please install the game first.");
+        int ret = QMessageBox::question(this, "Game Not Installed", 
+            "WoW is not installed. Would you like to download and install it now?",
+            QMessageBox::Yes | QMessageBox::No);
+        
+        if (ret == QMessageBox::Yes) {
+            m_isUpdating = true;
+            m_launchButton->setEnabled(false);
+            m_launchButton->setText("Installing...");
+            m_checkUpdatesButton->setEnabled(false);
+            m_launcherCore->installGame();
+        }
         return;
     }
     
@@ -210,9 +219,11 @@ void MainWindow::onStatusUpdated(const QString &status)
     
     // Reset update state if status indicates completion
     if (status.contains("complete", Qt::CaseInsensitive) || 
-        status.contains("ready", Qt::CaseInsensitive)) {
+        status.contains("ready", Qt::CaseInsensitive) ||
+        status.contains("installation complete", Qt::CaseInsensitive)) {
         m_isUpdating = false;
         m_checkUpdatesButton->setEnabled(true);
+        m_launchButton->setText("Launch WoW");
         updateUI();
     }
 }
