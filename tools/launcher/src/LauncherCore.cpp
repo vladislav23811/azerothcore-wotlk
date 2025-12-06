@@ -126,6 +126,68 @@ bool LauncherCore::isGameInstalled() const
     return wowExe.exists();
 }
 
+QString LauncherCore::detectGameLanguage() const
+{
+    if (m_gamePath.isEmpty())
+        return "enUS"; // Default
+    
+    // Check Data folder for language subfolders
+    QDir dataDir(m_gamePath + "/Data");
+    if (!dataDir.exists())
+        return "enUS";
+    
+    // Common language codes
+    QStringList languages = {"enUS", "enGB", "esES", "esMX", "frFR", "deDE", "ruRU", "koKR", "zhCN", "zhTW"};
+    
+    for (const QString &lang : languages) {
+        QDir langDir(dataDir.absoluteFilePath(lang));
+        if (langDir.exists()) {
+            // Check if it has MPQ files
+            QFileInfoList files = langDir.entryInfoList(QStringList() << "*.MPQ", QDir::Files);
+            if (!files.isEmpty()) {
+                return lang;
+            }
+        }
+    }
+    
+    // Fallback: check locale.wtf or realmlist.wtf
+    QFile localeFile(m_gamePath + "/Data/locale.wtf");
+    if (localeFile.open(QIODevice::ReadOnly)) {
+        QByteArray data = localeFile.readAll();
+        for (const QString &lang : languages) {
+            if (data.contains(lang.toUtf8())) {
+                return lang;
+            }
+        }
+    }
+    
+    return "enUS"; // Default fallback
+}
+
+bool LauncherCore::needsFullInstall() const
+{
+    if (!isGameInstalled())
+        return true;
+    
+    // Check for critical files
+    QStringList criticalFiles = {
+        "/Wow.exe",
+        "/Data/patch.MPQ",
+        "/Data/patch-2.MPQ"
+    };
+    
+    int missingCount = 0;
+    for (const QString &file : criticalFiles) {
+        if (!QFileInfo::exists(m_gamePath + file)) {
+            missingCount++;
+        }
+    }
+    
+    // If more than 1 critical file missing, suggest full install
+    // Otherwise, just patches needed
+    return missingCount > 1;
+}
+
 QString LauncherCore::getPatchVersion() const
 {
     return getLocalPatchVersion();
@@ -179,6 +241,10 @@ void LauncherCore::checkForUpdates()
         emit progressUpdated(0, "Game not installed");
         return;
     }
+    
+    // Detect language
+    QString language = detectGameLanguage();
+    emit statusUpdated(QString("Detected game language: %1").arg(language));
     
     // Check for patch updates
     QString localVersion = getLocalPatchVersion();
@@ -274,7 +340,120 @@ void LauncherCore::launchGame()
 void LauncherCore::installGame()
 {
     emit statusUpdated("Starting game installation from server folder...");
-    downloadGameFromFolder();
+    
+    // Check if game is partially installed
+    if (isGameInstalled() && !needsFullInstall()) {
+        // Just download patches
+        emit statusUpdated("Game detected. Downloading patches only...");
+        downloadPatchesOnly();
+    } else {
+        // Full install
+        downloadGameFromFolder();
+    }
+}
+
+void LauncherCore::downloadPatchesOnly()
+{
+    // Get game folder URL
+    QString gameFolderUrl = m_gameZipUrl;
+    if (!gameFolderUrl.endsWith("/")) {
+        gameFolderUrl += "/";
+    }
+    
+    // Detect language
+    QString language = detectGameLanguage();
+    emit statusUpdated(QString("Detected language: %1").arg(language));
+    emit statusUpdated("Downloading patches only...");
+    
+    // List of patch files to download
+    QStringList patchFiles = {
+        QString("Data/%1/patch-%1.MPQ").arg(language),
+        QString("Data/%1/patch-%1-2.MPQ").arg(language),
+        QString("Data/%1/patch-%1-3.MPQ").arg(language),
+        "Data/patch.MPQ",
+        "Data/patch-2.MPQ",
+        "Data/patch-3.MPQ",
+        "Data/patch-Z.MPQ" // Custom patch
+    };
+    
+    // Filter to only missing files
+    QStringList filesToDownload;
+    for (const QString &file : patchFiles) {
+        QString localPath = m_gamePath + "/" + file;
+        if (!QFileInfo::exists(localPath)) {
+            filesToDownload.append(file);
+        }
+    }
+    
+    if (filesToDownload.isEmpty()) {
+        emit statusUpdated("All patches are up to date!");
+        emit progressUpdated(100, "Up to date");
+        return;
+    }
+    
+    emit statusUpdated(QString("Found %1 missing patches").arg(filesToDownload.size()));
+    
+    m_isDownloading = true;
+    m_currentDownload = "patches";
+    
+    QNetworkAccessManager manager;
+    int totalFiles = filesToDownload.size();
+    int downloaded = 0;
+    int failed = 0;
+    
+    for (const QString &file : filesToDownload) {
+        QString fileUrl = gameFolderUrl + file;
+        QString localPath = m_gamePath + "/" + file;
+        
+        // Create directory if needed
+        QFileInfo fileInfo(localPath);
+        QDir dir = fileInfo.absoluteDir();
+        if (!dir.exists()) {
+            dir.mkpath(".");
+        }
+        
+        emit statusUpdated(QString("Downloading patch: %1").arg(file));
+        
+        // Download file
+        QNetworkRequest fileRequest(QUrl(fileUrl));
+        fileRequest.setRawHeader("User-Agent", "WoW-Launcher/1.0");
+        QNetworkReply *fileReply = manager.get(fileRequest);
+        
+        QEventLoop fileLoop;
+        connect(fileReply, &QNetworkReply::finished, &fileLoop, &QEventLoop::quit);
+        fileLoop.exec();
+        
+        if (fileReply->error() == QNetworkReply::NoError) {
+            QFile outputFile(localPath);
+            if (outputFile.open(QIODevice::WriteOnly)) {
+                outputFile.write(fileReply->readAll());
+                outputFile.close();
+                downloaded++;
+                emit progressUpdated((downloaded * 100) / totalFiles, 
+                    QString("Downloaded %1/%2 patches").arg(downloaded).arg(totalFiles));
+            } else {
+                emit errorOccurred(QString("Cannot write file: %1").arg(localPath));
+                failed++;
+            }
+        } else {
+            emit errorOccurred(QString("Failed to download %1: %2").arg(file, fileReply->errorString()));
+            failed++;
+        }
+        
+        fileReply->deleteLater();
+    }
+    
+    m_isDownloading = false;
+    
+    if (downloaded > 0) {
+        emit statusUpdated(QString("Downloaded %1/%2 patches successfully").arg(downloaded).arg(totalFiles));
+        if (failed > 0) {
+            emit statusUpdated(QString("Warning: %1 patches failed to download").arg(failed));
+        }
+        emit progressUpdated(100, "Patches installed");
+    } else {
+        emit errorOccurred("No patches were downloaded!");
+    }
 }
 
 void LauncherCore::downloadGameFromFolder()
@@ -295,6 +474,10 @@ void LauncherCore::downloadGameFromFolder()
         emit statusUpdated(QString("Created game directory: %1").arg(m_gamePath));
     }
     
+    // Detect language if game partially installed
+    QString language = detectGameLanguage();
+    emit statusUpdated(QString("Using language: %1").arg(language));
+    
     // First, try to get file list from server
     QString fileListUrl = gameFolderUrl + "filelist.txt";
     QNetworkAccessManager manager;
@@ -312,20 +495,36 @@ void LauncherCore::downloadGameFromFolder()
     if (reply->error() == QNetworkReply::NoError) {
         // Got file list from server
         QString fileList = QString::fromUtf8(reply->readAll());
-        filesToDownload = fileList.split("\n", Qt::SkipEmptyParts);
-        emit statusUpdated(QString("Found %1 files to download").arg(filesToDownload.size()));
+        QStringList allFiles = fileList.split("\n", Qt::SkipEmptyParts);
+        
+        // Filter files based on what's missing
+        for (const QString &file : allFiles) {
+            QString localPath = m_gamePath + "/" + file;
+            if (!QFileInfo::exists(localPath)) {
+                filesToDownload.append(file);
+            }
+        }
+        
+        emit statusUpdated(QString("Found %1 missing files to download").arg(filesToDownload.size()));
     } else {
         // No file list, download critical files only
         emit statusUpdated("No file list found, downloading critical files only...");
-        filesToDownload = {
+        QStringList criticalFiles = {
             "Wow.exe",
-            "Data/enUS/patch-enUS.MPQ",
-            "Data/enUS/patch-enUS-2.MPQ",
-            "Data/enUS/patch-enUS-3.MPQ",
+            QString("Data/%1/patch-%1.MPQ").arg(language),
+            QString("Data/%1/patch-%1-2.MPQ").arg(language),
+            QString("Data/%1/patch-%1-3.MPQ").arg(language),
             "Data/patch.MPQ",
             "Data/patch-2.MPQ",
             "Data/patch-3.MPQ"
         };
+        
+        // Only add files that don't exist
+        for (const QString &file : criticalFiles) {
+            if (!QFileInfo::exists(m_gamePath + "/" + file)) {
+                filesToDownload.append(file);
+            }
+        }
     }
     reply->deleteLater();
     
@@ -352,13 +551,17 @@ void LauncherCore::downloadGameFromFolder()
             dir.mkpath(".");
         }
         
-        // Skip if file already exists and is recent (optional - can be made configurable)
+        // Skip if file already exists (we already filtered, but double-check)
         if (QFileInfo::exists(localPath)) {
-            emit statusUpdated(QString("Skipping existing file: %1").arg(file));
-            downloaded++;
-            emit progressUpdated((downloaded * 100) / totalFiles, 
-                QString("Downloaded %1/%2 files").arg(downloaded).arg(totalFiles));
-            continue;
+            // Check file size - if 0 bytes or very small, re-download
+            QFileInfo fileInfo(localPath);
+            if (fileInfo.size() > 100) { // File exists and has content
+                emit statusUpdated(QString("Skipping existing file: %1").arg(file));
+                downloaded++;
+                emit progressUpdated((downloaded * 100) / totalFiles, 
+                    QString("Downloaded %1/%2 files").arg(downloaded).arg(totalFiles));
+                continue;
+            }
         }
         
         emit statusUpdated(QString("Downloading: %1").arg(file));

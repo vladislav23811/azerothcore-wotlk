@@ -24,12 +24,15 @@ public:
     // Game status
     bool isGameInstalled() const;
     QString getPatchVersion() const;
+    QString detectGameLanguage() const; // Detect client language (enUS, enGB, esES, frFR, etc.)
+    bool needsFullInstall() const; // Check if full install needed or just patches
     
     // Actions
     void checkForUpdates();
     void launchGame();
     void installGame();
     void downloadGameFromFolder();
+    void downloadPatchesOnly(); // Download only patches for existing installation
 
 signals:
     void progressUpdated(int percentage, const QString &status);

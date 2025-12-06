@@ -147,9 +147,17 @@ void MainWindow::updateUI()
     QString patchVersion = m_launcherCore->getPatchVersion();
     m_patchVersionLabel->setText("Patch Version: " + (patchVersion.isEmpty() ? "Unknown" : patchVersion));
     
-    // Update game status
+    // Update game status with language info
     bool gameInstalled = m_launcherCore->isGameInstalled();
-    m_gameStatusLabel->setText("Status: " + (gameInstalled ? "Installed" : "Not Installed"));
+    QString statusText = gameInstalled ? "Installed" : "Not Installed";
+    if (gameInstalled) {
+        QString language = m_launcherCore->detectGameLanguage();
+        statusText += QString(" (%1)").arg(language);
+        if (!m_launcherCore->needsFullInstall()) {
+            statusText += " - Patches only";
+        }
+    }
+    m_gameStatusLabel->setText("Status: " + statusText);
     
     // Update launch button
     m_launchButton->setEnabled(gameInstalled && !m_isUpdating && !m_isLaunching);
@@ -185,7 +193,14 @@ void MainWindow::onCheckUpdatesClicked()
     m_checkUpdatesButton->setEnabled(false);
     m_launchButton->setEnabled(false);
     
-    m_launcherCore->checkForUpdates();
+    // Check if game is installed
+    if (m_launcherCore->isGameInstalled()) {
+        // Check for updates (patches)
+        m_launcherCore->checkForUpdates();
+    } else {
+        // Install game
+        m_launcherCore->installGame();
+    }
 }
 
 void MainWindow::onSettingsClicked()
