@@ -15,6 +15,8 @@ The **server** (AzerothCore) and **launcher** (Qt application) are **separate pr
 
 ### Build Steps
 
+#### Option 1: Server Only
+
 ```powershell
 # Navigate to project root
 cd C:\servery\WOTLK-BOTS\azerothcore-wotlk
@@ -32,6 +34,29 @@ cmake --build . --config RelWithDebInfo
 # Output: build/bin/RelWithDebInfo/worldserver.exe
 ```
 
+#### Option 2: Server + Launcher Together
+
+```powershell
+# Navigate to project root
+cd C:\servery\WOTLK-BOTS\azerothcore-wotlk
+
+# Create build directory
+mkdir build
+cd build
+
+# Configure with launcher enabled (requires Qt)
+cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_LAUNCHER=ON
+
+# Build (both server and launcher)
+cmake --build . --config RelWithDebInfo
+
+# Outputs:
+# - build/bin/RelWithDebInfo/worldserver.exe
+# - build/bin/RelWithDebInfo/WoWLauncher.exe
+```
+
+**Note**: If Qt is not found, the launcher build will be skipped automatically (server will still build).
+
 ## 🎨 Building the Launcher (Qt Application)
 
 ### Prerequisites
@@ -41,6 +66,8 @@ cmake --build . --config RelWithDebInfo
 - Python 3 (for MPQ generation tool)
 
 ### Build Steps
+
+#### Option 1: Standalone Build (Recommended for launcher-only)
 
 ```powershell
 # Navigate to launcher directory
@@ -59,6 +86,10 @@ cmake --build . --config Release
 # Output: build/Release/WoWLauncher.exe
 ```
 
+#### Option 2: Integrated Build (with server)
+
+See "Option 2" in the Server build section above. Use `-DBUILD_LAUNCHER=ON` when configuring.
+
 ### Using vcpkg (Recommended)
 
 ```powershell
@@ -74,28 +105,30 @@ cmake --build . --config Release
 
 ## 🚀 Quick Build Script
 
-Create `build_all.ps1`:
+Use the provided `build_all.ps1` script:
 
 ```powershell
-# Build Server
-Write-Host "Building AzerothCore server..." -ForegroundColor Cyan
-cd C:\servery\WOTLK-BOTS\azerothcore-wotlk
-if (-not (Test-Path build)) { mkdir build }
+# Run from project root
+.\build_all.ps1
+```
+
+The script will:
+1. Ask if you want to build launcher with server
+2. Configure and build server (and launcher if enabled)
+3. Optionally build launcher separately if Qt wasn't available during integrated build
+
+**Manual commands** (if you prefer):
+
+```powershell
+# Build Server + Launcher together
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
+cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_LAUNCHER=ON
 cmake --build . --config RelWithDebInfo
 
-# Build Launcher
-Write-Host "`nBuilding Qt launcher..." -ForegroundColor Cyan
-cd ..\tools\launcher
-if (-not (Test-Path build)) { mkdir build }
-cd build
+# Or build launcher separately
+cd tools\launcher\build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config Release
-
-Write-Host "`n✅ Build complete!" -ForegroundColor Green
-Write-Host "Server: C:\servery\WOTLK-BOTS\azerothcore-wotlk\build\bin\RelWithDebInfo\worldserver.exe" -ForegroundColor White
-Write-Host "Launcher: C:\servery\WOTLK-BOTS\azerothcore-wotlk\tools\launcher\build\Release\WoWLauncher.exe" -ForegroundColor White
 ```
 
 ## 📦 Build Output Locations
@@ -108,18 +141,24 @@ Write-Host "Launcher: C:\servery\WOTLK-BOTS\azerothcore-wotlk\tools\launcher\bui
   - `mod-progressive-systems.dll`
 
 ### Launcher
-- **Executable**: `tools/launcher/build/Release/WoWLauncher.exe`
-- **Qt DLLs**: Same folder (or use `windeployqt`)
+- **When built with server** (`-DBUILD_LAUNCHER=ON`):
+  - **Executable**: `build/bin/RelWithDebInfo/WoWLauncher.exe`
+  - **Qt DLLs**: Same folder (or use `windeployqt`)
+- **When built standalone**:
+  - **Executable**: `tools/launcher/build/Release/WoWLauncher.exe`
+  - **Qt DLLs**: Same folder (or use `windeployqt`)
 
 ## ⚠️ Important Notes
 
-1. **Separate Builds**: Server and launcher are independent projects
-2. **Different Dependencies**: 
+1. **Integrated Build**: You can now build both together using `-DBUILD_LAUNCHER=ON`
+2. **Standalone Build**: Launcher can still be built separately (recommended if Qt path is complex)
+3. **Different Dependencies**: 
    - Server needs AzerothCore dependencies
-   - Launcher needs Qt libraries
-3. **Different Build Times**: 
+   - Launcher needs Qt libraries (optional, won't fail server build if missing)
+4. **Different Build Times**: 
    - Server: ~10-30 minutes (full rebuild)
    - Launcher: ~1-2 minutes (small project)
+5. **Qt Detection**: If Qt is not found during integrated build, launcher is skipped automatically
 
 ## ✅ After Building
 
@@ -131,6 +170,9 @@ Write-Host "Launcher: C:\servery\WOTLK-BOTS\azerothcore-wotlk\tools\launcher\bui
 ## 🎯 Summary
 
 - **Server**: Build in `build/` directory (main project)
-- **Launcher**: Build in `tools/launcher/build/` directory (separate project)
+- **Launcher**: 
+  - **Integrated**: Build with server using `-DBUILD_LAUNCHER=ON` → `build/bin/RelWithDebInfo/WoWLauncher.exe`
+  - **Standalone**: Build in `tools/launcher/build/` → `tools/launcher/build/Release/WoWLauncher.exe`
 - **Both needed**: Server for game, Launcher for players
+- **Flexibility**: Choose integrated or standalone based on your Qt setup
 

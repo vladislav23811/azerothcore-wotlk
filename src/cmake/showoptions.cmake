@@ -45,6 +45,12 @@ else()
   message("* Build tools                     : No")
 endif()
 
+if (BUILD_LAUNCHER)
+  message("* Build launcher                  : Yes")
+else()
+  message("* Build launcher                  : No  (default)")
+endif()
+
 if (SCRIPTS AND (NOT SCRIPTS STREQUAL "none"))
   message("* Build with scripts              : Yes (${SCRIPTS})")
 
