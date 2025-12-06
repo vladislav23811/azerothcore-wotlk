@@ -171,6 +171,26 @@ void MainWindow::onLaunchClicked()
             QMessageBox::Yes | QMessageBox::No);
         
         if (ret == QMessageBox::Yes) {
+            // Prompt for installation folder
+            QString currentPath = m_launcherCore->getGamePath();
+            if (currentPath.isEmpty()) {
+                currentPath = "C:/WoW"; // Default suggestion
+            }
+            
+            QString installPath = QFileDialog::getExistingDirectory(this, 
+                "Select WoW Installation Folder", 
+                currentPath,
+                QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+            
+            if (installPath.isEmpty()) {
+                // User cancelled folder selection
+                return;
+            }
+            
+            // Set the game path before installing
+            m_launcherCore->setGamePath(installPath);
+            updateUI(); // Update UI to show new path
+            
             m_isUpdating = true;
             m_launchButton->setEnabled(false);
             m_launchButton->setText("Installing...");
