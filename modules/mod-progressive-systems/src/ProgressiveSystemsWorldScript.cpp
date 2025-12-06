@@ -10,6 +10,10 @@
 #include "World.h"
 #include "ScriptMgr.h"
 #include "Log.h"
+#include "Config.h"
+#include <filesystem>
+#include <fstream>
+#include <chrono>
 
 class ProgressiveSystemsDatabaseScript : public DatabaseScript
 {
@@ -32,6 +36,28 @@ public:
             // Get paths from config
             std::string dbcDir = sConfigMgr->GetOption<std::string>("ProgressiveSystems.DBC.OutputDir", "dbc/custom");
             std::string outputMPQ = sConfigMgr->GetOption<std::string>("ProgressiveSystems.DBC.MPQOutput", "patches/patch-Z.MPQ");
+            
+            // Also copy to web server if configured
+            std::string webServerPath = sConfigMgr->GetOption<std::string>("ProgressiveSystems.DBC.WebServerPath", "");
+            if (!webServerPath.empty() && std::filesystem::exists(outputMPQ))
+            {
+                std::string webPatchPath = webServerPath + "/patches/patch-Z.MPQ";
+                std::filesystem::create_directories(std::filesystem::path(webPatchPath).parent_path());
+                std::filesystem::copy_file(outputMPQ, webPatchPath, std::filesystem::copy_options::overwrite_existing);
+                LOG_INFO("module", "Progressive Systems: Patch copied to web server: {}", webPatchPath);
+                
+                // Update version.txt
+                std::string versionPath = webServerPath + "/patches/version.txt";
+                std::ofstream versionFile(versionPath);
+                if (versionFile.is_open())
+                {
+                    auto now = std::chrono::system_clock::now();
+                    auto time = std::chrono::system_clock::to_time_t(now);
+                    versionFile << time;
+                    versionFile.close();
+                    LOG_INFO("module", "Progressive Systems: Version file updated: {}", versionPath);
+                }
+            }
             
             // Write DBC files
             if (sDBCGenerator->WriteDBCFiles(dbcDir))
