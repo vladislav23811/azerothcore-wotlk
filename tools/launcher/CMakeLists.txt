@@ -180,12 +180,25 @@ endif()
 
 # Set output directory to dedicated launcher folder
 if(NOT IS_STANDALONE_BUILD)
-    # Output to build/wowlauncher/ for easy identification
+    # Output to build/wowlauncher/ for easy identification (no config subfolder)
     set(LAUNCHER_OUTPUT_DIR "${CMAKE_BINARY_DIR}/wowlauncher")
     set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${LAUNCHER_OUTPUT_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${LAUNCHER_OUTPUT_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${LAUNCHER_OUTPUT_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${LAUNCHER_OUTPUT_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${LAUNCHER_OUTPUT_DIR}"
     )
     message(STATUS "Launcher: Output directory set to ${LAUNCHER_OUTPUT_DIR}")
+    
+    # Move files from config subfolder to main folder (VS sometimes creates subfolder anyway)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${LAUNCHER_OUTPUT_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E $<IF:$<EXISTS:${LAUNCHER_OUTPUT_DIR}/$<CONFIG>/WoWLauncher.exe>,copy_if_different,true>
+            "${LAUNCHER_OUTPUT_DIR}/$<CONFIG>/WoWLauncher.exe"
+            "${LAUNCHER_OUTPUT_DIR}/WoWLauncher.exe"
+        COMMENT "Organizing launcher files..."
+    )
 endif()
 
 # Install
