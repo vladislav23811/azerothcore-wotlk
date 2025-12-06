@@ -7,6 +7,8 @@
 #include "Log.h"
 #include "WorldDatabase.h"
 #include "ObjectMgr.h"
+#include "Config.h"
+#include "QueryResult.h"
 #include <fstream>
 #include <sstream>
 #include <filesystem>
