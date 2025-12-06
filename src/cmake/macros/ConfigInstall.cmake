@@ -78,6 +78,11 @@ endfunction()
 
 function(CopyModuleConfig configDir)
   set(postPath "configs/modules")
+  
+  # Get the filename without path
+  get_filename_component(configFileName "${configDir}" NAME)
+  # Remove .dist extension to get the actual config filename
+  string(REGEX REPLACE "\.dist$" "" configFileNameNoDist "${configFileName}")
 
   if(WIN32)
     if("${CMAKE_MAKE_PROGRAM}" MATCHES "MSBuild")
@@ -87,20 +92,40 @@ function(CopyModuleConfig configDir)
       add_custom_command(TARGET modules
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy "${configDir}" "${CMAKE_BINARY_DIR}/bin/$(ConfigurationName)/${postPath}")
+      # Also copy as .conf (without .dist) if it doesn't exist - for automatic config setup
+      add_custom_command(TARGET modules
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${configDir}" "${CMAKE_BINARY_DIR}/bin/$(ConfigurationName)/${postPath}/${configFileNameNoDist}")
     elseif(MINGW)
       add_custom_command(TARGET modules
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/${postPath}")
       add_custom_command(TARGET modules
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy "${configDir} ${CMAKE_BINARY_DIR}/bin/${postPath}")
+        COMMAND ${CMAKE_COMMAND} -E copy "${configDir}" "${CMAKE_BINARY_DIR}/bin/${postPath}")
+      add_custom_command(TARGET modules
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${configDir}" "${CMAKE_BINARY_DIR}/bin/${postPath}/${configFileNameNoDist}")
     endif()
   endif()
 
   if(UNIX)
     install(FILES "${configDir}" DESTINATION "${CONF_DIR}/modules")
+    # Also install as .conf (without .dist) if it doesn't exist - preserves user edits
+    install(CODE "
+      if(NOT EXISTS \"${CONF_DIR}/modules/${configFileNameNoDist}\")
+        file(COPY \"${configDir}\" DESTINATION \"${CONF_DIR}/modules\" RENAME \"${configFileNameNoDist}\")
+      endif()
+    ")
   elseif(WIN32)
     install(FILES "${configDir}" DESTINATION "${CMAKE_INSTALL_PREFIX}/${postPath}")
+    # Also install as .conf (without .dist) if it doesn't exist - ensures new users have working configs
+    install(CODE "
+      if(NOT EXISTS \"${CMAKE_INSTALL_PREFIX}/${postPath}/${configFileNameNoDist}\")
+        file(COPY \"${configDir}\" DESTINATION \"${CMAKE_INSTALL_PREFIX}/${postPath}\" RENAME \"${configFileNameNoDist}\")
+        message(STATUS \"Created module config: ${CMAKE_INSTALL_PREFIX}/${postPath}/${configFileNameNoDist}\")
+      endif()
+    ")
   endif()
   unset(postPath)
 endfunction()

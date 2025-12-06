@@ -123,6 +123,16 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 # Disable vcpkg's automatic DLL copying (it uses wildcards which break MSBuild)
 # We'll manually copy the DLLs we need instead
 # Note: vcpkg adds automatic dependency copying via .props files, which we'll clean up post-configure
+# Disable vcpkg's applocal feature completely to prevent wildcard issues
+if(CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}")
+    # Set property to disable vcpkg applocal deps (prevents wildcard DLL copying)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        VS_USER_PROPS ""
+        VCPKG_APPLOCAL_DEPS OFF
+    )
+    # Also set as directory property
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VCPKG_APPLOCAL_DEPS OFF)
+endif()
 
 # Enable Qt MOC (Meta-Object Compiler) for Q_OBJECT macros
 # AUTOMOC automatically processes Q_OBJECT macros
@@ -145,14 +155,7 @@ else()
     )
 endif()
 
-# Disable vcpkg's automatic DLL copying AFTER linking (it uses wildcards which break MSBuild)
-# We'll manually copy the DLLs we need instead
-if(CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}")
-    # Remove vcpkg's automatic post-build step by clearing VS_USER_PROPS
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        VS_USER_PROPS ""
-    )
-endif()
+# Already disabled above
 
 # Windows-specific settings
 if(WIN32)
@@ -187,55 +190,19 @@ if(WIN32)
         # Get the directory where Qt5 DLLs are located
         get_filename_component(QT5_BIN_DIR "${QT5_CORE_DLL}" DIRECTORY)
         
-        # Try to find OpenSSL DLLs explicitly (if they exist, copy them)
-        # Qt5 from vcpkg may depend on OpenSSL, but we'll only copy if they exist
-        # Note: Qt5 can work without OpenSSL on Windows (uses Windows native SSL)
-        # Search for OpenSSL DLLs with explicit version numbers (no wildcards)
-        # Check both Qt5 bin dir and vcpkg bin dir
-        set(OPENSSL_DLLS "")
-        set(VCPKG_BIN_DIR "")
-        if(CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}")
-            # Try to find vcpkg bin directory
-            if(EXISTS "C:/vcpkg/installed/x64-windows/bin")
-                set(VCPKG_BIN_DIR "C:/vcpkg/installed/x64-windows/bin")
-            elseif(DEFINED ENV{VCPKG_ROOT})
-                set(VCPKG_BIN_DIR "$ENV{VCPKG_ROOT}/installed/x64-windows/bin")
-            endif()
-        endif()
+        # Don't copy OpenSSL DLLs - Qt5 on Windows uses native SSL, not OpenSSL
+        # This avoids vcpkg wildcard issues with libcrypto-*-x64.dll patterns
+        # If OpenSSL is needed later, it can be added explicitly without wildcards
         
-        # Try common OpenSSL names in both locations
-        foreach(OSSLLIB crypto ssl)
-            foreach(BIN_DIR ${QT5_BIN_DIR} ${VCPKG_BIN_DIR})
-                if(BIN_DIR)
-                    # Try 3-x64 (OpenSSL 3.x - most recent)
-                    if(EXISTS "${BIN_DIR}/lib${OSSLLIB}-3-x64.dll")
-                        list(APPEND OPENSSL_DLLS "${BIN_DIR}/lib${OSSLLIB}-3-x64.dll")
-                        break()
-                    # Try 1_1-x64 (OpenSSL 1.1.x)
-                    elseif(EXISTS "${BIN_DIR}/lib${OSSLLIB}-1_1-x64.dll")
-                        list(APPEND OPENSSL_DLLS "${BIN_DIR}/lib${OSSLLIB}-1_1-x64.dll")
-                        break()
-                    # Try 1_0_2-x64 (older version)
-                    elseif(EXISTS "${BIN_DIR}/lib${OSSLLIB}-1_0_2-x64.dll")
-                        list(APPEND OPENSSL_DLLS "${BIN_DIR}/lib${OSSLLIB}-1_0_2-x64.dll")
-                        break()
-                    endif()
-                endif()
-            endforeach()
-        endforeach()
-        
-        # Copy Qt5 DLLs and OpenSSL DLLs together (if found)
-        set(ALL_DLLS "${QT5_CORE_DLL}" "${QT5_WIDGETS_DLL}" "${QT5_NETWORK_DLL}")
-        if(OPENSSL_DLLS)
-            list(APPEND ALL_DLLS ${OPENSSL_DLLS})
-        endif()
-        
+        # Copy only Qt5 DLLs (no OpenSSL)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory "${LAUNCHER_OUTPUT_DIR}"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                ${ALL_DLLS}
+                "${QT5_CORE_DLL}"
+                "${QT5_WIDGETS_DLL}"
+                "${QT5_NETWORK_DLL}"
                 "${LAUNCHER_OUTPUT_DIR}/"
-            COMMENT "Copying Qt5 and OpenSSL DLLs to launcher folder..."
+            COMMENT "Copying Qt5 DLLs to launcher folder..."
         )
     endif()
 endif()
@@ -254,16 +221,57 @@ if(NOT IS_STANDALONE_BUILD)
     message(STATUS "Launcher: Output directory set to ${LAUNCHER_OUTPUT_DIR}")
 endif()
 
-# Fix vcpkg wildcard issue: Remove wildcard patterns from .vcxproj after generation
+# Fix vcpkg wildcard issue: Remove wildcard patterns from .vcxproj files
 # vcpkg adds automatic dependency copying with wildcards that break MSBuild
-# This runs automatically before build
+# The wildcard is injected via vcpkg.applocal.props which MSBuild imports
+# We need to remove it both PRE_BUILD (before MSBuild reads it) and after configure
 if(CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}" AND WIN32)
     set(VCXPROJ_FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj")
-    # Use inline PowerShell command to avoid file generation escaping issues
-    # This directly filters the .vcxproj file to remove wildcard patterns
+    
+    # Create a PowerShell script to remove wildcards
+    # Use double quotes and escape properly to avoid PowerShell parsing issues
+    set(FIX_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/fix_vcpkg_wildcards.ps1")
+    file(WRITE "${FIX_SCRIPT}" 
+        "$vcxproj = '${VCXPROJ_FILE}'\n"
+        "if (Test-Path $vcxproj) {\n"
+        "  $content = Get-Content $vcxproj -Raw\n"
+        "  # CRITICAL: Remove vcpkg.applocal.props import to prevent wildcard injection\n"
+        "  $content = $content -replace '(?s)<Import[^>]*vcpkg[^>]*applocal[^>]*/>', ''\n"
+        "  $content = $content -replace '(?s)<Import[^>]*Project=\"[^\"]*vcpkg[^\"]*applocal[^\"]*\"[^>]*/>', ''\n"
+        "  # Remove entire ItemGroup sections with wildcards\n"
+        "  $content = $content -replace '(?s)<ItemGroup[^>]*>.*?libcrypto-[^*]*\\*[^<]*</ItemGroup>', ''\n"
+        "  $content = $content -replace '(?s)<ItemGroup[^>]*>.*?libssl-[^*]*\\*[^<]*</ItemGroup>', ''\n"
+        "  # Remove Files Include with wildcards\n"
+        "  $content = $content -replace '<Files[^>]*Include=\"[^\"]*libcrypto-[^*]*\\*[^\"]*\"[^>]*/>', ''\n"
+        "  $content = $content -replace '<Files[^>]*Include=\"[^\"]*libssl-[^*]*\\*[^\"]*\"[^>]*/>', ''\n"
+        "  # Remove any remaining wildcard patterns (escape < properly)\n"
+        "  $content = $content -replace 'libcrypto-[^*]*\\*[^\"\\x3C]*', ''\n"
+        "  $content = $content -replace 'libssl-[^*]*\\*[^\"\\x3C]*', ''\n"
+        "  Set-Content $vcxproj -Value $content -NoNewline\n"
+        "}\n"
+        "$userFile = \"$vcxproj.user\"\n"
+        "if (Test-Path $userFile) {\n"
+        "  $content = Get-Content $userFile -Raw\n"
+        "  $content = $content -replace '(?s)<Import[^>]*vcpkg[^>]*applocal[^>]*/>', ''\n"
+        "  $content = $content -replace '(?s)<ItemGroup[^>]*>.*?libcrypto-[^*]*\\*[^<]*</ItemGroup>', ''\n"
+        "  $content = $content -replace '(?s)<ItemGroup[^>]*>.*?libssl-[^*]*\\*[^<]*</ItemGroup>', ''\n"
+        "  $content = $content -replace 'libcrypto-[^*]*\\*[^\"\\x3C]*', ''\n"
+        "  $content = $content -replace 'libssl-[^*]*\\*[^\"\\x3C]*', ''\n"
+        "  Set-Content $userFile -Value $content -NoNewline\n"
+        "}\n"
+    )
+    
+    # Run PRE_BUILD to remove wildcards before MSBuild processes the file
     add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
-        COMMAND powershell -ExecutionPolicy Bypass -Command "if (Test-Path '${VCXPROJ_FILE}') { $content = Get-Content '${VCXPROJ_FILE}'; $filtered = $content | Where-Object { $_ -notmatch 'libcrypto-\\*' -and $_ -notmatch 'libssl-\\*' }; $filtered | Set-Content '${VCXPROJ_FILE}' }"
-        COMMENT "Fixing vcpkg wildcard patterns in .vcxproj..."
+        COMMAND powershell -ExecutionPolicy Bypass -File "${FIX_SCRIPT}"
+        COMMENT "Removing vcpkg wildcard patterns from project files..."
+        VERBATIM
+    )
+    
+    # Also run after configure (when .vcxproj is first generated)
+    add_custom_command(TARGET ${PROJECT_NAME} PRE_LINK
+        COMMAND powershell -ExecutionPolicy Bypass -File "${FIX_SCRIPT}"
+        COMMENT "Cleaning vcpkg wildcards after configure..."
         VERBATIM
     )
 endif()

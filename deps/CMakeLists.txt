@@ -47,3 +47,8 @@ if (BUILD_TOOLS_MAPS)
   add_subdirectory(libmpq)
   add_subdirectory(fkYAML)
 endif()
+
+# StormLib for MPQ creation (used by mpq_creator tool)
+if (BUILD_TOOLS_MAPS OR BUILD_TOOLS)
+  add_subdirectory(StormLib)
+endif()

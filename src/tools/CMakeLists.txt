@@ -142,6 +142,27 @@ foreach(TOOL_NAME ${TOOLS_BUILD_LIST})
         Recast
         g3dlib
         fkYAML)
+    
+    # Link StormLib for mpq_creator tool
+    if (${TOOL_PROJECT_NAME} MATCHES "mpq_creator")
+      # Ensure StormLib is built first
+      if(TARGET storm)
+        add_dependencies(${TOOL_PROJECT_NAME} storm)
+        # Link to the storm target (which outputs as StormLib.lib on Windows)
+        target_link_libraries(${TOOL_PROJECT_NAME}
+          PRIVATE
+            storm)
+        target_include_directories(${TOOL_PROJECT_NAME}
+          PRIVATE
+            ${CMAKE_SOURCE_DIR}/deps/StormLib/src)
+        # Add compile definition to prevent auto-linking issues
+        target_compile_definitions(${TOOL_PROJECT_NAME}
+          PRIVATE
+            STORMLIB_NO_AUTO_LINK)
+      else()
+        message(WARNING "StormLib target 'storm' not found. mpq_creator may not build correctly.")
+      endif()
+    endif()
   endif()
 
   unset(TOOL_PUBLIC_INCLUDES)

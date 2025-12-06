@@ -158,10 +158,7 @@ bool DBCGenerator::GenerateMPQPatch(const std::string& dbcDir, const std::string
         return false;
     }
     
-    // Create MPQ using external tool (Python script)
-    // This is simpler than implementing MPQ creation in C++
-    std::string scriptPath = "tools/generate_patch.py";
-    
+    // Create MPQ using C++ tool (preferred) or Python script (fallback)
     // Get absolute paths
     std::filesystem::path dbcPath(dbcDir);
     std::filesystem::path mpqPath(outputMPQ);
@@ -174,15 +171,74 @@ bool DBCGenerator::GenerateMPQPatch(const std::string& dbcDir, const std::string
     // Create output directory if needed
     std::filesystem::create_directories(mpqPath.parent_path());
     
-    std::string command = "python \"" + scriptPath + "\" \"" + dbcPath.string() + "\" \"" + mpqPath.string() + "\"";
+    // Try C++ tool first (mpq_creator)
+    #ifdef _WIN32
+    // On Windows, try to find the tool in common locations
+    // Server typically runs from release/ directory, tool is in build/bin/
+    std::vector<std::filesystem::path> toolPaths = {
+        std::filesystem::current_path() / "mpq_creator.exe",  // Release directory
+        std::filesystem::current_path() / "bin/RelWithDebInfo/mpq_creator.exe",
+        std::filesystem::current_path() / "bin/Debug/mpq_creator.exe",
+        std::filesystem::current_path() / "bin/Release/mpq_creator.exe",
+        std::filesystem::current_path().parent_path() / "build/bin/RelWithDebInfo/mpq_creator.exe",  // From release/ to build/bin/
+        std::filesystem::current_path().parent_path() / "build/bin/Debug/mpq_creator.exe",
+        std::filesystem::current_path().parent_path() / "build/bin/Release/mpq_creator.exe",
+        // Also try absolute path based on common structure
+        std::filesystem::path("C:/servery/WOTLK-BOTS/build/bin/RelWithDebInfo/mpq_creator.exe")
+    };
     
-    LOG_INFO("module", "DBCGenerator: Generating MPQ patch via: {}", command);
+    std::string toolCmd;
+    for (const auto& path : toolPaths)
+    {
+        if (std::filesystem::exists(path))
+        {
+            toolCmd = "\"" + path.string() + "\"";
+            break;
+        }
+    }
+    
+    if (!toolCmd.empty())
+    {
+        std::string command = toolCmd + " \"" + dbcPath.string() + "\" \"" + mpqPath.string() + "\"";
+        LOG_INFO("module", "DBCGenerator: Generating MPQ patch via C++ tool: {}", command);
+        
+        int result = system(command.c_str());
+        
+        if (result == 0)
+        {
+            LOG_INFO("module", "DBCGenerator: Successfully generated MPQ patch: {}", outputMPQ);
+            return true;
+        }
+        else
+        {
+            LOG_WARN("module", "DBCGenerator: C++ tool failed, trying Python fallback...");
+        }
+    }
+    #endif
+    
+    // Fallback to Python script
+    std::string scriptPath = "tools/generate_patch.py";
+    std::string pythonCmd = "\"C:\\Program Files\\PyManager\\python.exe\"";
+    
+    // Test if Python exists at that path, otherwise fall back to "python"
+    #ifdef _WIN32
+    std::string testCmd = pythonCmd + " --version >nul 2>&1";
+    if (system(testCmd.c_str()) != 0)
+    {
+        pythonCmd = "python";  // Fall back to PATH
+    }
+    #endif
+    
+    std::string command = pythonCmd + " \"" + scriptPath + "\" \"" + dbcPath.string() + "\" \"" + mpqPath.string() + "\"";
+    
+    LOG_INFO("module", "DBCGenerator: Generating MPQ patch via Python: {}", command);
     
     int result = system(command.c_str());
     
     if (result != 0)
     {
-        LOG_WARN("module", "DBCGenerator: Failed to generate MPQ patch (install pympq: pip install pympq)");
+        LOG_WARN("module", "DBCGenerator: Failed to generate MPQ patch");
+        LOG_WARN("module", "DBCGenerator: Please ensure mpq_creator tool is built or pympq is installed");
         return false;
     }
     
