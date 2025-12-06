@@ -16,12 +16,14 @@ class SettingsDialog : public QDialog
 public:
     explicit SettingsDialog(QWidget *parent = nullptr);
     
+    // Getters
     QString getGamePath() const;
     QString getServerUrl() const;
     QString getGameZipUrl() const;
     QString getPatchVersionUrl() const;
     QString getPatchDownloadUrl() const;
     
+    // Setters
     void setGamePath(const QString &path);
     void setServerUrl(const QString &url);
     void setGameZipUrl(const QString &url);
@@ -30,20 +32,19 @@ public:
 
 private slots:
     void onBrowseGamePath();
-    void onSave();
-    void onCancel();
+    void onServerUrlChanged();
 
 private:
     void setupUI();
     
     QLineEdit *m_gamePathEdit;
+    QPushButton *m_browseButton;
     QLineEdit *m_serverUrlEdit;
     QLineEdit *m_gameZipUrlEdit;
     QLineEdit *m_patchVersionUrlEdit;
     QLineEdit *m_patchDownloadUrlEdit;
     
-    QPushButton *m_browseButton;
-    QPushButton *m_saveButton;
+    QPushButton *m_okButton;
     QPushButton *m_cancelButton;
 };
 

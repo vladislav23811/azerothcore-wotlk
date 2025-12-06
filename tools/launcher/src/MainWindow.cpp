@@ -185,12 +185,6 @@ void MainWindow::onSettingsClicked()
     dialog.setGamePath(m_launcherCore->getGamePath());
     dialog.setServerUrl(m_launcherCore->getServerUrl());
     
-    // Set URLs based on server URL
-    QString serverUrl = m_launcherCore->getServerUrl();
-    dialog.setGameZipUrl(serverUrl + "/WoW/");
-    dialog.setPatchVersionUrl(serverUrl + "/patches/version.txt");
-    dialog.setPatchDownloadUrl(serverUrl + "/patches/latest/patch-Z.MPQ");
-    
     if (dialog.exec() == QDialog::Accepted) {
         m_launcherCore->setGamePath(dialog.getGamePath());
         m_launcherCore->setServerUrl(dialog.getServerUrl());

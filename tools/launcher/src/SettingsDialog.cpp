@@ -17,42 +17,40 @@ void SettingsDialog::setupUI()
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     
     // Game Path Group
-    QGroupBox *gamePathGroup = new QGroupBox("Game Installation Path", this);
-    QHBoxLayout *gamePathLayout = new QHBoxLayout(gamePathGroup);
+    QGroupBox *gamePathGroup = new QGroupBox("Game Installation", this);
+    QVBoxLayout *gamePathLayout = new QVBoxLayout(gamePathGroup);
+    
+    QHBoxLayout *pathLayout = new QHBoxLayout();
     m_gamePathEdit = new QLineEdit(this);
     m_browseButton = new QPushButton("Browse...", this);
-    gamePathLayout->addWidget(m_gamePathEdit);
-    gamePathLayout->addWidget(m_browseButton);
+    pathLayout->addWidget(m_gamePathEdit);
+    pathLayout->addWidget(m_browseButton);
+    
+    gamePathLayout->addLayout(pathLayout);
     mainLayout->addWidget(gamePathGroup);
     
-    connect(m_browseButton, &QPushButton::clicked, this, &SettingsDialog::onBrowseGamePath);
-    
-    // Server URLs Group
-    QGroupBox *serverGroup = new QGroupBox("Server Configuration", this);
+    // Server Settings Group
+    QGroupBox *serverGroup = new QGroupBox("Server Settings", this);
     QVBoxLayout *serverLayout = new QVBoxLayout(serverGroup);
     
-    QLabel *serverUrlLabel = new QLabel("Server URL:", this);
+    serverLayout->addWidget(new QLabel("Server URL:", this));
     m_serverUrlEdit = new QLineEdit(this);
-    m_serverUrlEdit->setPlaceholderText("http://localhost or http://your-server-ip");
-    serverLayout->addWidget(serverUrlLabel);
+    m_serverUrlEdit->setPlaceholderText("http://localhost");
     serverLayout->addWidget(m_serverUrlEdit);
     
-    QLabel *gameZipLabel = new QLabel("Game Folder URL:", this);
+    serverLayout->addWidget(new QLabel("Game ZIP URL:", this));
     m_gameZipUrlEdit = new QLineEdit(this);
-    m_gameZipUrlEdit->setPlaceholderText("http://localhost/WoW/");
-    serverLayout->addWidget(gameZipLabel);
+    m_gameZipUrlEdit->setPlaceholderText("http://localhost/WOTLKHD.zip");
     serverLayout->addWidget(m_gameZipUrlEdit);
     
-    QLabel *patchVersionLabel = new QLabel("Patch Version URL:", this);
+    serverLayout->addWidget(new QLabel("Patch Version URL:", this));
     m_patchVersionUrlEdit = new QLineEdit(this);
     m_patchVersionUrlEdit->setPlaceholderText("http://localhost/patches/version.txt");
-    serverLayout->addWidget(patchVersionLabel);
     serverLayout->addWidget(m_patchVersionUrlEdit);
     
-    QLabel *patchDownloadLabel = new QLabel("Patch Download URL:", this);
+    serverLayout->addWidget(new QLabel("Patch Download URL:", this));
     m_patchDownloadUrlEdit = new QLineEdit(this);
     m_patchDownloadUrlEdit->setPlaceholderText("http://localhost/patches/latest/patch-Z.MPQ");
-    serverLayout->addWidget(patchDownloadLabel);
     serverLayout->addWidget(m_patchDownloadUrlEdit);
     
     mainLayout->addWidget(serverGroup);
@@ -61,74 +59,20 @@ void SettingsDialog::setupUI()
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     buttonLayout->addStretch();
     
-    m_saveButton = new QPushButton("Save", this);
-    m_saveButton->setStyleSheet(
-        "QPushButton { background-color: #28a745; color: white; padding: 8px 20px; border-radius: 4px; }"
-        "QPushButton:hover { background-color: #218838; }"
-    );
-    
+    m_okButton = new QPushButton("OK", this);
+    m_okButton->setDefault(true);
     m_cancelButton = new QPushButton("Cancel", this);
-    m_cancelButton->setStyleSheet(
-        "QPushButton { background-color: #666; color: white; padding: 8px 20px; border-radius: 4px; }"
-        "QPushButton:hover { background-color: #555; }"
-    );
     
-    buttonLayout->addWidget(m_saveButton);
+    buttonLayout->addWidget(m_okButton);
     buttonLayout->addWidget(m_cancelButton);
+    
     mainLayout->addLayout(buttonLayout);
     
-    connect(m_saveButton, &QPushButton::clicked, this, &SettingsDialog::onSave);
-    connect(m_cancelButton, &QPushButton::clicked, this, &SettingsDialog::onCancel);
-}
-
-QString SettingsDialog::getGamePath() const
-{
-    return m_gamePathEdit->text();
-}
-
-QString SettingsDialog::getServerUrl() const
-{
-    return m_serverUrlEdit->text();
-}
-
-QString SettingsDialog::getGameZipUrl() const
-{
-    return m_gameZipUrlEdit->text();
-}
-
-QString SettingsDialog::getPatchVersionUrl() const
-{
-    return m_patchVersionUrlEdit->text();
-}
-
-QString SettingsDialog::getPatchDownloadUrl() const
-{
-    return m_patchDownloadUrlEdit->text();
-}
-
-void SettingsDialog::setGamePath(const QString &path)
-{
-    m_gamePathEdit->setText(path);
-}
-
-void SettingsDialog::setServerUrl(const QString &url)
-{
-    m_serverUrlEdit->setText(url);
-}
-
-void SettingsDialog::setGameZipUrl(const QString &url)
-{
-    m_gameZipUrlEdit->setText(url);
-}
-
-void SettingsDialog::setPatchVersionUrl(const QString &url)
-{
-    m_patchVersionUrlEdit->setText(url);
-}
-
-void SettingsDialog::setPatchDownloadUrl(const QString &url)
-{
-    m_patchDownloadUrlEdit->setText(url);
+    // Connections
+    connect(m_browseButton, &QPushButton::clicked, this, &SettingsDialog::onBrowseGamePath);
+    connect(m_serverUrlEdit, &QLineEdit::textChanged, this, &SettingsDialog::onServerUrlChanged);
+    connect(m_okButton, &QPushButton::clicked, this, &QDialog::accept);
+    connect(m_cancelButton, &QPushButton::clicked, this, &QDialog::reject);
 }
 
 void SettingsDialog::onBrowseGamePath()
@@ -139,23 +83,73 @@ void SettingsDialog::onBrowseGamePath()
     }
 }
 
-void SettingsDialog::onSave()
+void SettingsDialog::onServerUrlChanged()
 {
-    if (m_gamePathEdit->text().isEmpty()) {
-        QMessageBox::warning(this, "Invalid Settings", "Game path cannot be empty!");
-        return;
+    QString serverUrl = m_serverUrlEdit->text();
+    if (serverUrl.isEmpty()) {
+        serverUrl = "http://localhost";
     }
     
-    if (m_serverUrlEdit->text().isEmpty()) {
-        QMessageBox::warning(this, "Invalid Settings", "Server URL cannot be empty!");
-        return;
+    // Auto-update URLs based on server URL
+    if (m_gameZipUrlEdit->text().isEmpty() || m_gameZipUrlEdit->text().contains("localhost")) {
+        m_gameZipUrlEdit->setText(serverUrl + "/WOTLKHD.zip");
     }
-    
-    accept();
+    if (m_patchVersionUrlEdit->text().isEmpty() || m_patchVersionUrlEdit->text().contains("localhost")) {
+        m_patchVersionUrlEdit->setText(serverUrl + "/patches/version.txt");
+    }
+    if (m_patchDownloadUrlEdit->text().isEmpty() || m_patchDownloadUrlEdit->text().contains("localhost")) {
+        m_patchDownloadUrlEdit->setText(serverUrl + "/patches/latest/patch-Z.MPQ");
+    }
 }
 
-void SettingsDialog::onCancel()
+QString SettingsDialog::getGamePath() const
 {
-    reject();
+    return m_gamePathEdit->text();
+}
+
+void SettingsDialog::setGamePath(const QString &path)
+{
+    m_gamePathEdit->setText(path);
+}
+
+QString SettingsDialog::getServerUrl() const
+{
+    return m_serverUrlEdit->text();
+}
+
+void SettingsDialog::setServerUrl(const QString &url)
+{
+    m_serverUrlEdit->setText(url);
+    onServerUrlChanged();
+}
+
+QString SettingsDialog::getGameZipUrl() const
+{
+    return m_gameZipUrlEdit->text();
+}
+
+void SettingsDialog::setGameZipUrl(const QString &url)
+{
+    m_gameZipUrlEdit->setText(url);
+}
+
+QString SettingsDialog::getPatchVersionUrl() const
+{
+    return m_patchVersionUrlEdit->text();
+}
+
+void SettingsDialog::setPatchVersionUrl(const QString &url)
+{
+    m_patchVersionUrlEdit->setText(url);
+}
+
+QString SettingsDialog::getPatchDownloadUrl() const
+{
+    return m_patchDownloadUrlEdit->text();
+}
+
+void SettingsDialog::setPatchDownloadUrl(const QString &url)
+{
+    m_patchDownloadUrlEdit->setText(url);
 }
 

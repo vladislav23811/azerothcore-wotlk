@@ -12,8 +12,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QEventLoop>
-#include <QZipReader>
-#include <QDirIterator>
+#include <QTimer>
 
 LauncherCore::LauncherCore(QObject *parent)
     : QObject(parent)
@@ -64,8 +63,7 @@ void LauncherCore::loadConfig()
     // Fallback to QSettings or defaults
     m_gamePath = m_settings->value("gamePath", "C:/WoW").toString();
     m_serverUrl = m_settings->value("serverUrl", "http://localhost").toString();
-    // Game is now in extracted folder, not ZIP
-    m_gameZipUrl = m_settings->value("gameZipUrl", m_serverUrl + "/WoW/").toString();
+    m_gameZipUrl = m_settings->value("gameZipUrl", m_serverUrl + "/WOTLKHD.zip").toString();
     m_patchVersionUrl = m_settings->value("patchVersionUrl", m_serverUrl + "/patches/version.txt").toString();
     m_patchDownloadUrl = m_settings->value("patchDownloadUrl", m_serverUrl + "/patches/latest/patch-Z.MPQ").toString();
 }
@@ -142,23 +140,27 @@ QString LauncherCore::getLocalPatchVersion() const
 
 QString LauncherCore::getServerPatchVersion() const
 {
-    // Make synchronous HTTP request (in real app, use async)
+    // Make synchronous HTTP request to get patch version
     QNetworkAccessManager manager;
     QNetworkRequest request(QUrl(m_patchVersionUrl));
+    request.setRawHeader("User-Agent", "WoW-Launcher/1.0");
+    
     QNetworkReply *reply = manager.get(request);
     
     QEventLoop loop;
     connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    
+    // 5 second timeout
+    QTimer::singleShot(5000, &loop, &QEventLoop::quit);
     loop.exec();
     
+    QString version = "";
     if (reply->error() == QNetworkReply::NoError) {
-        QString version = QString::fromUtf8(reply->readAll()).trimmed();
-        reply->deleteLater();
-        return version;
+        version = QString::fromUtf8(reply->readAll()).trimmed();
     }
     
     reply->deleteLater();
-    return "";
+    return version;
 }
 
 void LauncherCore::checkForUpdates()
@@ -168,17 +170,19 @@ void LauncherCore::checkForUpdates()
     // Check if game is installed
     if (!isGameInstalled()) {
         emit statusUpdated("Game not installed. Please install first.");
+        emit progressUpdated(0, "Game not installed");
         return;
     }
     
     // Check for patch updates
     QString localVersion = getLocalPatchVersion();
-    emit statusUpdated(QString("Local patch version: %1").arg(localVersion));
+    emit statusUpdated(QString("Local patch version: %1").arg(localVersion.isEmpty() ? "None" : localVersion));
     
     // Get server version
     QString serverVersion = getServerPatchVersion();
     if (serverVersion.isEmpty()) {
         emit statusUpdated("Could not connect to server. Check server URL in settings.");
+        emit progressUpdated(0, "Connection failed");
         return;
     }
     
@@ -186,17 +190,38 @@ void LauncherCore::checkForUpdates()
     
     // Compare versions
     bool needsUpdate = false;
-    if (localVersion == "0") {
+    if (localVersion == "0" || localVersion.isEmpty()) {
         needsUpdate = true;
+        emit statusUpdated("No local patch found. Downloading...");
     } else {
         // Compare timestamps (server version should be timestamp)
-        qint64 local = localVersion.toLongLong();
-        qint64 server = serverVersion.toLongLong();
-        needsUpdate = server > local;
+        bool ok1, ok2;
+        qint64 local = localVersion.toLongLong(&ok1);
+        qint64 server = serverVersion.toLongLong(&ok2);
+        
+        if (ok1 && ok2) {
+            needsUpdate = server > local;
+            if (needsUpdate) {
+                emit statusUpdated("New patch available! Downloading...");
+            } else {
+                emit statusUpdated("Patch is up to date.");
+                emit progressUpdated(100, "Up to date");
+                return;
+            }
+        } else {
+            // String comparison fallback
+            needsUpdate = serverVersion != localVersion;
+            if (needsUpdate) {
+                emit statusUpdated("New patch available! Downloading...");
+            } else {
+                emit statusUpdated("Patch is up to date.");
+                emit progressUpdated(100, "Up to date");
+                return;
+            }
+        }
     }
     
     if (needsUpdate) {
-        emit statusUpdated("New patch available! Downloading...");
         QString patchPath = m_gamePath + "/Data/patch-Z.MPQ";
         
         // Create Data directory if needed
@@ -208,9 +233,6 @@ void LauncherCore::checkForUpdates()
         m_isDownloading = true;
         m_currentDownload = "patch";
         m_downloadManager->downloadFile(m_patchDownloadUrl, patchPath);
-    } else {
-        emit statusUpdated("Patch is up to date.");
-        emit progressUpdated(100, "Ready");
     }
 }
 
@@ -245,101 +267,8 @@ void LauncherCore::launchGame()
 
 void LauncherCore::installGame()
 {
-    emit statusUpdated("Starting game installation...");
-    
-    // Download from extracted folder on server
-    // Server should have game extracted at: http://server/WoW/
-    QString gameFolderUrl = m_serverUrl;
-    if (!gameFolderUrl.endsWith("/")) {
-        gameFolderUrl += "/";
-    }
-    gameFolderUrl += "WoW/";
-    
-    emit statusUpdated("Downloading game files from server...");
-    emit progressUpdated(0, "Preparing download...");
-    
-    // Download game files from extracted folder
-    downloadGameFromFolder(gameFolderUrl);
-}
-
-void LauncherCore::downloadGameFromFolder(const QString &baseUrl)
-{
-    // Create game directory
-    QDir gameDir(m_gamePath);
-    if (!gameDir.exists()) {
-        gameDir.mkpath(".");
-    }
-    
-    emit statusUpdated("Downloading game files...");
-    
-    // List of critical files to download
-    // In a real implementation, you'd get a file list from server
-    // For now, we'll download key files
-    QStringList criticalFiles = {
-        "Wow.exe",
-        "Data/enUS/patch-enUS.MPQ",
-        "Data/patch.MPQ"
-    };
-    
-    // For simplicity, we'll download files one by one
-    // In production, you'd want to:
-    // 1. Get file list from server (filelist.txt or similar)
-    // 2. Download files in parallel
-    // 3. Show progress
-    
-    m_isDownloading = true;
-    m_currentDownload = "game";
-    
-    // Download critical files
-    int totalFiles = criticalFiles.size();
-    int downloaded = 0;
-    
-    for (const QString &file : criticalFiles) {
-        QString fileUrl = baseUrl + file;
-        QString localPath = m_gamePath + "/" + file;
-        
-        // Create directory if needed
-        QFileInfo fileInfo(localPath);
-        QDir dir = fileInfo.absoluteDir();
-        if (!dir.exists()) {
-            dir.mkpath(".");
-        }
-        
-        emit statusUpdated(QString("Downloading: %1").arg(file));
-        
-        // Download file (synchronous for simplicity)
-        QNetworkAccessManager manager;
-        QNetworkRequest request(QUrl(fileUrl));
-        QNetworkReply *reply = manager.get(request);
-        
-        QEventLoop loop;
-        connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-        loop.exec();
-        
-        if (reply->error() == QNetworkReply::NoError) {
-            QFile outputFile(localPath);
-            if (outputFile.open(QIODevice::WriteOnly)) {
-                outputFile.write(reply->readAll());
-                outputFile.close();
-                downloaded++;
-                emit progressUpdated((downloaded * 100) / totalFiles, 
-                    QString("Downloaded %1/%2 files").arg(downloaded).arg(totalFiles));
-            }
-        } else {
-            emit errorOccurred(QString("Failed to download %1: %2").arg(file, reply->errorString()));
-        }
-        
-        reply->deleteLater();
-    }
-    
-    m_isDownloading = false;
-    
-    if (downloaded == totalFiles) {
-        emit statusUpdated("Game installation complete!");
-        emit progressUpdated(100, "Installation complete");
-    } else {
-        emit errorOccurred(QString("Only downloaded %1/%2 files").arg(downloaded).arg(totalFiles));
-    }
+    // TODO: Implement game installation from ZIP
+    emit statusUpdated("Game installation not yet implemented.");
 }
 
 void LauncherCore::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
@@ -362,6 +291,9 @@ void LauncherCore::onDownloadFinished(const QString &filePath)
     // If we were downloading the patch
     if (m_currentDownload == "patch") {
         emit statusUpdated("Patch installed successfully!");
+        // Update UI to show new version
+        QString newVersion = getLocalPatchVersion();
+        emit statusUpdated(QString("Patch version updated to: %1").arg(newVersion));
     }
     
     m_currentDownload = "";

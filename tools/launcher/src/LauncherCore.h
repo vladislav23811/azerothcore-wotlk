@@ -29,7 +29,6 @@ public:
     void checkForUpdates();
     void launchGame();
     void installGame();
-    void downloadGameFromFolder(const QString &baseUrl);
 
 signals:
     void progressUpdated(int percentage, const QString &status);
