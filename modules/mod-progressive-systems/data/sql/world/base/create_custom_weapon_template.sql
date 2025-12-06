@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS `custom_weapon_templates` (
 
 -- Step 1: Copy the entire weapon structure
 INSERT INTO `item_template` (
-    `entry`, `class`, `subclass`, `name`, `name2`, `name3`, `name4`,
-    `displayid`, `Quality`, `Flags`, `Flags2`, `BuyCount`, `BuyPrice`, `SellPrice`,
+    `entry`, `class`, `subclass`, `SoundOverrideSubclass`, `name`,
+    `displayid`, `Quality`, `Flags`, `FlagsExtra`, `BuyCount`, `BuyPrice`, `SellPrice`,
     `InventoryType`, `AllowableClass`, `AllowableRace`, `ItemLevel`, `RequiredLevel`,
     `RequiredSkill`, `RequiredSkillRank`, `RequiredSpell`, `RequiredHonorRank`,
     `RequiredCityRank`, `RequiredReputationFaction`, `RequiredReputationRank`,
@@ -48,8 +48,6 @@ INSERT INTO `item_template` (
     `stat_type9`, `stat_value9`, `stat_type10`, `stat_value10`,
     `ScalingStatDistribution`, `ScalingStatValue`,
     `dmg_min1`, `dmg_max1`, `dmg_type1`, `dmg_min2`, `dmg_max2`, `dmg_type2`,
-    `dmg_min3`, `dmg_max3`, `dmg_type3`, `dmg_min4`, `dmg_max4`, `dmg_type4`,
-    `dmg_min5`, `dmg_max5`, `dmg_type5`,
     `armor`, `holy_res`, `fire_res`, `nature_res`, `frost_res`, `shadow_res`, `arcane_res`,
     `delay`, `ammo_type`, `RangedModRange`,
     `spellid_1`, `spelltrigger_1`, `spellcharges_1`, `spellppmRate_1`, `spellcooldown_1`,
@@ -73,8 +71,8 @@ INSERT INTO `item_template` (
 )
 SELECT 
     99990,  -- NEW CUSTOM ENTRY
-    class, subclass, name, name2, name3, name4,
-    displayid, Quality, Flags, Flags2, BuyCount, BuyPrice, SellPrice,
+    class, subclass, SoundOverrideSubclass, name,
+    displayid, Quality, Flags, FlagsExtra, BuyCount, BuyPrice, SellPrice,
     InventoryType, AllowableClass, AllowableRace, ItemLevel, RequiredLevel,
     RequiredSkill, RequiredSkillRank, RequiredSpell, RequiredHonorRank,
     RequiredCityRank, RequiredReputationFaction, RequiredReputationRank,
@@ -86,8 +84,6 @@ SELECT
     stat_type9, stat_value9, stat_type10, stat_value10,
     ScalingStatDistribution, ScalingStatValue,
     dmg_min1, dmg_max1, dmg_type1, dmg_min2, dmg_max2, dmg_type2,
-    dmg_min3, dmg_max3, dmg_type3, dmg_min4, dmg_max4, dmg_type4,
-    dmg_min5, dmg_max5, dmg_type5,
     armor, holy_res, fire_res, nature_res, frost_res, shadow_res, arcane_res,
     delay, ammo_type, RangedModRange,
     spellid_1, spelltrigger_1, spellcharges_1, spellppmRate_1, spellcooldown_1,
