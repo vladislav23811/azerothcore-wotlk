@@ -27,13 +27,37 @@ if (-not (Test-Path $patchesPath)) {
     Write-Host "✓ Patches directory exists: $patchesPath" -ForegroundColor Green
 }
 
-# Check for game ZIP
-$gameZip = "$htdocsPath\WOTLKHD.zip"
-if (Test-Path $gameZip) {
-    Write-Host "✓ Game ZIP found: $gameZip" -ForegroundColor Green
-} else {
-    Write-Host "⚠ Game ZIP not found: $gameZip" -ForegroundColor Yellow
+# Check for game ZIP (multiple possible locations)
+$possibleZips = @(
+    "$htdocsPath\WOTLKHD.zip",
+    "C:\xampp\htdocs\WOTLKHD.zip",
+    "WOTLKHD.zip"  # Current directory
+)
+
+$gameZip = $null
+foreach ($zip in $possibleZips) {
+    if (Test-Path $zip) {
+        $gameZip = $zip
+        Write-Host "✓ Game ZIP found: $zip" -ForegroundColor Green
+        
+        # If not in htdocs, offer to copy
+        if ($zip -ne "$htdocsPath\WOTLKHD.zip") {
+            Write-Host "  Game ZIP is not in htdocs folder" -ForegroundColor Yellow
+            $copy = Read-Host "  Copy to htdocs? (y/n)"
+            if ($copy -eq 'y') {
+                Copy-Item $zip "$htdocsPath\WOTLKHD.zip" -Force
+                Write-Host "  ✓ Copied to: $htdocsPath\WOTLKHD.zip" -ForegroundColor Green
+                $gameZip = "$htdocsPath\WOTLKHD.zip"
+            }
+        }
+        break
+    }
+}
+
+if (-not $gameZip) {
+    Write-Host "⚠ Game ZIP not found in common locations" -ForegroundColor Yellow
     Write-Host "  Place WOTLKHD.zip in: $htdocsPath" -ForegroundColor Yellow
+    Write-Host "  Or update launcher_config.json to point to your ZIP location" -ForegroundColor Yellow
 }
 
 # Create version.txt file (placeholder)
