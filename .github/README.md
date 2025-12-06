@@ -7,14 +7,14 @@
 
 ## Build Status
 
-[![playerbots-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-playerbots.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-playerbots.yml?query=branch%3Aplayerbotwithall)
-[![windows-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/windows_build.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/windows_build.yml?query=branch%3Aplayerbotwithall)
-[![nopch-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-nopch.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-nopch.yml?query=branch%3Aplayerbotwithall)
-[![pch-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-pch.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-pch.yml?query=branch%3Aplayerbotwithall)
-[![core-modules-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core_modules_build.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core_modules_build.yml?query=branch%3Aplayerbotwithall)
-[![docker-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/docker_build.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/docker_build.yml?query=branch%3Aplayerbotwithall)
-[![macos-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/macos_build.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/macos_build.yml?query=branch%3Aplayerbotwithall)
-[![tools-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/tools_build.yml/badge.svg?branch=playerbotwithall)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/tools_build.yml?query=branch%3Aplayerbotwithall)
+[![playerbots-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-playerbots.yml/badge.svg?branch=master)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-playerbots.yml?query=branch%3Amaster)
+[![windows-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/windows_build.yml/badge.svg?branch=master)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/windows_build.yml?query=branch%3Amaster)
+[![nopch-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-nopch.yml/badge.svg?branch=master)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-nopch.yml?query=branch%3Amaster)
+[![pch-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-pch.yml/badge.svg?branch=master)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core-build-pch.yml?query=branch%3Amaster)
+[![core-modules-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core_modules_build.yml/badge.svg?branch=master)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/core_modules_build.yml?query=branch%3Amaster)
+[![docker-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/docker_build.yml/badge.svg?branch=master)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/docker_build.yml?query=branch%3Amaster)
+[![macos-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/macos_build.yml/badge.svg?branch=master)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/macos_build.yml?query=branch%3Amaster)
+[![tools-build](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/tools_build.yml/badge.svg?branch=master)](https://github.com/vladislav23811/azerothcore-wotlk/actions/workflows/tools_build.yml?query=branch%3Amaster)
 
 ## 📑 Table of Contents
 
@@ -535,7 +535,7 @@ This build is **READY TO RUN** with automatic database setup:
 
 ```bash
 # 1. Clone
-git clone https://github.com/vladislav23811/azerothcore-wotlk.git --branch playerbotwithall
+git clone https://github.com/vladislav23811/azerothcore-wotlk.git
 cd azerothcore-wotlk
 
 # 2. Build (C++20 compiler required)
@@ -562,7 +562,7 @@ If you're already familiar with AzerothCore:
 
 ```bash
 # Clone the repository
-git clone https://github.com/vladislav23811/azerothcore-wotlk.git --branch playerbotwithall
+git clone https://github.com/vladislav23811/azerothcore-wotlk.git
 cd azerothcore-wotlk
 
 # Build (follow standard AzerothCore build process)
@@ -600,7 +600,7 @@ cp modules/mod-*/conf/*.conf.dist conf/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/vladislav23811/azerothcore-wotlk.git --branch playerbotwithall
+   git clone https://github.com/vladislav23811/azerothcore-wotlk.git
    cd azerothcore-wotlk
    ```
 
@@ -784,11 +784,11 @@ This fork maintains AzerothCore's core philosophy while adding specialized featu
 
 ---
 
-**Branches**: `master` and `playerbotwithall` *(both identical!)* | **Focus**: Playerbots & Progressive Systems | **Status**: ⚠️ Beta/Testing Phase
+**Branch**: `master` | **Focus**: Playerbots & Progressive Systems | **Status**: ⚠️ Beta/Testing Phase
 
 **Build Status**: ✅ All workflows passing | **Compilation**: ✅ Zero errors | **Modernization**: ✅ C++20 Complete | **Testing**: ⚠️ In Progress
 
-**Clone**: `git clone https://github.com/vladislav23811/azerothcore-wotlk.git` - Works perfectly! All features included on both branches.
+**Clone**: `git clone https://github.com/vladislav23811/azerothcore-wotlk.git` - Works perfectly! All features included on master branch.
 
 ---
 *Last updated: December 2025 - **ALL STARTUP ERRORS FIXED!** Zero manual SQL import needed. Clean first-run experience. Server verified stable with 229 active bots. **Progressive systems implemented but need comprehensive in-game testing.***
