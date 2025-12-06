@@ -1,6 +1,9 @@
 ## Interface: 30305
 ## Title: ProgressiveSystems
 ## Notes: Complete client addon for Progressive Systems - Paragon, Custom Stats, and more!
+
+## Optional: Item Icon Enhancement
+# ProgressiveSystemsItemIcons.lua
 ## Author: AI Assistant
 ## Version: 2.0
 ## SavedVariables: ProgressiveSystemsDB
