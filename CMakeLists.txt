@@ -15,6 +15,25 @@ cmake_minimum_required(VERSION 3.16)
 
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 
+# Auto-detect vcpkg toolchain if not specified and vcpkg exists
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    # Check common vcpkg locations
+    set(VCPKG_POSSIBLE_PATHS
+        "$ENV{VCPKG_ROOT}"
+        "C:/vcpkg"
+        "$ENV{USERPROFILE}/vcpkg"
+        "$ENV{ProgramFiles}/vcpkg"
+    )
+    
+    foreach(VCPKG_PATH ${VCPKG_POSSIBLE_PATHS})
+        if(VCPKG_PATH AND EXISTS "${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake")
+            set(CMAKE_TOOLCHAIN_FILE "${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake" CACHE FILEPATH "Vcpkg toolchain file")
+            message(STATUS "Auto-detected vcpkg toolchain: ${CMAKE_TOOLCHAIN_FILE}")
+            break()
+        endif()
+    endforeach()
+endif()
+
 # CMake policies (can not be handled elsewhere)
 cmake_policy(SET CMP0005 NEW)
 

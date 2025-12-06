@@ -85,10 +85,10 @@ if ($vcpkgPath) {
     
     $response = Read-Host "Install Qt5 via vcpkg? (Y/n)"
     if ($response -ne "n" -and $response -ne "N") {
-        Write-Host "Installing Qt5 (this may take 10-30 minutes)..." -ForegroundColor Yellow
+        Write-Host "Installing Qt5 essentials (this may take 10-30 minutes)..." -ForegroundColor Yellow
         Write-Host "Please wait..." -ForegroundColor Gray
         
-        $installCmd = "& `"$vcpkgPath`" install qt5-base qt5-widgets qt5-network --triplet x64-windows"
+        $installCmd = "& `"$vcpkgPath`" install qt5[essentials] --triplet x64-windows"
         Invoke-Expression $installCmd
         
         if ($LASTEXITCODE -eq 0) {
@@ -110,7 +110,7 @@ if ($vcpkgPath) {
     Write-Host "   cd C:\vcpkg" -ForegroundColor Gray
     Write-Host "   .\bootstrap-vcpkg.bat" -ForegroundColor Gray
     Write-Host "   .\vcpkg integrate install" -ForegroundColor Gray
-    Write-Host "   .\vcpkg install qt5-base qt5-widgets qt5-network --triplet x64-windows" -ForegroundColor Gray
+    Write-Host "   .\vcpkg install qt5[essentials] --triplet x64-windows" -ForegroundColor Gray
     Write-Host ""
     Write-Host "Option 2: Download Qt Installer" -ForegroundColor Yellow
     Write-Host "   Qt6: https://www.qt.io/download-qt-installer" -ForegroundColor Gray
