@@ -136,16 +136,25 @@ CREATE TABLE IF NOT EXISTS `bloody_palace_bosses` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Bloody Palace boss pool';
 
 -- Insert default boss data if not exists (replace with actual boss entries)
-INSERT IGNORE INTO `bloody_palace_bosses` (`creature_entry`, `floor_min`, `floor_max`, `spawn_weight`, `name`) VALUES
--- Early floors (1-10)
-(36597, 1, 10, 100, 'The Lich King (Easy)'),
-(36612, 1, 10, 100, 'Frostmourne Guardian'),
--- Mid floors (11-30)
-(36612, 11, 30, 80, 'Frostmourne Guardian (Hard)'),
-(36597, 11, 30, 60, 'The Lich King (Hard)'),
--- High floors (31+)
-(36597, 31, 255, 50, 'The Lich King (Nightmare)'),
-(36612, 31, 255, 40, 'Frostmourne Guardian (Nightmare)');
+-- Only insert if table is empty to avoid AUTO_INCREMENT conflicts during reapplication
+INSERT INTO `bloody_palace_bosses` (`creature_entry`, `floor_min`, `floor_max`, `spawn_weight`, `name`)
+SELECT 36597, 1, 10, 100, 'The Lich King (Easy)'
+WHERE NOT EXISTS (SELECT 1 FROM `bloody_palace_bosses` LIMIT 1)
+UNION ALL
+SELECT 36612, 1, 10, 100, 'Frostmourne Guardian'
+WHERE NOT EXISTS (SELECT 1 FROM `bloody_palace_bosses` LIMIT 1)
+UNION ALL
+SELECT 36612, 11, 30, 80, 'Frostmourne Guardian (Hard)'
+WHERE NOT EXISTS (SELECT 1 FROM `bloody_palace_bosses` LIMIT 1)
+UNION ALL
+SELECT 36597, 11, 30, 60, 'The Lich King (Hard)'
+WHERE NOT EXISTS (SELECT 1 FROM `bloody_palace_bosses` LIMIT 1)
+UNION ALL
+SELECT 36597, 31, 255, 50, 'The Lich King (Nightmare)'
+WHERE NOT EXISTS (SELECT 1 FROM `bloody_palace_bosses` LIMIT 1)
+UNION ALL
+SELECT 36612, 31, 255, 40, 'Frostmourne Guardian (Nightmare)'
+WHERE NOT EXISTS (SELECT 1 FROM `bloody_palace_bosses` LIMIT 1);
 
 -- ============================================================
 -- 4. AUTO ITEM GENERATOR
