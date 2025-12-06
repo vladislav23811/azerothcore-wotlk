@@ -151,3 +151,31 @@ ProgressiveSystems.Currency.CelestialToken = 99998
 # Progression Token (custom)
 ProgressiveSystems.Currency.ProgressionToken = 99997
 
+###################################################################################################
+# DBC GENERATOR SETTINGS
+###################################################################################################
+
+# Custom Item Threshold
+# Items with entry >= this value will be auto-generated in DBC files
+# Default: 999000 (safe range, avoids conflicts with existing items)
+ProgressiveSystems.DBC.CustomItemThreshold = 999000
+
+# DBC Output Directory
+# Where to write generated DBC files
+ProgressiveSystems.DBC.OutputDir = "dbc/custom"
+
+# MPQ Patch Output
+# Where to generate MPQ patch file
+ProgressiveSystems.DBC.MPQOutput = "patches/patch-Z.MPQ"
+
+# Auto-Generate MPQ
+# Automatically create MPQ patch on server startup (requires pympq)
+ProgressiveSystems.DBC.AutoGenerateMPQ = true
+
+# Web Server Path (for launcher auto-updates)
+# If set, patch will be copied to this path for web server distribution
+# Example: "C:/xampp/htdocs" or "C:/nginx/html"
+# Leave empty to disable web server copying
+# This allows launcher to download patches automatically
+ProgressiveSystems.DBC.WebServerPath = ""
+
