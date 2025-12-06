@@ -168,13 +168,14 @@ if(WIN32)
     endif()
 endif()
 
-# Set output directory to match server build structure when built as subdirectory
+# Set output directory to dedicated launcher folder
 if(NOT IS_STANDALONE_BUILD)
-    # When built with server, put launcher in bin/RelWithDebInfo (or Release/Debug based on config)
+    # Output to build/wowlauncher/ for easy identification
+    set(LAUNCHER_OUTPUT_DIR "${CMAKE_BINARY_DIR}/wowlauncher")
     set_target_properties(${PROJECT_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>"
+        RUNTIME_OUTPUT_DIRECTORY "${LAUNCHER_OUTPUT_DIR}"
     )
-    message(STATUS "Launcher: Output directory set to ${CMAKE_BINARY_DIR}/bin/$<CONFIG>")
+    message(STATUS "Launcher: Output directory set to ${LAUNCHER_OUTPUT_DIR}")
 endif()
 
 # Install
