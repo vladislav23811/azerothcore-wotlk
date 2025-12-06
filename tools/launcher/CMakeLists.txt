@@ -147,24 +147,34 @@ if(WIN32)
         WIN32_EXECUTABLE TRUE
     )
     
-    # Copy Qt DLLs to output directory (for distribution)
+    # Copy Qt DLLs to launcher output directory (for distribution)
+    if(NOT IS_STANDALONE_BUILD)
+        set(LAUNCHER_OUTPUT_DIR "${CMAKE_BINARY_DIR}/wowlauncher")
+    else()
+        set(LAUNCHER_OUTPUT_DIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
+    endif()
+    
     if(QT_VERSION_MAJOR EQUAL 6)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${LAUNCHER_OUTPUT_DIR}"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:Qt6::Core>
-            $<TARGET_FILE:Qt6::Widgets>
-            $<TARGET_FILE:Qt6::Network>
-            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                $<TARGET_FILE:Qt6::Core>
+                $<TARGET_FILE:Qt6::Widgets>
+                $<TARGET_FILE:Qt6::Network>
+                "${LAUNCHER_OUTPUT_DIR}/"
+            COMMENT "Copying Qt6 DLLs to launcher folder..."
         )
     elseif(QT_VERSION_MAJOR EQUAL 5)
-        # For Qt5, we can use windeployqt if available, or manually copy DLLs
-        find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS ${Qt5_DIR}/../../../bin)
-        if(WINDEPLOYQT_EXECUTABLE)
-            add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${WINDEPLOYQT_EXECUTABLE} $<TARGET_FILE:${PROJECT_NAME}>
-                COMMENT "Deploying Qt5 libraries..."
-            )
-        endif()
+        # For Qt5, manually copy DLLs (windeployqt can cause issues with wildcards)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${LAUNCHER_OUTPUT_DIR}"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:Qt5::Core>
+                $<TARGET_FILE:Qt5::Widgets>
+                $<TARGET_FILE:Qt5::Network>
+                "${LAUNCHER_OUTPUT_DIR}/"
+            COMMENT "Copying Qt5 DLLs to launcher folder..."
+        )
     endif()
 endif()
 
