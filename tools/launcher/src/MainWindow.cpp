@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include "SettingsDialog.h"
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QSettings>
@@ -180,9 +181,22 @@ void MainWindow::onCheckUpdatesClicked()
 
 void MainWindow::onSettingsClicked()
 {
-    QMessageBox::information(this, "Settings", 
-        "Settings dialog coming soon!\n\n"
-        "You can edit launcher_config.json manually for now.");
+    SettingsDialog dialog(this);
+    dialog.setGamePath(m_launcherCore->getGamePath());
+    dialog.setServerUrl(m_launcherCore->getServerUrl());
+    
+    // Set URLs based on server URL
+    QString serverUrl = m_launcherCore->getServerUrl();
+    dialog.setGameZipUrl(serverUrl + "/WOTLKHD.zip");
+    dialog.setPatchVersionUrl(serverUrl + "/patches/version.txt");
+    dialog.setPatchDownloadUrl(serverUrl + "/patches/latest/patch-Z.MPQ");
+    
+    if (dialog.exec() == QDialog::Accepted) {
+        m_launcherCore->setGamePath(dialog.getGamePath());
+        m_launcherCore->setServerUrl(dialog.getServerUrl());
+        updateUI();
+        QMessageBox::information(this, "Settings", "Settings saved successfully!");
+    }
 }
 
 void MainWindow::onProgressUpdated(int percentage, const QString &status)

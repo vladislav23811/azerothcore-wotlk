@@ -8,6 +8,12 @@
 #include <QJsonParseError>
 #include <QMessageBox>
 #include <QDebug>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QEventLoop>
+#include <QZipReader>
+#include <QDirIterator>
 
 LauncherCore::LauncherCore(QObject *parent)
     : QObject(parent)
@@ -135,8 +141,22 @@ QString LauncherCore::getLocalPatchVersion() const
 
 QString LauncherCore::getServerPatchVersion() const
 {
-    // This would make an HTTP request - simplified for now
-    // In real implementation, use QNetworkAccessManager
+    // Make synchronous HTTP request (in real app, use async)
+    QNetworkAccessManager manager;
+    QNetworkRequest request(QUrl(m_patchVersionUrl));
+    QNetworkReply *reply = manager.get(request);
+    
+    QEventLoop loop;
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+    
+    if (reply->error() == QNetworkReply::NoError) {
+        QString version = QString::fromUtf8(reply->readAll()).trimmed();
+        reply->deleteLater();
+        return version;
+    }
+    
+    reply->deleteLater();
     return "";
 }
 
@@ -154,16 +174,42 @@ void LauncherCore::checkForUpdates()
     QString localVersion = getLocalPatchVersion();
     emit statusUpdated(QString("Local patch version: %1").arg(localVersion));
     
-    // TODO: Get server version and compare
-    // For now, just check if patch exists
-    QString patchPath = m_gamePath + "/Data/patch-Z.MPQ";
-    if (!QFileInfo::exists(patchPath)) {
-        emit statusUpdated("Patch not found. Downloading...");
+    // Get server version
+    QString serverVersion = getServerPatchVersion();
+    if (serverVersion.isEmpty()) {
+        emit statusUpdated("Could not connect to server. Check server URL in settings.");
+        return;
+    }
+    
+    emit statusUpdated(QString("Server patch version: %1").arg(serverVersion));
+    
+    // Compare versions
+    bool needsUpdate = false;
+    if (localVersion == "0") {
+        needsUpdate = true;
+    } else {
+        // Compare timestamps (server version should be timestamp)
+        qint64 local = localVersion.toLongLong();
+        qint64 server = serverVersion.toLongLong();
+        needsUpdate = server > local;
+    }
+    
+    if (needsUpdate) {
+        emit statusUpdated("New patch available! Downloading...");
+        QString patchPath = m_gamePath + "/Data/patch-Z.MPQ";
+        
+        // Create Data directory if needed
+        QDir dataDir(m_gamePath + "/Data");
+        if (!dataDir.exists()) {
+            dataDir.mkpath(".");
+        }
+        
         m_isDownloading = true;
         m_currentDownload = "patch";
         m_downloadManager->downloadFile(m_patchDownloadUrl, patchPath);
     } else {
         emit statusUpdated("Patch is up to date.");
+        emit progressUpdated(100, "Ready");
     }
 }
 
@@ -198,8 +244,72 @@ void LauncherCore::launchGame()
 
 void LauncherCore::installGame()
 {
-    // TODO: Implement game installation from ZIP
-    emit statusUpdated("Game installation not yet implemented.");
+    emit statusUpdated("Starting game installation...");
+    
+    // Check if ZIP exists locally first
+    QString localZip = "WOTLKHD.zip";
+    if (!QFileInfo::exists(localZip)) {
+        // Download from server
+        emit statusUpdated("Downloading game client...");
+        localZip = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/WOTLKHD.zip";
+        
+        m_isDownloading = true;
+        m_currentDownload = "game";
+        m_downloadManager->downloadFile(m_gameZipUrl, localZip);
+        
+        // Wait for download to complete (in real app, use signals)
+        // For now, we'll handle it in onDownloadFinished
+        return;
+    }
+    
+    // Extract ZIP
+    extractGameZip(localZip);
+}
+
+void LauncherCore::extractGameZip(const QString &zipPath)
+{
+    emit statusUpdated("Extracting game files...");
+    emit progressUpdated(0, "Extracting...");
+    
+    // Use QZipReader or system unzip
+    // For simplicity, we'll use QProcess to call system unzip
+    // Or implement ZIP extraction using minizip or similar
+    
+    QProcess *unzipProcess = new QProcess(this);
+    QStringList args;
+    
+    // Try to use system unzip (Windows: PowerShell, Linux: unzip)
+#ifdef Q_OS_WIN
+    // Use PowerShell Expand-Archive
+    unzipProcess->setProgram("powershell");
+    args << "-Command" << QString("Expand-Archive -Path '%1' -DestinationPath '%2' -Force")
+        .arg(zipPath).arg(m_gamePath);
+#else
+    // Use unzip command
+    unzipProcess->setProgram("unzip");
+    args << "-o" << zipPath << "-d" << m_gamePath;
+#endif
+    
+    unzipProcess->setArguments(args);
+    
+    connect(unzipProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            [this, unzipProcess](int exitCode, QProcess::ExitStatus status) {
+        if (exitCode == 0 && status == QProcess::NormalExit) {
+            emit statusUpdated("Game installation complete!");
+            emit progressUpdated(100, "Installation complete");
+            updateUI();
+        } else {
+            emit errorOccurred("Failed to extract game files: " + unzipProcess->errorString());
+        }
+        unzipProcess->deleteLater();
+    });
+    
+    unzipProcess->start();
+    
+    if (!unzipProcess->waitForStarted(3000)) {
+        emit errorOccurred("Failed to start extraction process. Make sure unzip is available.");
+        unzipProcess->deleteLater();
+    }
 }
 
 void LauncherCore::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
@@ -218,6 +328,16 @@ void LauncherCore::onDownloadFinished(const QString &filePath)
     m_isDownloading = false;
     emit statusUpdated("Download complete: " + filePath);
     emit progressUpdated(100, "Download complete");
+    
+    // If we were downloading the game, extract it
+    if (m_currentDownload == "game") {
+        extractGameZip(filePath);
+    } else if (m_currentDownload == "patch") {
+        emit statusUpdated("Patch installed successfully!");
+        updateUI();
+    }
+    
+    m_currentDownload = "";
 }
 
 void LauncherCore::onDownloadError(const QString &error)

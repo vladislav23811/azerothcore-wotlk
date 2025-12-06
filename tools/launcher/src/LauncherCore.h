@@ -29,6 +29,7 @@ public:
     void checkForUpdates();
     void launchGame();
     void installGame();
+    void extractGameZip(const QString &zipPath);
 
 signals:
     void progressUpdated(int percentage, const QString &status);

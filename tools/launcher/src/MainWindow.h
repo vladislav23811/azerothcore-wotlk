@@ -12,6 +12,7 @@
 #include <QLineEdit>
 #include <QCheckBox>
 #include "LauncherCore.h"
+#include "SettingsDialog.h"
 
 class MainWindow : public QMainWindow
 {

@@ -19,12 +19,14 @@ set(SOURCES
     src/MainWindow.cpp
     src/LauncherCore.cpp
     src/DownloadManager.cpp
+    src/SettingsDialog.cpp
 )
 
 set(HEADERS
     src/MainWindow.h
     src/LauncherCore.h
     src/DownloadManager.h
+    src/SettingsDialog.h
 )
 
 # UI files (if using Qt Designer)
