@@ -297,7 +297,6 @@ void LauncherCore::extractGameZip(const QString &zipPath)
         if (exitCode == 0 && status == QProcess::NormalExit) {
             emit statusUpdated("Game installation complete!");
             emit progressUpdated(100, "Installation complete");
-            updateUI();
         } else {
             emit errorOccurred("Failed to extract game files: " + unzipProcess->errorString());
         }
@@ -334,7 +333,6 @@ void LauncherCore::onDownloadFinished(const QString &filePath)
         extractGameZip(filePath);
     } else if (m_currentDownload == "patch") {
         emit statusUpdated("Patch installed successfully!");
-        updateUI();
     }
     
     m_currentDownload = "";
