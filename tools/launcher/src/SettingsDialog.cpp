@@ -35,22 +35,22 @@ void SettingsDialog::setupUI()
     
     serverLayout->addWidget(new QLabel("Server URL:", this));
     m_serverUrlEdit = new QLineEdit(this);
-    m_serverUrlEdit->setPlaceholderText("http://localhost");
+    m_serverUrlEdit->setPlaceholderText("http://myclubgames.com");
     serverLayout->addWidget(m_serverUrlEdit);
     
     serverLayout->addWidget(new QLabel("Game Folder URL:", this));
     m_gameZipUrlEdit = new QLineEdit(this);
-    m_gameZipUrlEdit->setPlaceholderText("http://localhost/WoW/");
+    m_gameZipUrlEdit->setPlaceholderText("http://myclubgames.com/WoW/");
     serverLayout->addWidget(m_gameZipUrlEdit);
     
     serverLayout->addWidget(new QLabel("Patch Version URL:", this));
     m_patchVersionUrlEdit = new QLineEdit(this);
-    m_patchVersionUrlEdit->setPlaceholderText("http://localhost/patches/version.txt");
+    m_patchVersionUrlEdit->setPlaceholderText("http://myclubgames.com/patches/version.txt");
     serverLayout->addWidget(m_patchVersionUrlEdit);
     
     serverLayout->addWidget(new QLabel("Patch Download URL:", this));
     m_patchDownloadUrlEdit = new QLineEdit(this);
-    m_patchDownloadUrlEdit->setPlaceholderText("http://localhost/patches/latest/patch-Z.MPQ");
+    m_patchDownloadUrlEdit->setPlaceholderText("http://myclubgames.com/patches/latest/patch-Z.MPQ");
     serverLayout->addWidget(m_patchDownloadUrlEdit);
     
     mainLayout->addWidget(serverGroup);
@@ -87,17 +87,23 @@ void SettingsDialog::onServerUrlChanged()
 {
     QString serverUrl = m_serverUrlEdit->text();
     if (serverUrl.isEmpty()) {
-        serverUrl = "http://localhost";
+        serverUrl = "http://myclubgames.com";
     }
     
     // Auto-update URLs based on server URL
-    if (m_gameZipUrlEdit->text().isEmpty() || m_gameZipUrlEdit->text().contains("localhost")) {
+    if (m_gameZipUrlEdit->text().isEmpty() || 
+        m_gameZipUrlEdit->text().contains("localhost") || 
+        m_gameZipUrlEdit->text().contains("127.0.0.1")) {
         m_gameZipUrlEdit->setText(serverUrl + "/WoW/");
     }
-    if (m_patchVersionUrlEdit->text().isEmpty() || m_patchVersionUrlEdit->text().contains("localhost")) {
+    if (m_patchVersionUrlEdit->text().isEmpty() || 
+        m_patchVersionUrlEdit->text().contains("localhost") ||
+        m_patchVersionUrlEdit->text().contains("127.0.0.1")) {
         m_patchVersionUrlEdit->setText(serverUrl + "/patches/version.txt");
     }
-    if (m_patchDownloadUrlEdit->text().isEmpty() || m_patchDownloadUrlEdit->text().contains("localhost")) {
+    if (m_patchDownloadUrlEdit->text().isEmpty() || 
+        m_patchDownloadUrlEdit->text().contains("localhost") ||
+        m_patchDownloadUrlEdit->text().contains("127.0.0.1")) {
         m_patchDownloadUrlEdit->setText(serverUrl + "/patches/latest/patch-Z.MPQ");
     }
 }

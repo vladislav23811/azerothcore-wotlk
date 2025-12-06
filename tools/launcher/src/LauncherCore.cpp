@@ -67,7 +67,7 @@ void LauncherCore::loadConfig()
     
     // Fallback to QSettings or defaults
     m_gamePath = m_settings->value("gamePath", "C:/WoW").toString();
-    m_serverUrl = m_settings->value("serverUrl", "http://localhost").toString();
+    m_serverUrl = m_settings->value("serverUrl", "http://myclubgames.com").toString();
     // Game folder URL (extracted game files)
     m_gameZipUrl = m_settings->value("gameFolderUrl", m_serverUrl + "/WoW/").toString();
     m_patchVersionUrl = m_settings->value("patchVersionUrl", m_serverUrl + "/patches/version.txt").toString();

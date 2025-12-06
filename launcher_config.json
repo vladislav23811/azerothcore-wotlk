@@ -1,0 +1,8 @@
+{
+    "wow_path": "C:/WoW",
+    "server_url": "http://myclubgames.com",
+    "game_folder_url": "http://myclubgames.com/WoW/",
+    "patch_version_url": "http://myclubgames.com/patches/version.txt",
+    "patch_download_url": "http://myclubgames.com/patches/latest/patch-Z.MPQ"
+}
+
