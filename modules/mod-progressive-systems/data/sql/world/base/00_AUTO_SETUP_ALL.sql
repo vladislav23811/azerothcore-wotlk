@@ -310,17 +310,77 @@ INSERT IGNORE INTO `paragon_stat_definitions` (`stat_type`, `stat_name`, `stat_d
 (3, 'Resource Regeneration', 'Increases mana/energy/rage regeneration', 0, 50, 0.5, 5);
 
 -- ============================================================
--- 9. NPC SCRIPT ASSIGNMENTS
+-- 9. NPC SCRIPT ASSIGNMENTS AND NAMES
 -- ============================================================
--- Assign C++ script names to creature template entries
+-- Assign C++ script names to creature template entries with correct names
 -- These scripts are registered in ProgressiveSystemsNPCs.cpp
 -- Note: NPCs must be spawned in-game using: .npc add <entry>
-UPDATE `creature_template` SET `ScriptName` = 'npc_progressive_main_menu' WHERE `entry` = 190000;
-UPDATE `creature_template` SET `ScriptName` = 'npc_item_upgrade' WHERE `entry` = 190001;
-UPDATE `creature_template` SET `ScriptName` = 'npc_prestige' WHERE `entry` = 190002;
-UPDATE `creature_template` SET `ScriptName` = 'npc_stat_enhancement' WHERE `entry` = 190003;
-UPDATE `creature_template` SET `ScriptName` = 'npc_infinite_dungeon' WHERE `entry` = 190005;
-UPDATE `creature_template` SET `ScriptName` = 'npc_progressive_items' WHERE `entry` = 190006;
+
+-- Main Menu NPC (190000)
+UPDATE `creature_template` 
+SET `ScriptName` = 'npc_progressive_main_menu',
+    `name` = 'Progressive Systems',
+    `subname` = 'Main Menu',
+    `npcflag` = 1,
+    `minlevel` = 80,
+    `maxlevel` = 80,
+    `faction` = 35
+WHERE `entry` = 190000;
+
+-- Item Upgrade NPC (190001)
+UPDATE `creature_template` 
+SET `ScriptName` = 'npc_item_upgrade',
+    `name` = 'Item Upgrade Master',
+    `subname` = 'Upgrade Your Items',
+    `npcflag` = 1,
+    `minlevel` = 80,
+    `maxlevel` = 80,
+    `faction` = 35
+WHERE `entry` = 190001;
+
+-- Prestige NPC (190002)
+UPDATE `creature_template` 
+SET `ScriptName` = 'npc_prestige',
+    `name` = 'Prestige Master',
+    `subname` = 'Reset for Power',
+    `npcflag` = 1,
+    `minlevel` = 80,
+    `maxlevel` = 80,
+    `faction` = 35
+WHERE `entry` = 190002;
+
+-- Stat Enhancement NPC (190003)
+UPDATE `creature_template` 
+SET `ScriptName` = 'npc_stat_enhancement',
+    `name` = 'Stat Enhancement',
+    `subname` = 'Enhance Your Stats',
+    `npcflag` = 1,
+    `minlevel` = 80,
+    `maxlevel` = 80,
+    `faction` = 35
+WHERE `entry` = 190003;
+
+-- Infinite Dungeon NPC (190005)
+UPDATE `creature_template` 
+SET `ScriptName` = 'npc_infinite_dungeon',
+    `name` = 'Infinite Dungeon',
+    `subname` = 'Enter the Challenge',
+    `npcflag` = 1,
+    `minlevel` = 80,
+    `maxlevel` = 80,
+    `faction` = 35
+WHERE `entry` = 190005;
+
+-- Progressive Items NPC (190006)
+UPDATE `creature_template` 
+SET `ScriptName` = 'npc_progressive_items',
+    `name` = 'Progressive Items',
+    `subname` = 'Tiered Cosmetics',
+    `npcflag` = 1,
+    `minlevel` = 80,
+    `maxlevel` = 80,
+    `faction` = 35
+WHERE `entry` = 190006;
 
 -- ============================================================
 -- COMPLETE!
