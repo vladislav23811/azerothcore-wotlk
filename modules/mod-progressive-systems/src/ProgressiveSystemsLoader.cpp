@@ -29,11 +29,41 @@
 void AddSC_ProgressiveSystemsDifficultyScaling();
 void AddSC_ProgressiveSystemsAddonScript();
 void AddSC_progressive_systems_commands();
-void AddSC_progressive_systems_npcs();
-void AddSC_progressive_systems_player_script();
-void AddSC_progressive_systems_world_script();
-void AddSC_progressive_systems_map_script();
+void AddSC_progressive_systems_npcs(); // Defined in ProgressiveSystemsNPCs.cpp
 // Note: Daily Challenge and Seasonal NPCs are handled in ProgressiveSystemsNPCs
+
+// Script registration functions - DEFINED here (not just declared) so linker can find them
+// These functions MUST exist even though scripts are registered elsewhere
+// Note: ProgressiveSystemsPlayerScript and ProgressiveSystemsWorldScript are already
+// registered in AddSC_ProgressiveSystemsDifficultyScaling(), so these functions
+// are just placeholders to satisfy the loader. They don't create new instances.
+
+// Script registration functions - These must be defined (not just declared) for the linker
+void AddSC_progressive_systems_player_script()
+{
+    // Already registered in AddSC_ProgressiveSystemsDifficultyScaling()
+    // This function exists for compatibility with the loader
+    // Scripts are registered in DifficultyScaling.cpp
+    LOG_DEBUG("module", "AddSC_progressive_systems_player_script called (scripts already registered)");
+}
+
+void AddSC_progressive_systems_world_script()
+{
+    // Already registered in AddSC_ProgressiveSystemsDifficultyScaling()
+    // This function exists for compatibility with the loader
+    // Scripts are registered in DifficultyScaling.cpp
+    LOG_DEBUG("module", "AddSC_progressive_systems_world_script called (scripts already registered)");
+}
+
+void AddSC_progressive_systems_map_script()
+{
+    // Map script can be added here if needed
+    // Currently no map-specific script is implemented
+    LOG_DEBUG("module", "AddSC_progressive_systems_map_script called");
+}
+
+// NPC script registration - Implementation is in ProgressiveSystemsNPCs.cpp
+// Forward declaration only - actual implementation is in ProgressiveSystemsNPCs.cpp
 
 // Configuration validation
 static bool ValidateProgressiveSystemsConfig()
@@ -126,12 +156,12 @@ void Addmod_progressive_systemsScripts()
     LOG_INFO("module", "Progressive Systems subsystems initialized.");
     
     // Register scripts
-    AddSC_ProgressiveSystemsDifficultyScaling();
+    AddSC_ProgressiveSystemsDifficultyScaling();  // This already registers PlayerScript and WorldScript
     AddSC_ProgressiveSystemsAddonScript();        // Addon message handler
     AddSC_progressive_systems_commands();        // Commands (.ps upgrade, etc.)
-    AddSC_progressive_systems_npcs();            // NPC scripts
-    AddSC_progressive_systems_player_script();    // Player event hooks
-    AddSC_progressive_systems_world_script();     // World update hooks
+    AddSC_progressive_systems_npcs();            // NPC scripts (placeholder)
+    AddSC_progressive_systems_player_script();    // Player event hooks (already registered, but function must exist)
+    AddSC_progressive_systems_world_script();     // World update hooks (already registered, but function must exist)
     AddSC_progressive_systems_map_script();       // Map/instance event hooks
     
     LOG_INFO("module", "Progressive Systems Module: All scripts registered successfully!");
