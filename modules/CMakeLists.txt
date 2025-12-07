@@ -106,7 +106,8 @@ foreach(SOURCE_MODULE ${MODULES_MODULE_LIST})
     # Add include directory for ExtraDatabase.h (needed by DatabaseWorkerPool.cpp)
     # Always add it when module is found (don't check file existence - let compiler error if missing)
     GetPathToModuleSource(${SOURCE_MODULE} MODULE_SOURCE_PATH)
-    set(EXTRA_DB_INCLUDE_DIR "${MODULE_SOURCE_PATH}/src/AzerothShardModules/mod-as-common/src/game")
+    # MODULE_SOURCE_PATH already points to modules/<module>/src, so don't add /src/ again
+    set(EXTRA_DB_INCLUDE_DIR "${MODULE_SOURCE_PATH}/AzerothShardModules/mod-as-common/src/game")
     target_include_directories(database
       PRIVATE
         ${EXTRA_DB_INCLUDE_DIR})
