@@ -22,10 +22,6 @@ set(EXTRA_DATABASE_PATH "${CMAKE_SOURCE_DIR}/modules/mod-progressive-systems/src
 set(EXTRA_DATABASE_DIR "${CMAKE_SOURCE_DIR}/modules/mod-progressive-systems/src/AzerothShardModules/mod-as-common/src/game")
 if(EXISTS "${EXTRA_DATABASE_PATH}")
   list(APPEND PRIVATE_SOURCES "${EXTRA_DATABASE_PATH}")
-  # Add include directory so DatabaseWorkerPool.cpp can find ExtraDatabase.h
-  target_include_directories(database
-    PRIVATE
-      ${EXTRA_DATABASE_DIR})
 endif()
 
 if(USE_COREPCH)
@@ -58,6 +54,13 @@ target_include_directories(database
     ${PUBLIC_INCLUDES}
   PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR})
+
+# Add ExtraDatabase include directory if it exists (must be after target creation)
+if(EXISTS "${EXTRA_DATABASE_DIR}/ExtraDatabase.h")
+  target_include_directories(database
+    PRIVATE
+      ${EXTRA_DATABASE_DIR})
+endif()
 
 target_link_libraries(database
   PRIVATE
