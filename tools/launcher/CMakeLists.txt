@@ -30,7 +30,7 @@ if(CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}")
     elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../../../vcpkg")
         set(VCPKG_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../vcpkg")
     endif()
-    
+
     if(VCPKG_ROOT)
         # Qt5Config.cmake is typically in share/cmake/Qt5/ (not share/qt5/)
         if(EXISTS "${VCPKG_ROOT}/installed/x64-windows/share/cmake/Qt5/Qt5Config.cmake")
@@ -77,7 +77,7 @@ else()
             message("   cmake .. -DQt5_DIR=\"C:/Qt/5.x.x/msvc2019_64/lib/cmake/Qt5\"")
             message("")
         endif()
-        
+
         if(NOT IS_STANDALONE_BUILD)
             # If built as subdirectory and Qt not found, just skip (don't fail main build)
             message(WARNING "Launcher: Skipping launcher build (Qt not found). Server will still build.")
@@ -120,6 +120,15 @@ set(HEADERS
 # Create executable
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
+# Set output directory to separate launcher folder
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/WoWLauncher"
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/Debug/WoWLauncher"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release/WoWLauncher"
+    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/WoWLauncher"
+    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/bin/MinSizeRel/WoWLauncher"
+)
+
 # Disable vcpkg's automatic DLL copying (it uses wildcards which break MSBuild)
 # We'll manually copy the DLLs we need instead
 # Note: vcpkg adds automatic dependency copying via .props files, which we'll clean up post-configure
@@ -142,15 +151,15 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 # Link Qt libraries
 if(QT_VERSION_MAJOR EQUAL 6)
-    target_link_libraries(${PROJECT_NAME} 
-        Qt6::Core 
-        Qt6::Widgets 
+    target_link_libraries(${PROJECT_NAME}
+        Qt6::Core
+        Qt6::Widgets
         Qt6::Network
     )
 else()
-    target_link_libraries(${PROJECT_NAME} 
-        Qt5::Core 
-        Qt5::Widgets 
+    target_link_libraries(${PROJECT_NAME}
+        Qt5::Core
+        Qt5::Widgets
         Qt5::Network
     )
 endif()
@@ -162,14 +171,14 @@ if(WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         WIN32_EXECUTABLE TRUE
     )
-    
+
     # Copy Qt DLLs to launcher output directory (for distribution)
     if(NOT IS_STANDALONE_BUILD)
-        set(LAUNCHER_OUTPUT_DIR "${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/wowlauncher")
+        set(LAUNCHER_OUTPUT_DIR "${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/WoWLauncher")
     else()
         set(LAUNCHER_OUTPUT_DIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
     endif()
-    
+
     if(QT_VERSION_MAJOR EQUAL 6)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory "${LAUNCHER_OUTPUT_DIR}"
@@ -186,14 +195,14 @@ if(WIN32)
         get_target_property(QT5_CORE_DLL Qt5::Core LOCATION)
         get_target_property(QT5_WIDGETS_DLL Qt5::Widgets LOCATION)
         get_target_property(QT5_NETWORK_DLL Qt5::Network LOCATION)
-        
+
         # Get the directory where Qt5 DLLs are located
         get_filename_component(QT5_BIN_DIR "${QT5_CORE_DLL}" DIRECTORY)
-        
+
         # Don't copy OpenSSL DLLs - Qt5 on Windows uses native SSL, not OpenSSL
         # This avoids vcpkg wildcard issues with libcrypto-*-x64.dll patterns
         # If OpenSSL is needed later, it can be added explicitly without wildcards
-        
+
         # Copy only Qt5 DLLs (no OpenSSL)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory "${LAUNCHER_OUTPUT_DIR}"
@@ -209,14 +218,14 @@ endif()
 
 # Set output directory to dedicated launcher folder
 if(NOT IS_STANDALONE_BUILD)
-    # Output to build/bin/RelWithDebInfo/wowlauncher/ for easy identification
-    set(LAUNCHER_OUTPUT_DIR "${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/wowlauncher")
+    # Output to build/bin/RelWithDebInfo/WoWLauncher/ for easy identification
+    set(LAUNCHER_OUTPUT_DIR "${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/WoWLauncher")
     set_target_properties(${PROJECT_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/Debug/wowlauncher"
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/Debug/wowlauncher"
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release/wowlauncher"
-        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/wowlauncher"
-        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/bin/MinSizeRel/wowlauncher"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/Debug/WoWLauncher"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/Debug/WoWLauncher"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release/WoWLauncher"
+        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/WoWLauncher"
+        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/bin/MinSizeRel/WoWLauncher"
     )
     message(STATUS "Launcher: Output directory set to ${LAUNCHER_OUTPUT_DIR}")
 endif()
@@ -227,11 +236,11 @@ endif()
 # We need to remove it both PRE_BUILD (before MSBuild reads it) and after configure
 if(CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}" AND WIN32)
     set(VCXPROJ_FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj")
-    
+
     # Create a PowerShell script to remove wildcards
     # Use double quotes and escape properly to avoid PowerShell parsing issues
     set(FIX_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/fix_vcpkg_wildcards.ps1")
-    file(WRITE "${FIX_SCRIPT}" 
+    file(WRITE "${FIX_SCRIPT}"
         "$vcxproj = '${VCXPROJ_FILE}'\n"
         "if (Test-Path $vcxproj) {\n"
         "  $content = Get-Content $vcxproj -Raw\n"
@@ -260,14 +269,14 @@ if(CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}" AND WIN32)
         "  Set-Content $userFile -Value $content -NoNewline\n"
         "}\n"
     )
-    
+
     # Run PRE_BUILD to remove wildcards before MSBuild processes the file
     add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
         COMMAND powershell -ExecutionPolicy Bypass -File "${FIX_SCRIPT}"
         COMMENT "Removing vcpkg wildcard patterns from project files..."
         VERBATIM
     )
-    
+
     # Also run after configure (when .vcxproj is first generated)
     add_custom_command(TARGET ${PROJECT_NAME} PRE_LINK
         COMMAND powershell -ExecutionPolicy Bypass -File "${FIX_SCRIPT}"

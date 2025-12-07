@@ -4,7 +4,7 @@
             "name": "x64-RelWithDebInfo",
             "generator": "Visual Studio 18 2026 Win64",
             "configurationType": "RelWithDebInfo",
-            "buildRoot": "C:/servery/WOTLK-BOTS/build",
+            "buildRoot": "C:/servers/build",
             "cmakeCommandArgs": "",
             "buildCommandArgs": "--config RelWithDebInfo",
             "ctestCommandArgs": "",
@@ -21,6 +21,11 @@
                     "type": "STRING"
                 },
                 {
+                    "name": "CMAKE_TOOLCHAIN_FILE",
+                    "value": "C:/vcpkg/scripts/buildsystems/vcpkg.cmake",
+                    "type": "STRING"
+                },
+                {
                     "name": "APPS_BUILD",
                     "value": "all",
                     "type": "STRING"
@@ -29,6 +34,11 @@
                     "name": "TOOLS_BUILD",
                     "value": "all",
                     "type": "STRING"
+                },
+                {
+                    "name": "BUILD_LAUNCHER",
+                    "value": "ON",
+                    "type": "BOOL"
                 }
             ]
         }

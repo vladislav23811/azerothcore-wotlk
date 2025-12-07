@@ -197,7 +197,7 @@ This fits perfectly with your module:
 5. Works for everyone!
 
 ### Implementation:
-- Already partially implemented in `ItemUpgradeSystem`
+- Already implemented in `ProgressiveSystems` (item upgrade system)
 - Extend it to modify weapon names: "Weapon Name +5"
 - Apply stat bonuses server-side
 - No client changes needed!

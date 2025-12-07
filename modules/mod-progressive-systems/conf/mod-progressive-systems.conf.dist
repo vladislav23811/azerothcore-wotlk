@@ -182,3 +182,418 @@ ProgressiveSystems.DBC.AutoGenerateMPQ = true
 # Leave empty to use MPQOutput location instead
 ProgressiveSystems.DBC.WebServerPath = "C:/xampp/htdocs"
 
+###############################################################
+# Reforging System Configuration
+###############################################################
+#
+#    Reforging.Enable
+#        Description: Enable Reforging module
+#        Default:     0 - Disabled
+#                     1 - Enabled
+#
+Reforging.Enable = 1
+
+#
+#    Reforging.ReforgeableStats
+#        Description: Stats that can be reforged. These are usually secondary stats like spirit, hit rating, etc.
+#        Default:     6,13,14,31,32,36,37 (Spirit, Dodge Rating, Parry Rating, Hit Rating, Crit Rating, Haste Rating, Expertise Rating)
+#
+Reforging.ReforgeableStats = 6,13,14,31,32,36,37
+
+#
+#    Reforging.Percentage
+#        Description: A number between 10 and 90 which calculates how much from the reforged stat goes into another stat.
+#        Default:     40 - 40% of reforged stat goes to another
+#
+Reforging.Percentage = 40
+
+###############################################################
+# Advanced Item Upgrade System Configuration
+###############################################################
+#
+#    ItemUpgrade.Enable
+#        Description: Enable the advanced item upgrade module
+#
+ItemUpgrade.Enable = 1
+ItemUpgrade.AllowedStats = 3,4,5,6,7,32,36,45
+ItemUpgrade.SendUpgradedItemsPackets = 1
+ItemUpgrade.SendUpgradedItemsPacketsPrioritization = 0
+ItemUpgrade.AllowUpgradesPurge = 1
+ItemUpgrade.UpgradePurgeToken = 0
+ItemUpgrade.UpgradePurgeTokenCount = 0
+ItemUpgrade.RefundAllOnPurge = 1
+ItemUpgrade.RandomUpgradesOnLoot = 0
+ItemUpgrade.RandomUpgradeChance = 2
+ItemUpgrade.RandomUpgradeMaxStatCount = 2
+ItemUpgrade.RandomUpgradeMaxRank = 3
+ItemUpgrade.RandomUpgradeWhenBuying = 0
+ItemUpgrade.RandomUpgradeWhenLooting = 1
+ItemUpgrade.RandomUpgradeWhenWinning = 1
+ItemUpgrade.RandomUpgradeOnQuestReward = 1
+ItemUpgrade.RandomUpgradeWhenCrafting = 1
+ItemUpgrade.UpgradeWeaponDamage = 1
+ItemUpgrade.UpgradeWeaponDamagePercents = 5,10,15
+ItemUpgrade.UpgradeWeaponDamageToken = 0
+ItemUpgrade.UpgradeWeaponDamageTokenCount = 1
+ItemUpgrade.UpgradeWeaponDamageMoney = 0
+ItemUpgrade.UpgradeWeaponSpeed = 1
+ItemUpgrade.UpgradeWeaponSpeedPercents = 10,20,30
+ItemUpgrade.UpgradeWeaponSpeedToken = 0
+ItemUpgrade.UpgradeWeaponSpeedTokenCount = 1
+ItemUpgrade.UpgradeWeaponSpeedMoney = 0
+
+###############################################################
+# Mythic Plus System Configuration (Araxia Version)
+###############################################################
+#
+#  Logging Configuration
+#
+Appender.MythicPlusLog=2,4,0,mod-mythic-plus.log,w
+Logger.module.MythicPlus=5,MythicPlusLog MythicPlusConsole
+
+MythicPlus.Enabled = 1
+MythicPlus.EnableItemRewards = 1
+MythicPlus.EnableDeathLimits = 1
+MythicPlus.EnabledDifficulties = mythic,legendary,ascendant
+MythicPlus.DisabledDungeons =
+
+MythicPlus.Mythic.DungeonHealth = 1.25
+MythicPlus.Mythic.DungeonMelee = 1.25
+MythicPlus.Mythic.DungeonBaseDamage = 1.50
+MythicPlus.Mythic.DungeonSpell = 1.15
+MythicPlus.Mythic.DungeonArmor = 1.95
+MythicPlus.Mythic.DungeonAvgLevel = 83
+MythicPlus.Mythic.DungeonBossHealth = 1.50
+MythicPlus.Mythic.DungeonBossMelee = 1.35
+MythicPlus.Mythic.DungeonBossBaseDamage = 2.00
+MythicPlus.Mythic.DungeonBossSpell = 1.25
+MythicPlus.Mythic.DungeonBossArmor = 1.35
+MythicPlus.Mythic.DungeonBossLevel = 85
+
+MythicPlus.Legendary.DungeonHealth = 2.25
+MythicPlus.Legendary.DungeonMelee = 2.25
+MythicPlus.Legendary.DungeonBaseDamage = 2.75
+MythicPlus.Legendary.DungeonSpell = 2.25
+MythicPlus.Legendary.DungeonArmor = 2.25
+MythicPlus.Legendary.DungeonAvgLevel = 85
+MythicPlus.Legendary.DungeonBossHealth = 2.25
+MythicPlus.Legendary.DungeonBossMelee = 2.25
+MythicPlus.Legendary.DungeonBossSpell = 2.25
+MythicPlus.Legendary.DungeonBossBaseDamage = 4.00
+MythicPlus.Legendary.DungeonBossArmor = 3.25
+MythicPlus.Legendary.DungeonBossLevel = 87
+
+MythicPlus.Ascendant.DungeonHealth = 3.25
+MythicPlus.Ascendant.DungeonMelee = 3.25
+MythicPlus.Ascendant.DungeonBaseDamage = 4.75
+MythicPlus.Ascendant.DungeonSpell = 3.25
+MythicPlus.Ascendant.DungeonArmor = 3.25
+MythicPlus.Ascendant.DungeonAvgLevel = 87
+MythicPlus.Ascendant.DungeonBossHealth = 3.25
+MythicPlus.Ascendant.DungeonBossMelee = 3.25
+MythicPlus.Ascendant.DungeonBossSpell = 3.25
+MythicPlus.Ascendant.DungeonBossBaseDamage = 6.00
+MythicPlus.Ascendant.DungeonBossArmor = 3.25
+MythicPlus.Ascendant.DungeonBossLevel = 90
+
+MythicPlus.Mythic.DeathAllowance = 100
+MythicPlus.Legendary.DeathAllowance = 30
+MythicPlus.Ascendant.DeathAllowance = 15
+
+MythicPlus.Mythic.ItemOffset = 20000000
+MythicPlus.Legendary.ItemOffset = 21000000
+MythicPlus.Ascendant.ItemOffset = 22000000
+
+MythicPlus.DiminishingExponent = 0.96
+MythicPlus.DiminishingThreshold.Mythic = 10000
+MythicPlus.DiminishingThreshold.Legendary = 20000
+MythicPlus.DiminishingThreshold.Ascendant = 40000
+
+MythicPlus.ElementalMeleeReducer = 0.50
+MythicPlus.NormalEnemyReducer = 0.50
+MythicPlus.NonCreatureSpellReducer = 0.50
+
+###############################################################
+# Global Chat System Configuration
+###############################################################
+GlobalChat.Enable = 1
+GlobalChat.Announce = 1
+GlobalChat.Chat.Name = "Global"
+GlobalChat.Chat.NameColor = "FFFF00"
+GlobalChat.Chat.TextColor = "FFFFFF"
+GlobalChat.Player.NameColor = 1
+GlobalChat.Player.FactionIcon = 0
+GlobalChat.Player.RaceIcon = 1
+GlobalChat.Player.ClassIcon = 0
+GlobalChat.GM.Colors = "00FF00;091FE0;FF0000"
+GlobalChat.GM.Badge = 1
+GlobalChat.FactionSpecific = 0
+GlobalChat.OnFirstLogin = 1
+GlobalChat.PlayTimeToChat = 300
+GlobalChat.CoolDown = 2
+GlobalChat.SendToIgnored = 0
+GlobalChat.JoinChannelAllowed = 0
+GlobalChat.AnnounceMutes = 0
+GlobalChat.Profanity.BlockType = 1
+GlobalChat.Profanity.BlockLevel = 0
+GlobalChat.Profanity.MuteType = 1
+GlobalChat.Profanity.MuteTime = 30
+GlobalChat.Profanity.FromDBC = 0
+GlobalChat.URL.BlockType = 1
+GlobalChat.URL.BlockLevel = 0
+GlobalChat.URL.MuteType = 1
+GlobalChat.URL.MuteTime = 120
+GlobalChat.URL.Whitelist = ""
+
+###############################################################
+# Quest Loot Party Configuration
+###############################################################
+QuestParty.Enable = 0
+QuestParty.Message = 0
+
+###############################################################
+# 1v1 Arena Configuration
+###############################################################
+Arena1v1.Enable = 1
+Arena1v1.Announcer = 1
+Arena1v1.MinLevel = 80
+Arena1v1.Costs = 400000
+Arena1v1.VendorRating = 0
+Arena1v1.ArenaPointsMulti = 0.64
+Arena1v1.ArenaPointsMinLevel = 70
+Arena1v1.PreventHealingTalents = false
+Arena1v1.PreventTankTalents = false
+Arena1v1.ForbiddenTalentsIDs = "0"
+Arena1v1.ArenaSlotID = 3
+Arena1v1.EnableCommand = 1
+
+###############################################################
+# Account Achievements Configuration
+###############################################################
+Account.Achievements.Enable = 1
+Account.Achievements.Announce = 1
+Account.Achievements.Excluded = 0
+
+###############################################################
+# Account Mounts Configuration
+###############################################################
+Account.Mounts.Enable = 1
+Account.Mounts.Announce = 0
+Account.Mounts.ExcludedSpellIDs = 0
+Account.Mounts.LimitRace = 0
+
+###############################################################
+# Arena 3v3 Solo Queue Configuration
+###############################################################
+Solo.3v3.Enable = 1
+Solo.3v3.EnableCommand = 1
+Solo.3v3.EnableTestingCommand = 1
+Solo.3v3.FilterTalents = 0
+Arena.CheckEquipAndTalents = 0
+Arena.3v3.BlockForbiddenTalents = 0
+Solo.3v3.CastDeserterOnAfk = 1
+Solo.3v3.CastDeserterOnLeave = 1
+Solo.3v3.StopGameIncomplete = 1
+Solo.3v3.RatingPenalty.LeaveDuringMatch = 24
+Solo.3v3.RatingPenalty.LeaveBeforeMatchStart = 50
+Solo.3v3.MinLevel = 80
+Solo.3v3.Cost = 100000
+Solo.3v3.ArenaPointsMulti = 0.8
+Solo.3v3.ArenaPointsMinLevel = 70
+Solo.3v3.VendorRating = 0
+Solo.3v3.ShowMessageOnLogin = 0
+
+###############################################################
+# AutoBalance Configuration
+###############################################################
+AutoBalance.Enable.Global=1
+AutoBalance.Enable.5M=1
+AutoBalance.Enable.10M=1
+AutoBalance.Enable.15M=1
+AutoBalance.Enable.20M=1
+AutoBalance.Enable.25M=1
+AutoBalance.Enable.40M=1
+AutoBalance.Enable.OtherNormal=1
+AutoBalance.Enable.5MHeroic=1
+AutoBalance.Enable.10MHeroic=1
+AutoBalance.Enable.25MHeroic=1
+AutoBalance.Enable.OtherHeroic=1
+AutoBalance.reward.raidToken = 49426
+AutoBalance.reward.dungeonToken = 47241
+AutoBalance.reward.MinPlayerReward = 1
+AutoBalanceAnnounce.enable=0
+
+###############################################################
+# BG Reward Configuration
+###############################################################
+Battleground.Reward.Enable = 0
+Battleground.Reward.WinnerTeam.Count = 2
+Battleground.Reward.LoserTeam.Count = 1
+Battleground.Reward.ItemID.WS = 20558
+Battleground.Reward.ItemID.AB = 20559
+Battleground.Reward.ItemID.EY = 29024
+Battleground.Reward.ItemID.IC = 47395
+Battleground.Reward.ItemID.SA = 42425
+Battleground.Reward.ItemID.AV = 20560
+Arena.Reward.Enable = 0
+Arena.Reward.WinnerTeam.Count = 2
+Arena.Reward.LoserTeam.Count = 1
+Arena.Reward.Winner.ItemID.2v2 = 29434
+Arena.Reward.Loser.ItemID.2v2 = 29434
+Arena.Reward.Winner.ItemID.3v3 = 29434
+Arena.Reward.Loser.ItemID.3v3 = 29434
+Arena.Reward.Winner.ItemID.5v5 = 29434
+Arena.Reward.Loser.ItemID.5v5 = 29434
+
+###############################################################
+# Character Tools Configuration
+###############################################################
+CharacterTools = 1
+
+###############################################################
+# Congrats On Level Configuration
+###############################################################
+Congrats.Enable = 1
+CongratsPerLevel.Enable = 1
+Congrats.Announce = 1
+Congrats.Acore.String.ID = 60000
+
+###############################################################
+# Gain Honor Guard Configuration
+###############################################################
+GainHonorGuard.Enable = 1
+GainHonorGuard.Announce = 1
+GainHonorGuard.GainHonorOnGuardKill = 0
+GainHonorGuard.GainHonorOnEliteKill = 0
+GainHonorGuard.GainHonorOnGuardKillAnnounce = 0
+GainHonorGuard.GainHonorOnEliteKillAnnounce = 0
+GainHonorGuard.GainHonorRateEnable = 0
+GainHonorGuard.GainHonorRate = 1.0
+GainHonorGuard.SplitInGroup = 0
+
+###############################################################
+# Instance Reset Configuration (Legacy - Use Progressive Systems instead)
+###############################################################
+InstanceReset.Enable = 0
+InstanceReset.Announce = 0
+instanceReset.Enable = 1
+instanceReset.TransactionType = 0
+instanceReset.TokenID = 49426
+instanceReset.TokenCount = 26
+instanceReset.MoneyCount = 10000000
+instanceReset.Announcer = 1
+
+###############################################################
+# Learn Spells Configuration
+###############################################################
+LearnSpells.Enable = 1
+LearnSpells.Announce = 1
+LearnSpells.OnFirstLogin = 0
+LearnSpells.MaxLevel = 80
+
+###############################################################
+# NPC Beastmaster Configuration
+###############################################################
+BeastMaster.Enable = 1
+BeastMaster.Howls = 1
+BeastMaster.ShowLoginNotice = 1
+BeastMaster.LoginMessage = ""
+BeastMaster.HunterOnly = 1
+BeastMaster.AllowedClasses = 0
+BeastMaster.AllowedRaces = 0
+BeastMaster.MinLevel = 10
+BeastMaster.MaxLevel = 0
+BeastMaster.HunterBeastMasteryRequired = 1
+BeastMaster.AllowExotic = 0
+BeastMaster.KeepPetHappy = 0
+BeastMaster.TrackTamedPets = 0
+BeastMaster.MaxTrackedPets = 20
+BeastMaster.ProfanityFilter = 1
+BeastMaster.SummonCooldown = 120
+BeastMaster.NpcEntry = 601026
+BeastMaster.RarePets="3068,32481,27483,11497,12803,16179,17882"
+BeastMaster.RareExoticPets="32517,33776,35189,17447,38453,6585"
+
+###############################################################
+# Premium Account Configuration
+###############################################################
+PremiumAccount = 1
+Morph = 1
+Mount = 1
+Trainers = 1
+PlayerInteraction = 1
+Bank = 1
+Auction = 1
+Mail = 1
+Vendor = 1
+Taxi = 1
+GuildVault = 1
+
+###############################################################
+# Random Enchants Configuration
+###############################################################
+RandomEnchants.Enable = 1
+RandomEnchants.AnnounceOnLogin=1
+RandomEnchants.OnLoginMessage="This server is running a RandomEnchants Module."
+RandomEnchants.OnLoot=1
+RandomEnchants.OnCreate=1
+RandomEnchants.OnQuestReward=1
+
+###############################################################
+# Reward Shop Configuration
+###############################################################
+RewardShopEnable = 1
+WebsiteAddress = "You can get codes by visiting the online store at: www.wildhammer.co.uk"
+AllowGM = 0
+
+###############################################################
+# Reward Played Time Configuration
+###############################################################
+RewardSystem.Announce = 1
+RewardSystemEnable = 1
+RewardTime = 1
+MaxRoll = 1000
+
+###############################################################
+# Solo LFG Configuration
+###############################################################
+SoloLFG.Enable = 1
+SoloLFG.Announce = 1
+SoloLFG.FixedXP = 1
+SoloLFG.FixedXPRate = 0.2
+
+###############################################################
+# Transmog Configuration
+###############################################################
+Transmogrification.Enable = 1
+Transmogrification.UseCollectionSystem = 1
+Transmogrification.UseVendorInterface = 0
+Transmogrification.AllowHiddenTransmog = 1
+Transmogrification.HiddenTransmogIsFree = 1
+Transmogrification.TrackUnusableItems = 1
+Transmogrification.RetroActiveAppearances = 1
+Transmogrification.ResetRetroActiveAppearancesFlag = 0
+Transmogrification.EnableTransmogInfo = 1
+Transmogrification.TransmogNpcText = 601083
+Transmogrification.Allowed = ""
+Transmogrification.NotAllowed = ""
+Transmogrification.EnablePortable = 1
+Transmogrification.EnableSortByQualityAndName = 1
+Transmogrification.ScaledCostModifier = 1.0
+Transmogrification.CopperCost = 0
+Transmogrification.RequireToken = 0
+Transmogrification.TokenEntry = 49426
+Transmogrification.TokenAmount = 1
+Transmogrification.AllowPoor = 0
+Transmogrification.AllowCommon = 0
+Transmogrification.AllowUncommon = 1
+
+###############################################################
+# AzerothShard Configuration
+###############################################################
+ChallengeMode.noReward.deltaLevelHigher = 0
+ChallengeMode.noReward.deltaLevelLower = 0
+ChallengeMode.noReward.startLevelHigher = 0
+ChallengeMode.noReward.startLevelLower = 0
+Azth.Multiplies.Drop.Enable = 0
+

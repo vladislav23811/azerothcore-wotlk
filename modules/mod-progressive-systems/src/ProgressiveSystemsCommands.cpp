@@ -5,7 +5,6 @@
 
 #include "ProgressiveSystemsCommands.h"
 #include "ProgressiveSystems.h"
-#include "ItemUpgradeSystem.h"
 #include "ParagonSystem.h"
 #include "InfiniteDungeonSystem.h"
 #include "UnifiedStatSystem.h"
@@ -79,7 +78,18 @@ public:
         
         uint32 upgradeLevels = levels.value_or(1);
         
-        if (sItemUpgradeSystem->UpgradeItem(player, item, upgradeLevels))
+        // Upgrade item level by level
+        bool success = true;
+        for (uint32 i = 0; i < upgradeLevels; ++i)
+        {
+            if (!sProgressiveSystems->UpgradeItem(player, item))
+            {
+                success = false;
+                break;
+            }
+        }
+        
+        if (success)
         {
             handler->PSendSysMessage("|cFF00FF00Item upgraded successfully!|r");
             
@@ -88,7 +98,7 @@ public:
         }
         else
         {
-            handler->PSendSysMessage("|cFFFF0000Failed to upgrade item!|r");
+            handler->PSendSysMessage("|cFFFF0000Failed to upgrade item! Check if you have enough progression points.|r");
         }
         
         return true;

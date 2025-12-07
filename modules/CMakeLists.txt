@@ -38,6 +38,7 @@ set("AC_SCRIPTS_LIST" "")
 set(MOD_ALE_FOUND 0)
 set(MOD_ALE_PATH "")
 set(MOD_PLAYERBOTS_FOUND 0)
+set(MOD_PROGRESSIVE_SYSTEMS_FOUND 0)
 
 foreach(include ${AC_ADD_SCRIPTS_INCLUDE})
   set("AC_SCRIPTS_INCLUDES" "#include \"${include}\"\n${AC_SCRIPTS_INCLUDES}")
@@ -92,6 +93,16 @@ foreach(SOURCE_MODULE ${MODULES_MODULE_LIST})
     target_compile_options(game-interface
       INTERFACE
         -DMOD_PLAYERBOTS)
+  endif()
+
+  if (SOURCE_MODULE MATCHES "mod-progressive-systems")
+    set(MOD_PROGRESSIVE_SYSTEMS_FOUND 1 PARENT_SCOPE)
+    target_compile_options(database
+      PRIVATE
+        -DMOD_PROGRESSIVE_SYSTEMS)
+    target_compile_options(game-interface
+      INTERFACE
+        -DMOD_PROGRESSIVE_SYSTEMS)
   endif()
 
   # Build the Graph values
@@ -300,6 +311,11 @@ list(REMOVE_DUPLICATES PRIVATE_SOURCES_MODULES)
 if (MOD_ALE_FOUND)
   list(REMOVE_ITEM PRIVATE_SOURCES_MODULES ${MOD_ALE_PATH}/lualib/lua.c)
   list(REMOVE_ITEM PRIVATE_SOURCES_MODULES ${MOD_ALE_PATH}/lualib/luac.c)
+endif()
+
+# Remove ExtraDatabase.cpp from modules library - it's compiled into database library instead
+if (MOD_PROGRESSIVE_SYSTEMS_FOUND)
+  list(REMOVE_ITEM PRIVATE_SOURCES_MODULES ${CMAKE_SOURCE_DIR}/modules/mod-progressive-systems/src/AzerothShardModules/mod-as-common/src/game/ExtraDatabase.cpp)
 endif()
 
 add_library(modules STATIC

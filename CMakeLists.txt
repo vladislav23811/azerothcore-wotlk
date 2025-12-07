@@ -15,6 +15,21 @@ cmake_minimum_required(VERSION 3.16)
 
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 
+# Suppress CMP0167 warning about FindBoost module removal
+# Set default policy BEFORE toolchain file is processed (toolchain runs before project())
+# Must be set to OLD to use FindBoost.cmake (vcpkg uses FindBoost, not BoostConfig)
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 OLD)
+endif()
+
+# Suppress CMake dev warnings (like CMP0167 from vcpkg) - these are informational only
+# This suppresses "CMake Warning (dev)" messages which don't affect functionality
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.26")
+  # CMAKE_WARN_DEPRECATED=OFF suppresses deprecation warnings but not policy warnings
+  # Policy warnings from vcpkg's internal code may still appear but are harmless
+  set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "Suppress CMake deprecation warnings")
+endif()
+
 # Auto-detect vcpkg toolchain if not specified and vcpkg exists
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     # Check common vcpkg locations
@@ -24,7 +39,7 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
         "$ENV{USERPROFILE}/vcpkg"
         "$ENV{ProgramFiles}/vcpkg"
     )
-    
+
     foreach(VCPKG_PATH ${VCPKG_POSSIBLE_PATHS})
         if(VCPKG_PATH AND EXISTS "${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake")
             set(CMAKE_TOOLCHAIN_FILE "${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake" CACHE FILEPATH "Vcpkg toolchain file")

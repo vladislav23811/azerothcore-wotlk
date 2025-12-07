@@ -6,10 +6,8 @@
 #include "ProgressiveSystems.h"
 #include "ProgressiveSystemsAddon.h"
 #include "ProgressiveSystemsCache.h"
-#include "ProgressiveSystemsHelpers.h"
 #include "UnifiedStatSystem.h"
 #include "DailyChallengeSystem.h"
-#include "SeasonalSystem.h"
 #include "DatabaseEnv.h"
 #include "ObjectMgr.h"
 #include "ScriptMgr.h"
@@ -21,7 +19,37 @@
 #include <cmath>
 #include <stdexcept>
 
-using namespace ProgressiveSystemsHelpers;
+// Simple validation helpers (replacing missing ProgressiveSystemsHelpers.h)
+namespace
+{
+    struct ValidationHelper
+    {
+        static bool ValidatePlayer(Player* player, const char* funcName)
+        {
+            if (!player)
+            {
+                LOG_WARN("module", "ProgressiveSystems::{} - Invalid player (nullptr)", funcName);
+                return false;
+            }
+            return true;
+        }
+
+        static bool ValidateItem(Item* item, const char* funcName)
+        {
+            if (!item)
+            {
+                LOG_WARN("module", "ProgressiveSystems::{} - Invalid item (nullptr)", funcName);
+                return false;
+            }
+            return true;
+        }
+
+        static bool ValidateDifficultyTier(uint8 tier)
+        {
+            return tier <= MAX_DIFFICULTY_TIER;
+        }
+    };
+}
 
 ProgressiveSystems* ProgressiveSystems::instance()
 {
@@ -351,6 +379,13 @@ bool ProgressiveSystems::UpgradeItem(Player* player, Item* item)
 {
     if (!player || !item)
         return false;
+
+    // NOTE: This is the SIMPLE item upgrade system integrated into Progressive Systems.
+    // The advanced ItemUpgrade system (mod-item-upgrade) is a separate system that handles:
+    // - Stat-based upgrades (STR, AGI, INT, etc.)
+    // - Weapon damage/speed upgrades
+    // - Random upgrades on loot
+    // Both systems can coexist - this one handles basic level upgrades with progression points.
 
     try
     {
@@ -739,12 +774,8 @@ void ProgressiveSystems::OnCreatureKilled(Player* player, Creature* creature)
         }
     }
     
-    // Apply seasonal bonus
-    if (auto* seasonalSystem = SeasonalSystem::instance())
-    {
-        float bonus = seasonalSystem->GetProgressionBonus(player);
-        basePoints = static_cast<uint32>(basePoints * bonus);
-    }
+    // TODO: Seasonal bonuses - implement later if needed
+    // Seasonal system removed - can be re-added later
     
     AddProgressionPoints(player, basePoints);
     
@@ -768,12 +799,8 @@ void ProgressiveSystems::OnInstanceComplete(Player* player, Map* map, uint8 diff
     uint32 mapId = map->GetId();
     uint32 rewardPoints = GetRewardPoints(mapId, difficultyTier);
     
-    // Apply seasonal bonus
-    if (auto* seasonalSystem = SeasonalSystem::instance())
-    {
-        float bonus = seasonalSystem->GetProgressionBonus(player);
-        rewardPoints = static_cast<uint32>(rewardPoints * bonus);
-    }
+    // TODO: Seasonal bonuses - implement later if needed
+    // Seasonal system removed - can be re-added later
     
     if (rewardPoints > 0)
     {
@@ -798,11 +825,8 @@ void ProgressiveSystems::OnInstanceComplete(Player* player, Map* map, uint8 diff
             }
         }
         
-        // Update seasonal score
-        if (auto* seasonalSystem = SeasonalSystem::instance())
-        {
-            seasonalSystem->UpdatePlayerScore(player, rewardPoints);
-        }
+        // TODO: Seasonal score - implement later if needed
+        // Seasonal system removed - can be re-added later
         
         // Notify player
         if (player->GetSession())

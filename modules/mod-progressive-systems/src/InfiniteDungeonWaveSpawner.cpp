@@ -5,7 +5,6 @@
 
 #include "InfiniteDungeonWaveSpawner.h"
 #include "ProgressiveSystems.h"
-#include "RewardDistributionSystem.h"
 #include "DailyChallengeSystem.h"
 #include "ObjectMgr.h"
 #include "Creature.h"
@@ -540,10 +539,12 @@ bool InfiniteDungeonWaveSpawner::AdvanceToNextWave(Player* player)
         floor = sProgressiveSystems ? sProgressiveSystems->GetCurrentFloor(player) : floor;
         nextWave = 1;
         
-        // Award floor completion reward
-        if (auto* rewardSystem = RewardDistributionSystem::instance())
+        // Award floor completion reward (progression points)
+        if (sProgressiveSystems && floor > 1)
         {
-            rewardSystem->OnFloorComplete(player, floor - 1); // Reward for completing previous floor
+            // Award progression points for completing previous floor
+            uint32 floorReward = 100 * (floor - 1); // Base reward increases with floor
+            sProgressiveSystems->AddProgressionPoints(player, floorReward);
         }
         
         // Update daily challenge progress for floor completion
@@ -603,10 +604,13 @@ void InfiniteDungeonWaveSpawner::OnCreatureDeath(Creature* creature, Player* kil
         isBoss = (cInfo->rank >= CREATURE_ELITE_ELITE);
     }
     
-    // Award rewards for kill
-    if (auto* rewardSystem = RewardDistributionSystem::instance())
+    // Award rewards for kill (progression points)
+    if (sProgressiveSystems)
     {
-        rewardSystem->OnCreatureKilled(killer, creature, activeWave->floor, isBoss);
+        uint32 baseReward = isBoss ? 50 : 10;
+        uint32 floorMultiplier = activeWave->floor;
+        uint32 reward = baseReward * floorMultiplier;
+        sProgressiveSystems->AddProgressionPoints(killer, reward);
     }
     
     // Remove from active creatures
@@ -644,10 +648,11 @@ void InfiniteDungeonWaveSpawner::Update(uint32 diff)
                 ActiveWave* activeWave = GetActiveWave(delayItr->first);
                 if (activeWave)
                 {
-                    // Award wave completion reward
-                    if (auto* rewardSystem = RewardDistributionSystem::instance())
+                    // Award wave completion reward (progression points)
+                    if (sProgressiveSystems)
                     {
-                        rewardSystem->OnWaveComplete(player, activeWave->wave, activeWave->floor);
+                        uint32 waveReward = 25 * activeWave->floor; // Base reward per floor
+                        sProgressiveSystems->AddProgressionPoints(player, waveReward);
                     }
                 }
                 AdvanceToNextWave(player);

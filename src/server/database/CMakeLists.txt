@@ -16,6 +16,13 @@ CollectSourceFiles(
   # Exclude
   ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders)
 
+# Add ExtraDatabase sources conditionally (similar to PlayerbotsDatabase)
+# Check if mod-progressive-systems exists (may be processed after database, so check file existence)
+set(EXTRA_DATABASE_PATH "${CMAKE_SOURCE_DIR}/modules/mod-progressive-systems/src/AzerothShardModules/mod-as-common/src/game/ExtraDatabase.cpp")
+if(EXISTS "${EXTRA_DATABASE_PATH}")
+  list(APPEND PRIVATE_SOURCES "${EXTRA_DATABASE_PATH}")
+endif()
+
 if(USE_COREPCH)
   set(PRIVATE_PCH_HEADER PrecompiledHeaders/databasePCH.h)
 endif()

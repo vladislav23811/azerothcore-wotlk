@@ -45,6 +45,11 @@
 #include "Implementation/PlayerbotsDatabase.h"
 #endif
 
+// ExtraDatabase support (from mod-progressive-systems)
+#ifdef MOD_PROGRESSIVE_SYSTEMS
+#include "../../../../modules/mod-progressive-systems/src/AzerothShardModules/mod-as-common/src/game/ExtraDatabase.h"
+#endif
+
 class PingOperation : public SQLOperation
 {
     //! Operation for idle delaythreads
@@ -578,4 +583,8 @@ template class AC_DATABASE_API DatabaseWorkerPool<CharacterDatabaseConnection>;
 
 #ifdef MOD_PLAYERBOTS
 template class AC_DATABASE_API DatabaseWorkerPool<PlayerbotsDatabaseConnection>;
+#endif
+
+#ifdef MOD_PROGRESSIVE_SYSTEMS
+template class AC_DATABASE_API DatabaseWorkerPool<ExtraDatabaseConnection>;
 #endif

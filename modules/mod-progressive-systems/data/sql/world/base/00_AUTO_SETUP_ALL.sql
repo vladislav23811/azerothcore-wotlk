@@ -322,8 +322,8 @@ INSERT IGNORE INTO `paragon_stat_definitions` (`stat_type`, `stat_name`, `stat_d
 -- 9. NPC SCRIPT ASSIGNMENTS AND NAMES
 -- ============================================================
 -- Assign C++ script names to creature template entries with correct names
--- These scripts are registered in ProgressiveSystemsNPCs.cpp
--- Note: NPCs must be spawned in-game using: .npc add <entry>
+-- Note: NPC scripts are handled via Lua or other systems
+-- NPCs must be spawned in-game using: .npc add <entry>
 
 -- Main Menu NPC (190000)
 UPDATE `creature_template` 

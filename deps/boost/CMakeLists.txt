@@ -18,9 +18,24 @@ if(WIN32)
   set(Boost_USE_STATIC_LIBS        ON)
   set(Boost_USE_MULTITHREADED      ON)
   set(Boost_USE_STATIC_RUNTIME     OFF)
+
+  # For RelWithDebInfo, use Release Boost libraries (not Debug)
+  if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" OR CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(Boost_USE_DEBUG_LIBS       OFF)
+    set(Boost_USE_RELEASE_LIBS     ON)
+  else()
+    set(Boost_USE_DEBUG_LIBS       ON)
+    set(Boost_USE_RELEASE_LIBS     OFF)
+  endif()
 endif()
 
 set(Boost_NO_WARN_NEW_VERSIONS ON)
+
+# Suppress CMP0167 warning about FindBoost module removal - must be set before find_package
+# Use OLD policy to use FindBoost.cmake (vcpkg provides FindBoost, not BoostConfig)
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 OLD)
+endif()
 
 include (CheckCXXSourceCompiles)
 
@@ -32,10 +47,6 @@ else()
 endif()
 
 # Boost.System is header-only since 1.69; do not require it explicitly.
-# Suppress CMP0167 warning about FindBoost module removal
-if(POLICY CMP0167)
-  cmake_policy(SET CMP0167 OLD)
-endif()
 find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED COMPONENTS filesystem program_options iostreams regex thread)
 
 if(NOT Boost_FOUND)
@@ -56,6 +67,7 @@ target_include_directories(boost
 
 target_compile_definitions(boost
   INTERFACE
+    -DBOOST_ALL_NO_LIB              # Disable Boost auto-linking (CMake handles it)
     -DBOOST_DATE_TIME_NO_LIB
     -DBOOST_REGEX_NO_LIB
     -DBOOST_CHRONO_NO_LIB

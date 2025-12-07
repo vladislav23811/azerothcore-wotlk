@@ -49,6 +49,10 @@ if (BUILD_TOOLS_MAPS)
 endif()
 
 # StormLib for MPQ creation (used by mpq_creator tool)
-if (BUILD_TOOLS_MAPS OR BUILD_TOOLS)
+# NOTE: StormLib is optional - if not available, mpq_creator won't build
+# To use mpq_creator, clone StormLib: git clone https://github.com/ladislav-zezula/StormLib.git deps/StormLib
+if ((BUILD_TOOLS_MAPS OR BUILD_TOOLS) AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/StormLib/CMakeLists.txt")
   add_subdirectory(StormLib)
+elseif(BUILD_TOOLS_MAPS OR BUILD_TOOLS)
+  message(WARNING "StormLib not found - mpq_creator tool will not be built. This is optional.")
 endif()

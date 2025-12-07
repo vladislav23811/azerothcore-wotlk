@@ -1,96 +1,109 @@
 {
     "version": "2.0.0",
     "tasks": [
-      {
-        "label": "AzerothCore: Dashboard",
-        "type": "shell",
-        "command": "./acore.sh",
-        "group": "none",
-        "presentation": {
-          "reveal": "always",
-          "panel": "new"
+        {
+            "label": "CMake: Configure",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "C:/servers/azerothcore-wotlk",
+                "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+                "-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake",
+                "-DBUILD_LAUNCHER=ON",
+                "-DTOOLS=1"
+            ],
+            "options": {
+                "cwd": "C:/servers/build"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
         },
-        "problemMatcher": []
-      },
-      {
-        "label": "AzerothCore: Download client-data",
-        "type": "shell",
-        "command": "./acore.sh client-data",
-        "group": "none",
-        "presentation": {
-          "reveal": "always",
-          "panel": "new"
+        {
+            "label": "CMake: Build",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                ".",
+                "--config",
+                "RelWithDebInfo",
+                "--parallel"
+            ],
+            "options": {
+                "cwd": "C:/servers/build"
+            },
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "dependsOn": "CMake: Configure"
         },
-        "problemMatcher": []
-      },
-      {
-        "label": "AzerothCore: Clean build",
-        "type": "shell",
-        "command": "./acore.sh compiler clean",
-        "group": "build",
-        "presentation": {
-          "reveal": "always",
-          "panel": "new"
+        {
+            "label": "CMake: Clean",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                ".",
+                "--target",
+                "clean",
+                "--config",
+                "RelWithDebInfo"
+            ],
+            "options": {
+                "cwd": "C:/servers/build"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
         },
-        "problemMatcher": []
-      },
-      {
-        "label": "AzerothCore: Build",
-        "type": "shell",
-        "command": "./acore.sh compiler build",
-        "group": {
-          "kind": "build",
-          "isDefault": true
+        {
+            "label": "CMake: Rebuild",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "CMake: Clean",
+                "CMake: Build"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
         },
-        "presentation": {
-          "reveal": "always",
-          "panel": "new"
-        },
-        "problemMatcher": []
-      },
-      {
-        "label": "AzerothCore: Check codestyle cpp",
-        "type": "shell",
-        "command": "python apps/codestyle/codestyle-cpp.py",
-        "group": "none",
-        "presentation": {
-          "reveal": "always",
-          "panel": "new"
-        },
-        "problemMatcher": []
-      },
-      {
-        "label": "AzerothCore: Check codestyle sql",
-        "type": "shell",
-        "command": "python apps/codestyle/codestyle-sql.py",
-        "group": "none",
-        "presentation": {
-          "reveal": "always",
-          "panel": "new"
-        },
-        "problemMatcher": []
-      },
-      {
-        "label": "AzerothCore: Run authserver (restarter)",
-        "type": "shell",
-        "command": "./acore.sh run-authserver",
-        "group": "none",
-        "presentation": {
-          "reveal": "always",
-          "panel": "new"
-        },
-        "problemMatcher": []
-      },
-      {
-        "label": "AzerothCore: Run worldserver (restarter)",
-        "type": "shell",
-        "command": "./acore.sh run-worldserver",
-        "group": "none",
-        "presentation": {
-          "reveal": "always",
-          "panel": "new"
-        },
-        "problemMatcher": []
-      }
+        {
+            "label": "Build Progressive Systems Module Only",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                ".",
+                "--target",
+                "modules",
+                "--config",
+                "RelWithDebInfo"
+            ],
+            "options": {
+                "cwd": "C:/servers/build"
+            },
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        }
     ]
-  }
+}
