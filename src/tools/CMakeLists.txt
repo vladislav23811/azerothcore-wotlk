@@ -95,6 +95,28 @@ foreach(TOOL_NAME ${TOOLS_BUILD_LIST})
     continue()
   endif()
 
+  # Check if mpq_creator requires StormLib (before creating executable)
+  if (${TOOL_NAME} STREQUAL "mpq_creator")
+    set(STORMLIB_AVAILABLE FALSE)
+    
+    if(TARGET storm)
+      set(STORMLIB_AVAILABLE TRUE)
+    elseif(EXISTS "${CMAKE_SOURCE_DIR}/deps/StormLib/CMakeLists.txt")
+      # Try to add StormLib subdirectory
+      if(NOT TARGET storm)
+        add_subdirectory(${CMAKE_SOURCE_DIR}/deps/StormLib ${CMAKE_BINARY_DIR}/deps/StormLib EXCLUDE_FROM_ALL)
+      endif()
+      if(TARGET storm)
+        set(STORMLIB_AVAILABLE TRUE)
+      endif()
+    endif()
+    
+    if(NOT STORMLIB_AVAILABLE)
+      message(WARNING "mpq_creator requires StormLib but it was not found. Skipping mpq_creator. To enable: git clone https://github.com/ladislav-zezula/StormLib.git deps/StormLib")
+      continue()
+    endif()
+  endif()
+
   unset(TOOL_PRIVATE_SOURCES)
   CollectSourceFiles(
     ${SOURCE_TOOL_PATH}
@@ -145,34 +167,14 @@ foreach(TOOL_NAME ${TOOLS_BUILD_LIST})
     
     # Link StormLib for mpq_creator tool
     if (${TOOL_PROJECT_NAME} MATCHES "mpq_creator")
-      # Ensure StormLib is built first
       if(TARGET storm)
+        # Link StormLib
         add_dependencies(${TOOL_PROJECT_NAME} storm)
-        # Link to the storm target (which outputs as StormLib.lib on Windows)
-        target_link_libraries(${TOOL_PROJECT_NAME}
-          PRIVATE
-            storm)
-        target_include_directories(${TOOL_PROJECT_NAME}
-          PRIVATE
-            ${CMAKE_SOURCE_DIR}/deps/StormLib/src)
-        # Add compile definition to prevent auto-linking issues
-        target_compile_definitions(${TOOL_PROJECT_NAME}
-          PRIVATE
-            STORMLIB_NO_AUTO_LINK)
-      elseif(EXISTS "${CMAKE_SOURCE_DIR}/deps/StormLib/CMakeLists.txt")
-        # StormLib directory exists but target not created yet - add subdirectory
-        message(STATUS "StormLib found, adding subdirectory...")
-        add_subdirectory(${CMAKE_SOURCE_DIR}/deps/StormLib ${CMAKE_BINARY_DIR}/deps/StormLib EXCLUDE_FROM_ALL)
-        if(TARGET storm)
-          add_dependencies(${TOOL_PROJECT_NAME} storm)
-          target_link_libraries(${TOOL_PROJECT_NAME} PRIVATE storm)
-          target_include_directories(${TOOL_PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/deps/StormLib/src)
-          target_compile_definitions(${TOOL_PROJECT_NAME} PRIVATE STORMLIB_NO_AUTO_LINK)
-        else()
-          message(FATAL_ERROR "StormLib CMakeLists.txt exists but 'storm' target not created. Check StormLib installation.")
-        endif()
+        target_link_libraries(${TOOL_PROJECT_NAME} PRIVATE storm)
+        target_include_directories(${TOOL_PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/deps/StormLib/src)
+        target_compile_definitions(${TOOL_PROJECT_NAME} PRIVATE STORMLIB_NO_AUTO_LINK)
       else()
-        message(FATAL_ERROR "mpq_creator requires StormLib. Please install: git clone https://github.com/ladislav-zezula/StormLib.git deps/StormLib")
+        message(FATAL_ERROR "mpq_creator reached linking stage but StormLib target not found. This should have been caught earlier.")
       endif()
     endif()
   endif()
