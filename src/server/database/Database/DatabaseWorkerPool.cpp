@@ -47,7 +47,7 @@
 
 // ExtraDatabase support (from mod-progressive-systems)
 #ifdef MOD_PROGRESSIVE_SYSTEMS
-#include "ExtraDatabase.h"
+#include "../../../../modules/mod-progressive-systems/src/AzerothShardModules/mod-as-common/src/game/ExtraDatabase.h"
 #endif
 
 class PingOperation : public SQLOperation

@@ -98,7 +98,7 @@ foreach(TOOL_NAME ${TOOLS_BUILD_LIST})
   # Check if mpq_creator requires StormLib (before creating executable)
   if (${TOOL_NAME} STREQUAL "mpq_creator")
     set(STORMLIB_AVAILABLE FALSE)
-    
+
     if(TARGET storm)
       set(STORMLIB_AVAILABLE TRUE)
     elseif(EXISTS "${CMAKE_SOURCE_DIR}/deps/StormLib/CMakeLists.txt")
@@ -110,7 +110,7 @@ foreach(TOOL_NAME ${TOOLS_BUILD_LIST})
         set(STORMLIB_AVAILABLE TRUE)
       endif()
     endif()
-    
+
     if(NOT STORMLIB_AVAILABLE)
       message(WARNING "mpq_creator requires StormLib but it was not found. Skipping mpq_creator. To enable: git clone https://github.com/ladislav-zezula/StormLib.git deps/StormLib")
       continue()
@@ -164,7 +164,7 @@ foreach(TOOL_NAME ${TOOLS_BUILD_LIST})
         Recast
         g3dlib
         fkYAML)
-    
+
     # Link StormLib for mpq_creator tool
     if (${TOOL_PROJECT_NAME} MATCHES "mpq_creator")
       if(TARGET storm)
