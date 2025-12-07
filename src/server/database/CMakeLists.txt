@@ -19,8 +19,13 @@ CollectSourceFiles(
 # Add ExtraDatabase sources conditionally (similar to PlayerbotsDatabase)
 # Check if mod-progressive-systems exists (may be processed after database, so check file existence)
 set(EXTRA_DATABASE_PATH "${CMAKE_SOURCE_DIR}/modules/mod-progressive-systems/src/AzerothShardModules/mod-as-common/src/game/ExtraDatabase.cpp")
+set(EXTRA_DATABASE_DIR "${CMAKE_SOURCE_DIR}/modules/mod-progressive-systems/src/AzerothShardModules/mod-as-common/src/game")
 if(EXISTS "${EXTRA_DATABASE_PATH}")
   list(APPEND PRIVATE_SOURCES "${EXTRA_DATABASE_PATH}")
+  # Add include directory so DatabaseWorkerPool.cpp can find ExtraDatabase.h
+  target_include_directories(database
+    PRIVATE
+      ${EXTRA_DATABASE_DIR})
 endif()
 
 if(USE_COREPCH)
