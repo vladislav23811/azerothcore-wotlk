@@ -138,3 +138,18 @@ compile_commands.json
 # Sensitive test files
 test_mysql*.ps1
 run_verification*.ps1
+
+# Temporary test/fix scripts
+fix_*.ps1
+fix_*.sql
+check_*.ps1
+check_*.sql
+verify_*.sql
+build_all.ps1
+deploy.ps1
+wait_and_build.ps1
+launcher_config.json
+TODO_TRACKER*.csv
+IMPLEMENTATION_CHECKLIST.md
+BUILD_ALL.md
+erveryWOTLK-*
