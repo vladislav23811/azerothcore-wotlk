@@ -103,6 +103,14 @@ foreach(SOURCE_MODULE ${MODULES_MODULE_LIST})
     target_compile_options(game-interface
       INTERFACE
         -DMOD_PROGRESSIVE_SYSTEMS)
+    # Add include directory for ExtraDatabase.h (needed by DatabaseWorkerPool.cpp)
+    set(EXTRA_DB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/modules/mod-progressive-systems/src/AzerothShardModules/mod-as-common/src/game")
+    if(EXISTS "${EXTRA_DB_INCLUDE_DIR}/ExtraDatabase.h")
+      target_include_directories(database
+        PRIVATE
+          ${EXTRA_DB_INCLUDE_DIR})
+      message(STATUS "mod-progressive-systems: Added ExtraDatabase include directory")
+    endif()
   endif()
 
   # Build the Graph values

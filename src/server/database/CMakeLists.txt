@@ -55,11 +55,17 @@ target_include_directories(database
   PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR})
 
-# Add ExtraDatabase include directory if it exists (must be after target creation)
-if(EXISTS "${EXTRA_DATABASE_DIR}/ExtraDatabase.h")
+# Add ExtraDatabase include directory if the file exists
+# This is needed for DatabaseWorkerPool.cpp when MOD_PROGRESSIVE_SYSTEMS is defined
+# Check both the header file and the source file to ensure the module is present
+if(EXISTS "${EXTRA_DATABASE_PATH}" AND EXISTS "${EXTRA_DATABASE_DIR}/ExtraDatabase.h")
   target_include_directories(database
     PRIVATE
       ${EXTRA_DATABASE_DIR})
+  message(STATUS "ExtraDatabase: Added include directory ${EXTRA_DATABASE_DIR}")
+elseif(NOT EXISTS "${EXTRA_DATABASE_PATH}")
+  # Module not found - this is OK if mod-progressive-systems is not installed
+  message(STATUS "ExtraDatabase: mod-progressive-systems not found, skipping ExtraDatabase support")
 endif()
 
 target_link_libraries(database
