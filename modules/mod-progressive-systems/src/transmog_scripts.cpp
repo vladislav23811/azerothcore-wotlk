@@ -20,6 +20,7 @@ Cant transmogrify rediculus items // Foereaper: would be fun to stab people with
 -- Cant think of any good way to handle this easily, could rip flagged items from cata DB
 */
 #include <unordered_map>
+#include <exception>
 #include "Transmogrification.h"
 #include "Chat.h"
 #include "ScriptedCreature.h"
@@ -1227,18 +1228,33 @@ public:
         {
             LOG_INFO("module", "Loading transmog appearance collection cache....");
             uint32 collectedAppearanceCount = 0;
-            QueryResult result = CharacterDatabase.Query("SELECT account_id, item_template_id FROM custom_unlocked_appearances");
-            if (result)
+            try
             {
-                do
+                QueryResult result = CharacterDatabase.Query("SELECT account_id, item_template_id FROM custom_unlocked_appearances");
+                if (result)
                 {
-                    uint32 accountId = (*result)[0].Get<uint32>();
-                    uint32 itemId = (*result)[1].Get<uint32>();
-                    if (sT->AddCollectedAppearance(accountId, itemId))
+                    do
                     {
-                        collectedAppearanceCount++;
-                    }
-                } while (result->NextRow());
+                        try
+                        {
+                            uint32 accountId = (*result)[0].Get<uint32>();
+                            uint32 itemId = (*result)[1].Get<uint32>();
+                            if (sT->AddCollectedAppearance(accountId, itemId))
+                            {
+                                collectedAppearanceCount++;
+                            }
+                        }
+                        catch (std::exception const& e)
+                        {
+                            LOG_ERROR("module", "Transmogrification: Error processing appearance row: {}", e.what());
+                            break;
+                        }
+                    } while (result->NextRow());
+                }
+            }
+            catch (std::exception const& e)
+            {
+                LOG_ERROR("module", "Transmogrification: Failed to load appearance collection cache: {}. Table may not exist yet.", e.what());
             }
             LOG_INFO("module", "Loaded {} collected appearances into cache", collectedAppearanceCount);
         }
