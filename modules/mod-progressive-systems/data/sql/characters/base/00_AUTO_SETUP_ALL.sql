@@ -635,6 +635,21 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 -- ============================================================
+-- 21. CHARACTER REFORGING TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `character_reforging` (
+  `guid` INT UNSIGNED NOT NULL COMMENT 'Character GUID',
+  `item_guid` BIGINT UNSIGNED NOT NULL COMMENT 'Item GUID',
+  `stat_decrease` INT UNSIGNED NOT NULL COMMENT 'Stat type being decreased (ITEM_MOD_*)',
+  `stat_increase` INT UNSIGNED NOT NULL COMMENT 'Stat type being increased (ITEM_MOD_*)',
+  `stat_value` INT UNSIGNED NOT NULL COMMENT 'Value of the stat change',
+  PRIMARY KEY (`item_guid`),
+  INDEX `idx_guid` (`guid`),
+  INDEX `idx_item_guid` (`item_guid`),
+  CONSTRAINT `fk_character_reforging_guid` FOREIGN KEY (`guid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Character item reforging data';
+
+-- ============================================================
 -- COMPLETE!
 -- ============================================================
 
