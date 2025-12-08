@@ -18,6 +18,8 @@
 #include "WorldScript.h"
 #include "ScriptMgr.h"
 #include "ScriptMgrMacros.h"
+#include "Log.h"
+#include <exception>
 
 void ScriptMgr::OnOpenStateChange(bool open)
 {
@@ -26,7 +28,24 @@ void ScriptMgr::OnOpenStateChange(bool open)
 
 void ScriptMgr::OnAfterConfigLoad(bool reload)
 {
-    CALL_ENABLED_HOOKS(WorldScript, WORLDHOOK_ON_AFTER_CONFIG_LOAD, script->OnAfterConfigLoad(reload));
+    if (!ScriptRegistry<WorldScript>::EnabledHooks[WORLDHOOK_ON_AFTER_CONFIG_LOAD].empty())
+    {
+        for (auto const& script : ScriptRegistry<WorldScript>::EnabledHooks[WORLDHOOK_ON_AFTER_CONFIG_LOAD])
+        {
+            try
+            {
+                script->OnAfterConfigLoad(reload);
+            }
+            catch (std::exception const& e)
+            {
+                LOG_FATAL("server.loading", "Exception in module OnAfterConfigLoad ({}): {}. Continuing with other modules...", script->GetName(), e.what());
+            }
+            catch (...)
+            {
+                LOG_FATAL("server.loading", "Unknown exception in module OnAfterConfigLoad ({}). Continuing with other modules...", script->GetName());
+            }
+        }
+    }
 }
 
 void ScriptMgr::OnLoadCustomDatabaseTable()
