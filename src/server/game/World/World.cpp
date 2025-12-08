@@ -340,10 +340,14 @@ void World::SetInitialWorldSettings()
     LOG_INFO("server.loading", "SetInitialWorldSettings: Config settings loaded");
 
     ///- Initialize Allowed Security Level
+    LOG_INFO("server.loading", "SetInitialWorldSettings: Loading allowed security level...");
     LoadDBAllowedSecurityLevel();
+    LOG_INFO("server.loading", "SetInitialWorldSettings: Allowed security level loaded");
 
     ///- Init highest guids before any table loading to prevent using not initialized guids in some code.
+    LOG_INFO("server.loading", "SetInitialWorldSettings: Setting highest guids...");
     sObjectMgr->SetHighestGuids();
+    LOG_INFO("server.loading", "SetInitialWorldSettings: Highest guids set successfully");
 
     if (!sConfigMgr->isDryRun())
     {
