@@ -302,7 +302,7 @@ void World::LoadConfigSettings(bool reload)
     try
     {
         sScriptMgr->OnAfterConfigLoad(reload);
-        LOG_INFO("server.loading", "LoadConfigSettings: OnAfterConfigLoad completed successfully");
+        LOG_INFO("server.loading", "LoadConfigSettings: OnAfterConfigLoad call returned successfully");
     }
     catch (std::exception const& e)
     {
@@ -312,7 +312,7 @@ void World::LoadConfigSettings(bool reload)
     {
         LOG_FATAL("server.loading", "Unknown exception in OnAfterConfigLoad. Server will continue but some modules may not be configured correctly.");
     }
-    LOG_INFO("server.loading", "LoadConfigSettings: About to return (function end)");
+    LOG_INFO("server.loading", "LoadConfigSettings: Exception handling block completed, about to return");
 }
 
 /// Initialize the World
