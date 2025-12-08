@@ -56,6 +56,7 @@
 #include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
 #include <csignal>
+#include <exception>
 #include <filesystem>
 #include <iostream>
 #include <openssl/crypto.h>
