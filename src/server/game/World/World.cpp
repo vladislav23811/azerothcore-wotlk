@@ -318,19 +318,26 @@ void World::SetInitialWorldSettings()
     ///- Server startup begin
     uint32 startupBegin = getMSTime();
 
+    LOG_INFO("server.loading", "SetInitialWorldSettings: Starting initialization...");
+
     ///- Initialize the random number generator
     srand((unsigned int)GameTime::GetGameTime().count());
+    LOG_INFO("server.loading", "SetInitialWorldSettings: Random number generator initialized");
 
     ///- Initialize detour memory management
     dtAllocSetCustom(dtCustomAlloc, dtCustomFree);
+    LOG_INFO("server.loading", "SetInitialWorldSettings: Detour memory management initialized");
 
     ///- Initialize VMapMgr function pointers (to untangle game/collision circular deps)
     VMAP::VMapMgr2* vmmgr2 = VMAP::VMapFactory::createOrGetVMapMgr();
     vmmgr2->GetLiquidFlagsPtr = &GetLiquidFlags;
     vmmgr2->IsVMAPDisabledForPtr = &DisableMgr::IsVMAPDisabledFor;
+    LOG_INFO("server.loading", "SetInitialWorldSettings: VMapMgr function pointers initialized");
 
     ///- Initialize config settings
+    LOG_INFO("server.loading", "SetInitialWorldSettings: Loading config settings...");
     LoadConfigSettings();
+    LOG_INFO("server.loading", "SetInitialWorldSettings: Config settings loaded");
 
     ///- Initialize Allowed Security Level
     LoadDBAllowedSecurityLevel();
