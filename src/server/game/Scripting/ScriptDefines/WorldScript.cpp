@@ -55,7 +55,7 @@ void ScriptMgr::OnAfterConfigLoad(bool reload)
                 continue;
             }
             
-            const char* scriptName = "unknown";
+            std::string scriptName = "unknown";
             try
             {
                 scriptName = script->GetName();
@@ -71,17 +71,17 @@ void ScriptMgr::OnAfterConfigLoad(bool reload)
             try
             {
                 script->OnAfterConfigLoad(reload);
-                LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Module {} completed successfully", scriptName);
+                LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Module {} completed successfully", scriptName.c_str());
             }
             catch (std::exception const& e)
             {
-                LOG_FATAL("server.loading", "Exception in module OnAfterConfigLoad ({}): {}. Continuing with other modules...", scriptName, e.what());
+                LOG_FATAL("server.loading", "Exception in module OnAfterConfigLoad ({}): {}. Continuing with other modules...", scriptName.c_str(), e.what());
             }
             catch (...)
             {
-                LOG_FATAL("server.loading", "Unknown exception in module OnAfterConfigLoad ({}). Continuing with other modules...", scriptName);
+                LOG_FATAL("server.loading", "Unknown exception in module OnAfterConfigLoad ({}). Continuing with other modules...", scriptName.c_str());
             }
-            LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Finished processing module {}", scriptName);
+            LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Finished processing module {}", scriptName.c_str());
         }
         LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: All modules processed, about to return");
     }
