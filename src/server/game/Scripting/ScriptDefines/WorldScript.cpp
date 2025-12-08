@@ -21,6 +21,7 @@
 #include "Log.h"
 #include <exception>
 #include <cstring>
+#include <string>
 
 void ScriptMgr::OnOpenStateChange(bool open)
 {
@@ -49,11 +50,12 @@ void ScriptMgr::OnAfterConfigLoad(bool reload)
             try
             {
                 scriptName = script->GetName();
+                LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Got name for module {}/{}: '{}'", index, scriptCount, scriptName ? scriptName : "NULL");
                 
                 // Skip known problematic modules that cause crashes - check immediately after getting name
-                if (scriptName && strcmp(scriptName, "azth_smartstone_world") == 0)
+                if (scriptName && (strcmp(scriptName, "azth_smartstone_world") == 0 || std::string(scriptName).find("smartstone") != std::string::npos))
                 {
-                    LOG_WARN("server.loading", "ScriptMgr::OnAfterConfigLoad: Skipping module {} due to known crash issue", scriptName);
+                    LOG_WARN("server.loading", "ScriptMgr::OnAfterConfigLoad: Skipping module '{}' due to known crash issue", scriptName);
                     continue;
                 }
             }
