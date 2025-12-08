@@ -650,17 +650,94 @@ CREATE TABLE IF NOT EXISTS `character_reforging` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Character item reforging data';
 
 -- ============================================================
--- 22. MOD ITEM UPGRADE STATS REQ TABLE
+-- 22. MOD ITEM UPGRADE TABLES
 -- ============================================================
+-- Main stats table
+CREATE TABLE IF NOT EXISTS `mod_item_upgrade_stats` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `stat_type` INT UNSIGNED NOT NULL COMMENT 'Stat type (ITEM_MOD_*)',
+  `stat_mod_pct` FLOAT NOT NULL DEFAULT 0.0 COMMENT 'Stat modification percentage',
+  `stat_rank` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Stat rank',
+  PRIMARY KEY (`id`),
+  INDEX `idx_stat_type` (`stat_type`),
+  INDEX `idx_stat_rank` (`stat_rank`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Item upgrade stats definitions';
+
+-- Stat requirements table
 CREATE TABLE IF NOT EXISTS `mod_item_upgrade_stats_req` (
-  `itemEntry` INT UNSIGNED NOT NULL COMMENT 'Item entry ID',
-  `statType` INT UNSIGNED NOT NULL COMMENT 'Stat type (ITEM_MOD_*)',
-  `minValue` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Minimum stat value required',
-  `maxValue` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Maximum stat value required',
-  PRIMARY KEY (`itemEntry`, `statType`),
-  INDEX `idx_itemEntry` (`itemEntry`),
-  INDEX `idx_statType` (`statType`)
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `stat_id` INT UNSIGNED NOT NULL COMMENT 'Reference to mod_item_upgrade_stats.id',
+  `req_type` TINYINT UNSIGNED NOT NULL COMMENT 'Requirement type (0=None, 1=Copper, 2=Honor, 3=Arena, 4=Item)',
+  `req_val1` FLOAT NOT NULL DEFAULT 0.0 COMMENT 'Requirement value 1',
+  `req_val2` FLOAT NOT NULL DEFAULT 0.0 COMMENT 'Requirement value 2',
+  PRIMARY KEY (`id`),
+  INDEX `idx_stat_id` (`stat_id`),
+  INDEX `idx_req_type` (`req_type`),
+  CONSTRAINT `fk_mod_item_upgrade_stats_req_stat_id` FOREIGN KEY (`stat_id`) REFERENCES `mod_item_upgrade_stats` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Item upgrade stat requirements';
+
+-- Stat requirements override table
+CREATE TABLE IF NOT EXISTS `mod_item_upgrade_stats_req_override` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `stat_id` INT UNSIGNED NOT NULL COMMENT 'Reference to mod_item_upgrade_stats.id',
+  `item_entry` INT UNSIGNED NOT NULL COMMENT 'Item entry ID',
+  `req_type` TINYINT UNSIGNED NOT NULL COMMENT 'Requirement type',
+  `req_val1` FLOAT NOT NULL DEFAULT 0.0 COMMENT 'Requirement value 1',
+  `req_val2` FLOAT NOT NULL DEFAULT 0.0 COMMENT 'Requirement value 2',
+  PRIMARY KEY (`id`),
+  INDEX `idx_stat_id` (`stat_id`),
+  INDEX `idx_item_entry` (`item_entry`),
+  CONSTRAINT `fk_mod_item_upgrade_stats_req_override_stat_id` FOREIGN KEY (`stat_id`) REFERENCES `mod_item_upgrade_stats` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Item upgrade stat requirements override per item';
+
+-- Allowed items table
+CREATE TABLE IF NOT EXISTS `mod_item_upgrade_allowed_items` (
+  `entry` INT UNSIGNED NOT NULL COMMENT 'Item entry ID',
+  PRIMARY KEY (`entry`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Items allowed for upgrade';
+
+-- Allowed stats items table
+CREATE TABLE IF NOT EXISTS `mod_item_upgrade_allowed_stats_items` (
+  `stat_id` INT UNSIGNED NOT NULL COMMENT 'Reference to mod_item_upgrade_stats.id',
+  `entry` INT UNSIGNED NOT NULL COMMENT 'Item entry ID',
+  PRIMARY KEY (`stat_id`, `entry`),
+  INDEX `idx_stat_id` (`stat_id`),
+  INDEX `idx_entry` (`entry`),
+  CONSTRAINT `fk_mod_item_upgrade_allowed_stats_items_stat_id` FOREIGN KEY (`stat_id`) REFERENCES `mod_item_upgrade_stats` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Items allowed for specific stat upgrades';
+
+-- Blacklisted stats items table
+CREATE TABLE IF NOT EXISTS `mod_item_upgrade_blacklisted_stats_items` (
+  `stat_id` INT UNSIGNED NOT NULL COMMENT 'Reference to mod_item_upgrade_stats.id',
+  `entry` INT UNSIGNED NOT NULL COMMENT 'Item entry ID',
+  PRIMARY KEY (`stat_id`, `entry`),
+  INDEX `idx_stat_id` (`stat_id`),
+  INDEX `idx_entry` (`entry`),
+  CONSTRAINT `fk_mod_item_upgrade_blacklisted_stats_items_stat_id` FOREIGN KEY (`stat_id`) REFERENCES `mod_item_upgrade_stats` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Items blacklisted for specific stat upgrades';
+
+-- Character item upgrade table
+CREATE TABLE IF NOT EXISTS `character_item_upgrade` (
+  `item_guid` BIGINT UNSIGNED NOT NULL COMMENT 'Item GUID',
+  `stat_id` INT UNSIGNED NOT NULL COMMENT 'Reference to mod_item_upgrade_stats.id',
+  PRIMARY KEY (`item_guid`, `stat_id`),
+  INDEX `idx_stat_id` (`stat_id`),
+  CONSTRAINT `fk_character_item_upgrade_stat_id` FOREIGN KEY (`stat_id`) REFERENCES `mod_item_upgrade_stats` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Character item upgrades';
+
+-- Character weapon upgrade table
+CREATE TABLE IF NOT EXISTS `character_weapon_upgrade` (
+  `item_guid` BIGINT UNSIGNED NOT NULL COMMENT 'Item GUID',
+  `upgrade_level` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Upgrade level',
+  PRIMARY KEY (`item_guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Character weapon upgrades';
+
+-- Character weapon speed upgrade table
+CREATE TABLE IF NOT EXISTS `character_weapon_speed_upgrade` (
+  `item_guid` BIGINT UNSIGNED NOT NULL COMMENT 'Item GUID',
+  `speed_mod` FLOAT NOT NULL DEFAULT 0.0 COMMENT 'Speed modification',
+  PRIMARY KEY (`item_guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Character weapon speed upgrades';
 
 -- ============================================================
 -- COMPLETE!
