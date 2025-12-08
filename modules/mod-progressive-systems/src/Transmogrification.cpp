@@ -1093,6 +1093,13 @@ bool Transmogrification::CanNeverTransmog(ItemTemplate const* itemTemplate)
 
 void Transmogrification::LoadConfig(bool reload)
 {
+    // Defensive check: ensure sConfigMgr is initialized
+    if (!sConfigMgr)
+    {
+        LOG_ERROR("module", "Transmogrification: sConfigMgr is not initialized! Cannot load config.");
+        return;
+    }
+
 #ifdef PRESETS
     EnableSetInfo = sConfigMgr->GetOption<bool>("Transmogrification.EnableSetInfo", true);
     SetNpcText = sConfigMgr->GetOption<uint32>("Transmogrification.SetNpcText", 601084);
@@ -1107,15 +1114,23 @@ void Transmogrification::LoadConfig(bool reload)
 
     if (reload) // dont store presets for nothing
     {
-        auto const& sessions = sWorldSessionMgr->GetAllSessions();
-        for (auto const& session : sessions)
+        // Defensive check: ensure sWorldSessionMgr is initialized before accessing sessions
+        if (!sWorldSessionMgr)
         {
-            if (Player* player = session.second->GetPlayer())
+            LOG_WARN("module", "Transmogrification: sWorldSessionMgr is not initialized during reload, skipping preset reload.");
+        }
+        else
+        {
+            auto const& sessions = sWorldSessionMgr->GetAllSessions();
+            for (auto const& session : sessions)
             {
-                // skipping session check
-                UnloadPlayerSets(player->GetGUID());
-                if (GetEnableSets())
-                    LoadPlayerSets(player->GetGUID());
+                if (Player* player = session.second->GetPlayer())
+                {
+                    // skipping session check
+                    UnloadPlayerSets(player->GetGUID());
+                    if (GetEnableSets())
+                        LoadPlayerSets(player->GetGUID());
+                }
             }
         }
     }
@@ -1186,8 +1201,14 @@ void Transmogrification::LoadConfig(bool reload)
     IsTransmogEnabled = sConfigMgr->GetOption<bool>("Transmogrification.Enable", true);
     IsPortableNPCEnabled = sConfigMgr->GetOption<bool>("Transmogrification.EnablePortable", true);
 
-    if (!sObjectMgr->GetItemTemplate(TokenEntry))
+    // Defensive check: ensure sObjectMgr is initialized before accessing item templates
+    if (sObjectMgr && !sObjectMgr->GetItemTemplate(TokenEntry))
     {
+        TokenEntry = 49426;
+    }
+    else if (!sObjectMgr)
+    {
+        LOG_WARN("module", "Transmogrification: sObjectMgr is not initialized, using default TokenEntry.");
         TokenEntry = 49426;
     }
 
@@ -1222,8 +1243,16 @@ void Transmogrification::LoadConfig(bool reload)
 
     PetSpellId = sConfigMgr->GetOption<uint32>("Transmogrification.PetSpellId", 2000100);
 
-    if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(PetSpellId))
-        PetEntry = spellInfo->Effects[EFFECT_0].MiscValue;
+    // Defensive check: ensure sSpellMgr is initialized before accessing spell info
+    if (sSpellMgr)
+    {
+        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(PetSpellId))
+            PetEntry = spellInfo->Effects[EFFECT_0].MiscValue;
+    }
+    else
+    {
+        LOG_WARN("module", "Transmogrification: sSpellMgr is not initialized, PetEntry will be set later.");
+    }
 }
 
 void Transmogrification::DeleteFakeFromDB(ObjectGuid::LowType itemLowGuid, CharacterDatabaseTransaction* trans /*= nullptr*/)
