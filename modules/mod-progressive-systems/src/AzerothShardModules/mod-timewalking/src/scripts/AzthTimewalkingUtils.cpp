@@ -238,7 +238,7 @@ bool AzthUtils::updateTwLevel(Player *player,Group *group)
             {
                 sAZTH->GetAZTHPlayer(player)->instanceID = map->GetInstanceId();
 
-                QueryResult queryRes = CharacterDatabase.Query("SELECT levelPg,groupSize,startTime FROM instance WHERE id = %u", sAZTH->GetAZTHPlayer(player)->instanceID);
+                QueryResult queryRes = CharacterDatabase.Query("SELECT levelPg,groupSize,startTime FROM instance WHERE id = {}", sAZTH->GetAZTHPlayer(player)->instanceID);
                 if (!queryRes)
                     return result;
 

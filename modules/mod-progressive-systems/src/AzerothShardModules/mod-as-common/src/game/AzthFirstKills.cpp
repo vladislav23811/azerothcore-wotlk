@@ -164,7 +164,7 @@ bool AzthFirstKills::isRealmCompleted(AchievementEntry const* achievement, bool 
 void AzthFirstKills::loadCurrentFirstkills() {
     uint32 t= static_cast<uint32>(sAzthUtils->getStartsOfYear());
 
-    QueryResult fkAchievements = CharacterDatabase.Query("SELECT DISTINCT(achievement) FROM character_achievement WHERE achievement IN (%u,%u,%u,%u,%u,%u,%u) AND date >= %u",
+    QueryResult fkAchievements = CharacterDatabase.Query("SELECT DISTINCT(achievement) FROM character_achievement WHERE achievement IN ({},{},{},{},{},{},{}) AND date >= {}",
         ACHI_NAXXRAMAS,
         ACHI_OBSIDIAN,
         ACHI_MAGIC_SEEKER,

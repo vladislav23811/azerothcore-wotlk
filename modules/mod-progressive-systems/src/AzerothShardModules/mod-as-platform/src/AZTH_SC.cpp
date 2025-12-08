@@ -1829,7 +1829,7 @@ public:
 
         if (guildhouseaddid == 2)
         {
-            QueryResult guildResult = ExtraDatabase.Query("SELECT guildid FROM `guildhouses` WHERE id = %u", guildhouseid);
+            QueryResult guildResult = ExtraDatabase.Query("SELECT guildid FROM `guildhouses` WHERE id = {}", guildhouseid);
             if (guildResult)
             {
                 Field* fields = guildResult->Fetch();

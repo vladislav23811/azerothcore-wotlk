@@ -33,7 +33,7 @@ public:
 
         //------------------------------AZTH BANK ITEMS----------------------------------------------
 
-        QueryResult itemInBankQuery = CharacterDatabase.Query("SELECT item,itemEntry FROM azth_items_bank where guid = %u", pl->GetGUID().GetCounter()); //retrieve all items from db
+        QueryResult itemInBankQuery = CharacterDatabase.Query("SELECT item,itemEntry FROM azth_items_bank where guid = {}", pl->GetGUID().GetCounter()); //retrieve all items from db
 
         if (itemInBankQuery)
         {

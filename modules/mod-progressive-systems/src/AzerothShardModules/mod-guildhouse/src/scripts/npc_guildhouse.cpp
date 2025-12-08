@@ -198,7 +198,7 @@ class npc_guild_master : public CreatureScript
         if (player->IsGameMaster())
             guildsize = 20000;
 
-        result = ExtraDatabase.Query("SELECT `id`, `comment`, `price` FROM `guildhouses` WHERE `guildId` = 0 AND (`faction` = 3 OR `faction` = %u) AND `id` > %u AND `minguildsize` <= %u ORDER BY `id` ASC LIMIT %u",
+        result = ExtraDatabase.Query("SELECT `id`, `comment`, `price` FROM `guildhouses` WHERE `guildId` = 0 AND (`faction` = 3 OR `faction` = {}) AND `id` > {} AND `minguildsize` <= {} ORDER BY `id` ASC LIMIT {}",
             (player->GetTeamId(true) == TEAM_HORDE)?1:0, showFromId, guildsize, GOSSIP_COUNT_MAX);
 
         if (result)
@@ -278,7 +278,7 @@ class npc_guild_master : public CreatureScript
         if (player->IsGameMaster())
             guildsize = 20000;
 
-        result = WorldDatabase.Query("SELECT `add_type`, `comment`, `price` FROM `guildhouses_addtype` WHERE `minguildsize` <= %u AND `add_type` > %u ORDER BY `add_type` ASC LIMIT %u",
+        result = WorldDatabase.Query("SELECT `add_type`, `comment`, `price` FROM `guildhouses_addtype` WHERE `minguildsize` <= {} AND `add_type` > {} ORDER BY `add_type` ASC LIMIT {}",
             guildsize, showFromId, GOSSIP_COUNT_MAX);
 
         if (result)
@@ -375,7 +375,7 @@ class npc_guild_master : public CreatureScript
 
         QueryResult result;
 
-        result = ExtraDatabase.Query("SELECT `price` FROM `guildhouses` WHERE `id` = %u AND `guildId` = 0" , guildhouseId);
+        result = ExtraDatabase.Query("SELECT `price` FROM `guildhouses` WHERE `id` = {} AND `guildId` = 0" , guildhouseId);
 
         if (!result)
         {
@@ -427,7 +427,7 @@ class npc_guild_master : public CreatureScript
             return;
         }
 
-        QueryResult result = WorldDatabase.Query("SELECT `price` FROM `guildhouses_addtype` WHERE `add_type` = %u ", gh_Add);
+        QueryResult result = WorldDatabase.Query("SELECT `price` FROM `guildhouses_addtype` WHERE `add_type` = {} ", gh_Add);
         if (!result)
             return;
 
@@ -457,7 +457,7 @@ class npc_guild_master : public CreatureScript
         {
             QueryResult result;
 
-            result = ExtraDatabase.Query("SELECT `price` FROM `guildhouses` WHERE `guildId` = %u", player->GetGuildId());
+            result = ExtraDatabase.Query("SELECT `price` FROM `guildhouses` WHERE `guildId` = {}", player->GetGuildId());
 
             if (!result)
                 return;
