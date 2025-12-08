@@ -1235,6 +1235,14 @@ public:
 
     void OnStartup() override
     {
+        LOG_INFO("module", "Transmogrification: OnStartup called");
+        
+        if (!sT)
+        {
+            LOG_ERROR("module", "Transmogrification: sTransmogrification is null in OnStartup!");
+            return;
+        }
+        
         sT->LoadConfig(false);
         //sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Deleting non-existing transmogrification entries...");
         CharacterDatabase.Execute("DELETE FROM custom_transmogrification WHERE NOT EXISTS (SELECT 1 FROM item_instance WHERE item_instance.guid = custom_transmogrification.GUID)");
