@@ -37,21 +37,39 @@ void ScriptMgr::OnAfterConfigLoad(bool reload)
         for (auto const& script : ScriptRegistry<WorldScript>::EnabledHooks[WORLDHOOK_ON_AFTER_CONFIG_LOAD])
         {
             index++;
-            LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Processing module {}/{}: {}", index, scriptCount, script->GetName());
+            // Defensive check: ensure script pointer is valid
+            if (!script)
+            {
+                LOG_ERROR("server.loading", "ScriptMgr::OnAfterConfigLoad: Module {}/{} has null pointer, skipping", index, scriptCount);
+                continue;
+            }
+            
+            const char* scriptName = "unknown";
             try
             {
-                script->OnAfterConfigLoad(reload);
-                LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Module {} completed successfully", script->GetName());
-            }
-            catch (std::exception const& e)
-            {
-                LOG_FATAL("server.loading", "Exception in module OnAfterConfigLoad ({}): {}. Continuing with other modules...", script->GetName(), e.what());
+                scriptName = script->GetName();
             }
             catch (...)
             {
-                LOG_FATAL("server.loading", "Unknown exception in module OnAfterConfigLoad ({}). Continuing with other modules...", script->GetName());
+                LOG_ERROR("server.loading", "ScriptMgr::OnAfterConfigLoad: Module {}/{} has invalid GetName(), skipping", index, scriptCount);
+                continue;
             }
-            LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Finished processing module {}", script->GetName());
+            
+            LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Processing module {}/{}: {}", index, scriptCount, scriptName);
+            try
+            {
+                script->OnAfterConfigLoad(reload);
+                LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Module {} completed successfully", scriptName);
+            }
+            catch (std::exception const& e)
+            {
+                LOG_FATAL("server.loading", "Exception in module OnAfterConfigLoad ({}): {}. Continuing with other modules...", scriptName, e.what());
+            }
+            catch (...)
+            {
+                LOG_FATAL("server.loading", "Unknown exception in module OnAfterConfigLoad ({}). Continuing with other modules...", scriptName);
+            }
+            LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Finished processing module {}", scriptName);
         }
         LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: All modules processed, about to return");
     }
