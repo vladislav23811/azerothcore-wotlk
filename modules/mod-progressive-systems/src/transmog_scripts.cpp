@@ -1229,7 +1229,18 @@ public:
             return;
         }
         
-        sT->LoadConfig(reload);
+        try
+        {
+            sT->LoadConfig(reload);
+        }
+        catch (std::exception const& e)
+        {
+            LOG_ERROR("module", "Transmogrification: Exception in LoadConfig during OnAfterConfigLoad: {}", e.what());
+        }
+        catch (...)
+        {
+            LOG_ERROR("module", "Transmogrification: Unknown exception in LoadConfig during OnAfterConfigLoad");
+        }
         // Cache loading moved to OnStartup to ensure all systems are initialized
     }
 

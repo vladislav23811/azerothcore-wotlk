@@ -1244,10 +1244,23 @@ void Transmogrification::LoadConfig(bool reload)
     PetSpellId = sConfigMgr->GetOption<uint32>("Transmogrification.PetSpellId", 2000100);
 
     // Defensive check: ensure sSpellMgr is initialized before accessing spell info
+    // During initial startup, spell info may not be loaded yet, so we defer this check
     if (sSpellMgr)
     {
-        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(PetSpellId))
-            PetEntry = spellInfo->Effects[EFFECT_0].MiscValue;
+        try
+        {
+            if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(PetSpellId))
+            {
+                if (spellInfo->Effects.size() > EFFECT_0)
+                {
+                    PetEntry = spellInfo->Effects[EFFECT_0].MiscValue;
+                }
+            }
+        }
+        catch (...)
+        {
+            LOG_WARN("module", "Transmogrification: Exception accessing spell info for PetSpellId, PetEntry will be set later.");
+        }
     }
     else
     {
