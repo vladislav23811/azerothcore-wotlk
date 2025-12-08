@@ -762,6 +762,12 @@ bool ConfigMgr::LoadModulesConfigs(bool isReload /*= false*/, bool isNeedPrintIn
         LOG_INFO("server.loading", "Loading Modules Configuration...");
     }
 
+    // Clear module config files list to prevent duplicates if called multiple times
+    if (!isReload)
+    {
+        _moduleConfigFiles.clear();
+    }
+
     // Start loading module configs
     std::string const& moduleConfigPath = GetConfigPath() + "modules/";
 
@@ -770,7 +776,13 @@ bool ConfigMgr::LoadModulesConfigs(bool isReload /*= false*/, bool isNeedPrintIn
         bool isExistConfig = LoadAdditionalFile(moduleConfigPath + fileName, false, isReload);
 
         if (isExistConfig)
-            _moduleConfigFiles.emplace_back(fileName);
+        {
+            // Only add if not already in the list (prevent duplicates)
+            if (std::find(_moduleConfigFiles.begin(), _moduleConfigFiles.end(), fileName) == _moduleConfigFiles.end())
+            {
+                _moduleConfigFiles.emplace_back(fileName);
+            }
+        }
     }
 
     if (isNeedPrintInfo)
