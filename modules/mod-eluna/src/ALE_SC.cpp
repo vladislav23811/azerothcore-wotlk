@@ -1130,7 +1130,22 @@ public:
 
     void OnAfterConfigLoad(bool reload) override
     {
-        sALE->OnConfigLoad(reload, false);
+        try
+        {
+            LOG_INFO("module", "ALE: OnAfterConfigLoad called, reload={}", reload);
+            sALE->OnConfigLoad(reload, false);
+            LOG_INFO("module", "ALE: OnAfterConfigLoad completed successfully");
+        }
+        catch (std::exception const& e)
+        {
+            LOG_FATAL("module", "ALE: Exception in OnAfterConfigLoad: {}", e.what());
+            // Don't rethrow - allow server to continue
+        }
+        catch (...)
+        {
+            LOG_FATAL("module", "ALE: Unknown exception in OnAfterConfigLoad");
+            // Don't rethrow - allow server to continue
+        }
     }
 
     void OnShutdownInitiate(ShutdownExitCode code, ShutdownMask mask) override
