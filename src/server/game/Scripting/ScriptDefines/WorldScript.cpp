@@ -20,6 +20,7 @@
 #include "ScriptMgrMacros.h"
 #include "Log.h"
 #include <exception>
+#include <cstring>
 
 void ScriptMgr::OnOpenStateChange(bool open)
 {
