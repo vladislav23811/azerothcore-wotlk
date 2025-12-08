@@ -600,6 +600,41 @@ CREATE TABLE IF NOT EXISTS `custom_unlocked_appearances` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Transmog unlocked appearances collection system';
 
 -- ============================================================
+-- AZTH ACHIEVEMENT STATS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `azth_achievement_stats` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `playerGuid` INT UNSIGNED NOT NULL COMMENT 'Character GUID',
+  `achievement` INT UNSIGNED NOT NULL COMMENT 'Achievement or Criteria ID',
+  `type` TINYINT UNSIGNED NOT NULL COMMENT '0=Achievement, 1=Criteria',
+  `level` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Player level at completion',
+  `levelParty` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Group level at completion',
+  `specialLevel` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Special level (PStats) at completion',
+  `date` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Completion timestamp',
+  PRIMARY KEY (`id`),
+  INDEX `idx_playerGuid` (`playerGuid`),
+  INDEX `idx_achievement` (`achievement`),
+  INDEX `idx_type` (`type`),
+  INDEX `idx_date` (`date`),
+  CONSTRAINT `fk_azth_achievement_stats_guid` FOREIGN KEY (`playerGuid`) REFERENCES `characters` (`guid`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Achievement and criteria completion stats with player levels';
+
+-- Migration: Add specialLevel column if table exists but column is missing
+SET @col_exists = 0;
+SELECT COUNT(*) INTO @col_exists 
+FROM information_schema.COLUMNS 
+WHERE TABLE_SCHEMA = DATABASE() 
+  AND TABLE_NAME = 'azth_achievement_stats' 
+  AND COLUMN_NAME = 'specialLevel';
+
+SET @sql = IF(@col_exists = 0,
+    'ALTER TABLE `azth_achievement_stats` ADD COLUMN `specialLevel` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT ''Special level (PStats) at completion'' AFTER `levelParty`',
+    'SELECT ''Column specialLevel already exists'' AS message');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- ============================================================
 -- COMPLETE!
 -- ============================================================
 
