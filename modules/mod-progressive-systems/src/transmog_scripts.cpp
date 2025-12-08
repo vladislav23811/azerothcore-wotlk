@@ -1230,59 +1230,7 @@ public:
         }
         
         sT->LoadConfig(reload);
-        if (sT->GetUseCollectionSystem())
-        {
-            LOG_INFO("module", "Loading transmog appearance collection cache....");
-            uint32 collectedAppearanceCount = 0;
-            try
-            {
-                QueryResult result = CharacterDatabase.Query("SELECT account_id, item_template_id FROM custom_unlocked_appearances");
-                if (result)
-                {
-                    do
-                    {
-                        try
-                        {
-                            if (!result || result->GetRowCount() == 0)
-                                break;
-                                
-                            uint32 accountId = (*result)[0].Get<uint32>();
-                            uint32 itemId = (*result)[1].Get<uint32>();
-                            
-                            if (accountId == 0 || itemId == 0)
-                            {
-                                LOG_WARN("module", "Transmogrification: Skipping invalid appearance data (accountId: {}, itemId: {})", accountId, itemId);
-                                continue;
-                            }
-                            
-                            if (sT && sT->AddCollectedAppearance(accountId, itemId))
-                            {
-                                collectedAppearanceCount++;
-                            }
-                        }
-                        catch (std::exception const& e)
-                        {
-                            LOG_ERROR("module", "Transmogrification: Error processing appearance row: {}", e.what());
-                            break;
-                        }
-                        catch (...)
-                        {
-                            LOG_ERROR("module", "Transmogrification: Unknown exception processing appearance row");
-                            break;
-                        }
-                    } while (result->NextRow());
-                }
-            }
-            catch (std::exception const& e)
-            {
-                LOG_ERROR("module", "Transmogrification: Failed to load appearance collection cache: {}. Table may not exist yet.", e.what());
-            }
-            catch (...)
-            {
-                LOG_ERROR("module", "Transmogrification: Unknown exception loading appearance collection cache");
-            }
-            LOG_INFO("module", "Loaded {} collected appearances into cache", collectedAppearanceCount);
-        }
+        // Cache loading moved to OnStartup to ensure all systems are initialized
     }
 
     void OnStartup() override
