@@ -49,6 +49,13 @@ void ScriptMgr::OnAfterConfigLoad(bool reload)
             try
             {
                 scriptName = script->GetName();
+                
+                // Skip known problematic modules that cause crashes - check immediately after getting name
+                if (scriptName && strcmp(scriptName, "azth_smartstone_world") == 0)
+                {
+                    LOG_WARN("server.loading", "ScriptMgr::OnAfterConfigLoad: Skipping module {} due to known crash issue", scriptName);
+                    continue;
+                }
             }
             catch (...)
             {
@@ -57,13 +64,6 @@ void ScriptMgr::OnAfterConfigLoad(bool reload)
             }
             
             LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Processing module {}/{}: {}", index, scriptCount, scriptName);
-            
-            // Skip known problematic modules that cause crashes
-            if (strcmp(scriptName, "azth_smartstone_world") == 0)
-            {
-                LOG_WARN("server.loading", "ScriptMgr::OnAfterConfigLoad: Skipping module {} due to known crash issue", scriptName);
-                continue;
-            }
             
             try
             {
