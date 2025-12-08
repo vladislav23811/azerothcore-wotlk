@@ -696,6 +696,12 @@ CREATE TABLE IF NOT EXISTS `mod_item_upgrade_allowed_items` (
   PRIMARY KEY (`entry`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Items allowed for upgrade';
 
+-- Blacklisted items table
+CREATE TABLE IF NOT EXISTS `mod_item_upgrade_blacklisted_items` (
+  `entry` INT UNSIGNED NOT NULL COMMENT 'Item entry ID',
+  PRIMARY KEY (`entry`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Items blacklisted from upgrade';
+
 -- Allowed stats items table
 CREATE TABLE IF NOT EXISTS `mod_item_upgrade_allowed_stats_items` (
   `stat_id` INT UNSIGNED NOT NULL COMMENT 'Reference to mod_item_upgrade_stats.id',
@@ -718,25 +724,34 @@ CREATE TABLE IF NOT EXISTS `mod_item_upgrade_blacklisted_stats_items` (
 
 -- Character item upgrade table
 CREATE TABLE IF NOT EXISTS `character_item_upgrade` (
+  `guid` INT UNSIGNED NOT NULL COMMENT 'Character GUID',
   `item_guid` BIGINT UNSIGNED NOT NULL COMMENT 'Item GUID',
   `stat_id` INT UNSIGNED NOT NULL COMMENT 'Reference to mod_item_upgrade_stats.id',
-  PRIMARY KEY (`item_guid`, `stat_id`),
+  PRIMARY KEY (`guid`, `item_guid`, `stat_id`),
+  INDEX `idx_guid` (`guid`),
+  INDEX `idx_item_guid` (`item_guid`),
   INDEX `idx_stat_id` (`stat_id`),
   CONSTRAINT `fk_character_item_upgrade_stat_id` FOREIGN KEY (`stat_id`) REFERENCES `mod_item_upgrade_stats` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Character item upgrades';
 
 -- Character weapon upgrade table
 CREATE TABLE IF NOT EXISTS `character_weapon_upgrade` (
+  `guid` INT UNSIGNED NOT NULL COMMENT 'Character GUID',
   `item_guid` BIGINT UNSIGNED NOT NULL COMMENT 'Item GUID',
-  `upgrade_level` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Upgrade level',
-  PRIMARY KEY (`item_guid`)
+  `upgrade_perc` FLOAT NOT NULL DEFAULT 0.0 COMMENT 'Upgrade percentage',
+  PRIMARY KEY (`guid`, `item_guid`),
+  INDEX `idx_guid` (`guid`),
+  INDEX `idx_item_guid` (`item_guid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Character weapon upgrades';
 
 -- Character weapon speed upgrade table
 CREATE TABLE IF NOT EXISTS `character_weapon_speed_upgrade` (
+  `guid` INT UNSIGNED NOT NULL COMMENT 'Character GUID',
   `item_guid` BIGINT UNSIGNED NOT NULL COMMENT 'Item GUID',
-  `speed_mod` FLOAT NOT NULL DEFAULT 0.0 COMMENT 'Speed modification',
-  PRIMARY KEY (`item_guid`)
+  `upgrade_perc` FLOAT NOT NULL DEFAULT 0.0 COMMENT 'Upgrade percentage',
+  PRIMARY KEY (`guid`, `item_guid`),
+  INDEX `idx_guid` (`guid`),
+  INDEX `idx_item_guid` (`item_guid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Character weapon speed upgrades';
 
 -- ============================================================
