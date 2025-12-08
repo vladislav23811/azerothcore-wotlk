@@ -465,20 +465,47 @@ void Transmogrification::SetFakeEntry(Player* player, uint32 newEntry, uint8 /*s
 
 bool Transmogrification::AddCollectedAppearance(uint32 accountId, uint32 itemId)
 {
-    if (collectionCache.find(accountId)  == collectionCache.end())
+    if (accountId == 0 || itemId == 0)
+        return false;
+        
+    try
     {
-        collectionCache.insert({accountId, {itemId}});
-        return true;
-    }
-    if (std::find(collectionCache[accountId].begin(), collectionCache[accountId].end(), itemId) == collectionCache[accountId].end())
-    {
-        collectionCache[accountId].push_back(itemId);
-
-        if (!sConfigMgr->GetOption<bool>("Transmogrification.EnableSortByQualityAndName", true)) {
-            std::sort(collectionCache[accountId].begin(), collectionCache[accountId].end());
+        if (collectionCache.find(accountId)  == collectionCache.end())
+        {
+            collectionCache.insert({accountId, {itemId}});
+            return true;
         }
+        if (std::find(collectionCache[accountId].begin(), collectionCache[accountId].end(), itemId) == collectionCache[accountId].end())
+        {
+            collectionCache[accountId].push_back(itemId);
 
-        return true;
+            // Only sort if config manager is available and option is disabled
+            // During cache loading, config might not be fully ready, so use default (true = no sort)
+            bool shouldSort = true;
+            try
+            {
+                if (sConfigMgr)
+                {
+                    shouldSort = sConfigMgr->GetOption<bool>("Transmogrification.EnableSortByQualityAndName", true);
+                }
+            }
+            catch (...)
+            {
+                // Config not ready yet, use default (no sort)
+                shouldSort = true;
+            }
+            
+            if (!shouldSort) {
+                std::sort(collectionCache[accountId].begin(), collectionCache[accountId].end());
+            }
+
+            return true;
+        }
+    }
+    catch (...)
+    {
+        // Catch any exceptions to prevent crashes
+        return false;
     }
     return false;
 }
