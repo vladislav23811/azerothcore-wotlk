@@ -39,6 +39,15 @@ void ScriptMgr::OnAfterConfigLoad(bool reload)
         for (auto const& script : ScriptRegistry<WorldScript>::EnabledHooks[WORLDHOOK_ON_AFTER_CONFIG_LOAD])
         {
             index++;
+            
+            // Skip known problematic module 18 (azth_smartstone_world) that causes crashes
+            // We skip by index to avoid calling GetName() which crashes
+            if (index == 18)
+            {
+                LOG_WARN("server.loading", "ScriptMgr::OnAfterConfigLoad: Skipping module {}/{} (azth_smartstone_world) due to known crash issue", index, scriptCount);
+                continue;
+            }
+            
             // Defensive check: ensure script pointer is valid
             if (!script)
             {
@@ -50,14 +59,6 @@ void ScriptMgr::OnAfterConfigLoad(bool reload)
             try
             {
                 scriptName = script->GetName();
-                LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Got name for module {}/{}: '{}'", index, scriptCount, scriptName ? scriptName : "NULL");
-                
-                // Skip known problematic modules that cause crashes - check immediately after getting name
-                if (scriptName && (strcmp(scriptName, "azth_smartstone_world") == 0 || std::string(scriptName).find("smartstone") != std::string::npos))
-                {
-                    LOG_WARN("server.loading", "ScriptMgr::OnAfterConfigLoad: Skipping module '{}' due to known crash issue", scriptName);
-                    continue;
-                }
             }
             catch (...)
             {
