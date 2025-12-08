@@ -1246,15 +1246,8 @@ public:
                             if (!result || result->GetRowCount() == 0)
                                 break;
                                 
-                            Field* fields = result->Fetch();
-                            if (!fields)
-                            {
-                                LOG_ERROR("module", "Transmogrification: Null fields in result");
-                                break;
-                            }
-                            
-                            uint32 accountId = fields[0].Get<uint32>();
-                            uint32 itemId = fields[1].Get<uint32>();
+                            uint32 accountId = (*result)[0].Get<uint32>();
+                            uint32 itemId = (*result)[1].Get<uint32>();
                             
                             if (accountId == 0 || itemId == 0)
                             {
