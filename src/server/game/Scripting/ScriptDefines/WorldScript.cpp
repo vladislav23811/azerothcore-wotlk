@@ -28,13 +28,20 @@ void ScriptMgr::OnOpenStateChange(bool open)
 
 void ScriptMgr::OnAfterConfigLoad(bool reload)
 {
+    LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Starting, reload={}", reload);
     if (!ScriptRegistry<WorldScript>::EnabledHooks[WORLDHOOK_ON_AFTER_CONFIG_LOAD].empty())
     {
+        size_t scriptCount = ScriptRegistry<WorldScript>::EnabledHooks[WORLDHOOK_ON_AFTER_CONFIG_LOAD].size();
+        LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Found {} modules with OnAfterConfigLoad hook", scriptCount);
+        size_t index = 0;
         for (auto const& script : ScriptRegistry<WorldScript>::EnabledHooks[WORLDHOOK_ON_AFTER_CONFIG_LOAD])
         {
+            index++;
+            LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Processing module {}/{}: {}", index, scriptCount, script->GetName());
             try
             {
                 script->OnAfterConfigLoad(reload);
+                LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Module {} completed successfully", script->GetName());
             }
             catch (std::exception const& e)
             {
@@ -44,8 +51,15 @@ void ScriptMgr::OnAfterConfigLoad(bool reload)
             {
                 LOG_FATAL("server.loading", "Unknown exception in module OnAfterConfigLoad ({}). Continuing with other modules...", script->GetName());
             }
+            LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Finished processing module {}", script->GetName());
         }
+        LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: All modules processed, about to return");
     }
+    else
+    {
+        LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: No modules with OnAfterConfigLoad hook");
+    }
+    LOG_INFO("server.loading", "ScriptMgr::OnAfterConfigLoad: Function returning");
 }
 
 void ScriptMgr::OnLoadCustomDatabaseTable()
