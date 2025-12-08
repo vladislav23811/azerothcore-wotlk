@@ -36,7 +36,9 @@ HttpManager::HttpManager()
     condVarMutex(),
     parseUrlRegex("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?")
 {
-    StartHttpWorker();
+    // Don't start worker thread in constructor - start it in OnStartup instead
+    // Starting threads too early can cause memory corruption during initialization
+    // StartHttpWorker();
 }
 
 HttpManager::~HttpManager()

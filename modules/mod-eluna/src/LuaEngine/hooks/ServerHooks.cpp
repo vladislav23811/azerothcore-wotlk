@@ -268,6 +268,9 @@ void ALE::OnWorldUpdate(uint32 diff)
 
 void ALE::OnStartup()
 {
+    // Start HttpManager worker thread now that all systems are initialized
+    httpManager.StartHttpWorker();
+    
     START_HOOK(WORLD_EVENT_ON_STARTUP);
     CallAllFunctions(ServerEventBindings, key);
 }
