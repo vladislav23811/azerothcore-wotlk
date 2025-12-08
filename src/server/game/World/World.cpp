@@ -297,7 +297,19 @@ void World::LoadConfigSettings(bool reload)
     MMAP::MMapFactory::InitializeDisabledMaps();
 
     // call ScriptMgr if we're reloading the configuration
-    sScriptMgr->OnAfterConfigLoad(reload);
+    // Add exception handling to prevent crashes during module config loading
+    try
+    {
+        sScriptMgr->OnAfterConfigLoad(reload);
+    }
+    catch (std::exception const& e)
+    {
+        LOG_FATAL("server.loading", "Exception in OnAfterConfigLoad: {}. Server will continue but some modules may not be configured correctly.", e.what());
+    }
+    catch (...)
+    {
+        LOG_FATAL("server.loading", "Unknown exception in OnAfterConfigLoad. Server will continue but some modules may not be configured correctly.");
+    }
 }
 
 /// Initialize the World
