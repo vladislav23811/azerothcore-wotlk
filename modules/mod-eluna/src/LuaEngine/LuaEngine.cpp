@@ -82,7 +82,8 @@ void ALE::Initialize()
     {
         uint32 watchInterval = eConfigMgr->GetOption<uint32>("ALE.AutoReloadInterval", 1);
         fileWatcher = std::make_unique<ALEFileWatcher>();
-        fileWatcher->StartWatching(lua_folderpath, watchInterval);
+        // Don't start watching yet - start it in OnStartup() after all systems are initialized
+        // fileWatcher->StartWatching(lua_folderpath, watchInterval);
     }
 }
 

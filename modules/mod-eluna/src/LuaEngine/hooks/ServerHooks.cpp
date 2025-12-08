@@ -272,10 +272,10 @@ void ALE::OnStartup()
     httpManager.StartHttpWorker();
     
     // Start file watcher thread now that all systems are initialized
-    if (fileWatcher)
+    if (fileWatcher && ALEConfig::GetInstance().IsAutoReloadEnabled())
     {
-        std::string lua_folderpath = sConfigMgr->GetOption<std::string>("ALE.ScriptPath", "lua_scripts");
-        uint32 watchInterval = sConfigMgr->GetOption<uint32>("ALE.FileWatcherInterval", 1);
+        std::string lua_folderpath = eConfigMgr->GetOption<std::string>("ALE.ScriptPath", "lua_scripts");
+        uint32 watchInterval = eConfigMgr->GetOption<uint32>("ALE.AutoReloadInterval", 1);
         fileWatcher->StartWatching(lua_folderpath, watchInterval);
     }
     
