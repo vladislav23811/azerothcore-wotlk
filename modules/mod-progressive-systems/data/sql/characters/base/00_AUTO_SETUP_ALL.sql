@@ -561,6 +561,45 @@ SET `total_progression_points_earned` = `progression_points`
 WHERE `total_progression_points_earned` = 0 AND `progression_points` > 0;
 
 -- ============================================================
+-- GLOBAL CHAT BLACKLIST TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `globalchat_blacklist` (
+  `phrase` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`phrase`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Global Chat profanity/blacklist phrases';
+
+-- ============================================================
+-- TRANSMOG TABLES
+-- ============================================================
+-- Main transmogrification table (stores active transmogs on items)
+CREATE TABLE IF NOT EXISTS `custom_transmogrification` (
+  `GUID` INT UNSIGNED NOT NULL DEFAULT 0,
+  `FakeEntry` INT UNSIGNED NOT NULL DEFAULT 0,
+  `Owner` INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (`GUID`),
+  INDEX `idx_owner` (`Owner`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Transmogrification system - active transmogs';
+
+-- Transmogrification sets/presets table
+CREATE TABLE IF NOT EXISTS `custom_transmogrification_sets` (
+  `Owner` INT UNSIGNED NOT NULL DEFAULT 0,
+  `PresetID` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `SetName` VARCHAR(16) NOT NULL DEFAULT '',
+  `SetData` TEXT NOT NULL,
+  PRIMARY KEY (`Owner`, `PresetID`),
+  INDEX `idx_owner` (`Owner`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Transmogrification sets/presets';
+
+-- Unlocked appearances collection table (for collection system)
+CREATE TABLE IF NOT EXISTS `custom_unlocked_appearances` (
+  `account_id` INT UNSIGNED NOT NULL,
+  `item_template_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`account_id`, `item_template_id`),
+  INDEX `idx_account_id` (`account_id`),
+  INDEX `idx_item_template_id` (`item_template_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Transmog unlocked appearances collection system';
+
+-- ============================================================
 -- COMPLETE!
 -- ============================================================
 

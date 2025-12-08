@@ -241,6 +241,7 @@ ItemUpgrade.UpgradeWeaponSpeedPercents = 10,20,30
 ItemUpgrade.UpgradeWeaponSpeedToken = 0
 ItemUpgrade.UpgradeWeaponSpeedTokenCount = 1
 ItemUpgrade.UpgradeWeaponSpeedMoney = 0
+ItemUpgrade.RandomUpgradesBroadcastLoginMsg = ""
 
 ###############################################################
 # Mythic Plus System Configuration (Araxia Version)
@@ -423,6 +424,41 @@ AutoBalance.reward.dungeonToken = 47241
 AutoBalance.reward.MinPlayerReward = 1
 AutoBalanceAnnounce.enable=0
 
+# AutoBalance Advanced Configuration
+AutoBalance.ForcedID40 = ""
+AutoBalance.ForcedID25 = ""
+AutoBalance.ForcedID10 = ""
+AutoBalance.ForcedID5 = ""
+AutoBalance.ForcedID2 = ""
+AutoBalance.DisabledID = ""
+AutoBalance.Disable.PerInstance = ""
+AutoBalance.MinPlayers = 1
+AutoBalance.MinPlayers.Heroic = 1
+AutoBalance.MinPlayers.Raid = 1
+AutoBalance.MinPlayers.RaidHeroic = 1
+AutoBalance.PlayerChangeNotify = 1
+AutoBalance.reward.enable = 1
+AutoBalance.playerCountDifficultyOffset = 0
+AutoBalance.MinHPModifier = 0.1
+AutoBalance.MinManaModifier = 0.01
+AutoBalance.MinDamageModifier = 0.01
+AutoBalance.MinCCDurationModifier = 0.25
+AutoBalance.MaxCCDurationModifier = 1
+AutoBalance.LevelScaling = 1
+AutoBalance.LevelScaling.SkipHigherLevels = 3
+AutoBalance.LevelScaling.SkipLowerLevels = 5
+AutoBalance.LevelScaling.DynamicLevel.Ceiling.Dungeons = 1
+AutoBalance.LevelScaling.DynamicLevel.Floor.Dungeons = 5
+AutoBalance.LevelScaling.DynamicLevel.Ceiling.HeroicDungeons = 2
+AutoBalance.LevelScaling.DynamicLevel.Floor.HeroicDungeons = 5
+AutoBalance.LevelScaling.DynamicLevel.Ceiling.Raids = 3
+AutoBalance.LevelScaling.DynamicLevel.Floor.Raids = 5
+AutoBalance.LevelScaling.DynamicLevel.Ceiling.HeroicRaids = 3
+AutoBalance.LevelScaling.DynamicLevel.Floor.HeroicRaids = 5
+AutoBalance.LevelScaling.EndGameBoost = 1
+AutoBalance.RewardScaling.XP = 1
+AutoBalance.RewardScaling.Money = 1
+
 ###############################################################
 # BG Reward Configuration
 ###############################################################
@@ -587,6 +623,37 @@ Transmogrification.TokenAmount = 1
 Transmogrification.AllowPoor = 0
 Transmogrification.AllowCommon = 0
 Transmogrification.AllowUncommon = 1
+Transmogrification.AllowRare = 1
+Transmogrification.AllowEpic = 1
+Transmogrification.AllowLegendary = 0
+Transmogrification.AllowArtifact = 0
+Transmogrification.AllowHeirloom = 1
+Transmogrification.AllowTradeable = 0
+Transmogrification.AllowMixedArmorTypes = 0
+Transmogrification.AllowLowerTiers = 0
+Transmogrification.AllowMixedOffhandArmorTypes = 0
+Transmogrification.AllowMixedWeaponHandedness = 0
+Transmogrification.AllowFishingPoles = 0
+Transmogrification.AllowMixedWeaponTypes = 0
+Transmogrification.IgnoreReqRace = 0
+Transmogrification.IgnoreReqClass = 0
+Transmogrification.IgnoreReqSkill = 0
+Transmogrification.IgnoreReqSpell = 0
+Transmogrification.IgnoreReqLevel = 0
+Transmogrification.IgnoreReqEvent = 0
+Transmogrification.IgnoreReqStats = 0
+Transmogrification.EnableSets = 1
+Transmogrification.EnableSetInfo = 1
+Transmogrification.SetNpcText = 601084
+Transmogrification.MaxSets = 10
+Transmogrification.SetCostModifier = 3
+Transmogrification.SetCopperCost = 0
+Transmogrification.EnablePlus = 0
+Transmogrification.MembershipLevels = ""
+Transmogrification.MembershipLevelsLegendary = ""
+Transmogrification.MembershipLevelsPet = ""
+Transmogrification.MembershipLevelsSkipLevelReq = ""
+Transmogrification.PetSpellId = 2000100
 
 ###############################################################
 # AzerothShard Configuration

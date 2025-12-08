@@ -4,7 +4,7 @@
             "name": "x64-RelWithDebInfo",
             "generator": "Visual Studio 18 2026 Win64",
             "configurationType": "RelWithDebInfo",
-            "buildRoot": "C:/servers/build",
+            "buildRoot": "C:/servery/WOW-server/azerothcore-wotlk/build",
             "cmakeCommandArgs": "",
             "buildCommandArgs": "--config RelWithDebInfo",
             "ctestCommandArgs": "",
