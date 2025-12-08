@@ -305,7 +305,23 @@ int main(int argc, char** argv)
 
     ///- Initialize the World
     sSecretMgr->Initialize();
-    sWorld->SetInitialWorldSettings();
+    
+    try
+    {
+        sWorld->SetInitialWorldSettings();
+    }
+    catch (std::exception const& e)
+    {
+        LOG_FATAL("server.worldserver", "Exception in SetInitialWorldSettings: {}", e.what());
+        World::StopNow(ERROR_EXIT_CODE);
+        return 1;
+    }
+    catch (...)
+    {
+        LOG_FATAL("server.worldserver", "Unknown exception in SetInitialWorldSettings");
+        World::StopNow(ERROR_EXIT_CODE);
+        return 1;
+    }
 
     std::shared_ptr<void> mapManagementHandle(nullptr, [](void*)
     {
