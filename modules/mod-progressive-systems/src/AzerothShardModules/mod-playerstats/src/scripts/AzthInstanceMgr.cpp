@@ -20,6 +20,6 @@
         return;
      }
 
-     CharacterDatabase.DirectExecute("UPDATE instance SET levelPg = %u, groupSize = %u, startTime = %u WHERE id = %u", levelMax, groupSize, instanceSave->GetInstanceId(), startTime);
+     CharacterDatabase.DirectExecute("UPDATE instance SET levelPg = {}, groupSize = {}, startTime = {} WHERE id = {}", levelMax, groupSize, startTime, instanceSave->GetInstanceId());
  }
 

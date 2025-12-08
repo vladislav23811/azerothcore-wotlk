@@ -5,7 +5,7 @@ AzthGroupMgr::AzthGroupMgr(Group* original)
 {
     group = original;
 
-    QueryResult result = CharacterDatabase.Query("SELECT `MaxlevelGroup`, `MaxGroupSize` FROM `azth_groups` WHERE `guid` = '%u'", group->GetGUID().GetCounter());
+    QueryResult result = CharacterDatabase.Query("SELECT `MaxlevelGroup`, `MaxGroupSize` FROM `azth_groups` WHERE `guid` = {}", group->GetGUID().GetCounter());
     if (!result)
     {
         levelMaxGroup = 0;
@@ -28,7 +28,7 @@ void AzthGroupMgr::saveToDb()
 {
     ASSERT(group);
 
-    CharacterDatabase.DirectExecute("UPDATE azth_groups SET MaxLevelGroup = %u, MaxGroupSize = %u WHERE leaderGuid = %u", levelMaxGroup, groupSize, this->group->GetLeaderGUID().GetCounter());
+    CharacterDatabase.DirectExecute("UPDATE azth_groups SET MaxLevelGroup = {}, MaxGroupSize = {} WHERE leaderGuid = {}", levelMaxGroup, groupSize, this->group->GetLeaderGUID().GetCounter());
 }
 
 

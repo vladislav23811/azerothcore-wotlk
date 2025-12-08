@@ -642,7 +642,7 @@ public:
         // a small trick to create unique id here
         id = ObjectGuid::Create<HighGuid::Unit>(instanceStart, groupId).GetCounter();
 
-        CharacterDatabase.DirectExecute("INSERT INTO azth_quest_log (guid, groupId, quest, dungeon, difficulty, sLevel, nLevel, gSize, instanceStartTime, questEndTime) VALUES(%u,%u,%u,%u,%u,%u,%u,%u,%u,%u);",
+        CharacterDatabase.DirectExecute("INSERT INTO azth_quest_log (guid, groupId, quest, dungeon, difficulty, sLevel, nLevel, gSize, instanceStartTime, questEndTime) VALUES({},{},{},{},{},{},{},{},{},{});",
                                 guid, id, quest, dungeon, difficulty, sLevel,nLevel,gSize,instanceStart,questEnd);
 
         return true;

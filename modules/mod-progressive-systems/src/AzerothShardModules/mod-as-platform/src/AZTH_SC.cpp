@@ -1324,7 +1324,7 @@ public:
         if (!group || !leader)
             return;
 
-        CharacterDatabase.DirectExecute("INSERT INTO azth_groups (guid, MaxLevelGroup) VALUES (%u, %u)", group->GetGUID().GetCounter(), leader->GetLevel());
+        CharacterDatabase.DirectExecute("INSERT INTO azth_groups (guid, MaxLevelGroup) VALUES ({}, {})", group->GetGUID().GetCounter(), leader->GetLevel());
     }
 
     void OnDisband(Group* group) override
@@ -1332,7 +1332,7 @@ public:
         if (!group)
             return;
 
-        CharacterDatabase.DirectExecute("DELETE FROM `azth_groups` WHERE `guid` = '%u'", group->GetGUID().GetCounter());
+        CharacterDatabase.DirectExecute("DELETE FROM `azth_groups` WHERE `guid` = {}", group->GetGUID().GetCounter());
     }
 };
 
@@ -1761,8 +1761,8 @@ public:
         std::string new_str(pGameObj->GetName());
         WorldDatabase.EscapeString(new_str);
 
-        WorldDatabase.DirectExecute("INSERT INTO `guildhouses_add` (guid, type, id, add_type, comment) VALUES (%u, 1, %u, %u, '%s')",
-            pGameObj->GetGUID().GetCounter(), guildhouseid, guildhouseaddid, new_str.c_str());
+        WorldDatabase.DirectExecute("INSERT INTO `guildhouses_add` (guid, type, id, add_type, comment) VALUES ({}, 1, {}, {}, '{}')",
+            pGameObj->GetGUID().GetCounter(), guildhouseid, guildhouseaddid, new_str);
 
         // TODO: is it really necessary to add both the real and DB table guid here ?
         if (GameObjectData const* goData = sObjectMgr->GetGameObjectData(db_lowGUID))
@@ -1821,8 +1821,8 @@ public:
         std::string new_str(creature->GetName());
         WorldDatabase.EscapeString(new_str);
 
-        WorldDatabase.DirectExecute("INSERT INTO `guildhouses_add` (guid, type, id, add_type, comment) VALUES (%u, 0, %u, %u, '%s')",
-            creature->GetGUID().GetCounter(), guildhouseid, guildhouseaddid, new_str.c_str());
+        WorldDatabase.DirectExecute("INSERT INTO `guildhouses_add` (guid, type, id, add_type, comment) VALUES ({}, 0, {}, {}, '{}')",
+            creature->GetGUID().GetCounter(), guildhouseid, guildhouseaddid, new_str);
 
         map->AddToMap(creature);
         sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));

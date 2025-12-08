@@ -453,7 +453,7 @@ GuildHouse::GuildHouse(uint32 newGuildId, uint32 newId, float x, float y, float 
 void GuildHouse::AddGuildHouse_Add(uint32 NewAdd)
 {
     GuildHouse_Add |= NewAdd;
-    CharacterDatabase.DirectExecute("UPDATE `gh_guildadd` SET `GuildHouse_Add` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
+    CharacterDatabase.DirectExecute("UPDATE `gh_guildadd` SET `GuildHouse_Add` = {} WHERE `guildId` = {}", GuildHouse_Add, GuildId);
     GHobj.AddGuildHouseAdd(Id, NewAdd, GuildId);
 }
 
