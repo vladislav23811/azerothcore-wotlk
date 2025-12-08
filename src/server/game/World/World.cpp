@@ -301,8 +301,11 @@ void World::LoadConfigSettings(bool reload)
     LOG_INFO("server.loading", "LoadConfigSettings: About to call OnAfterConfigLoad...");
     try
     {
+        LOG_INFO("server.loading", "LoadConfigSettings: Calling sScriptMgr->OnAfterConfigLoad...");
         sScriptMgr->OnAfterConfigLoad(reload);
+        LOG_INFO("server.loading", "LoadConfigSettings: sScriptMgr->OnAfterConfigLoad returned, about to log success");
         LOG_INFO("server.loading", "LoadConfigSettings: OnAfterConfigLoad call returned successfully");
+        LOG_INFO("server.loading", "LoadConfigSettings: Success message logged, exiting try block");
     }
     catch (std::exception const& e)
     {
