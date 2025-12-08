@@ -1202,11 +1202,23 @@ void Transmogrification::LoadConfig(bool reload)
     IsPortableNPCEnabled = sConfigMgr->GetOption<bool>("Transmogrification.EnablePortable", true);
 
     // Defensive check: ensure sObjectMgr is initialized before accessing item templates
-    if (sObjectMgr && !sObjectMgr->GetItemTemplate(TokenEntry))
+    // During initial startup, item templates may not be loaded yet, so we defer this check
+    if (sObjectMgr)
     {
-        TokenEntry = 49426;
+        try
+        {
+            if (!sObjectMgr->GetItemTemplate(TokenEntry))
+            {
+                TokenEntry = 49426;
+            }
+        }
+        catch (...)
+        {
+            LOG_WARN("module", "Transmogrification: Exception accessing item template for TokenEntry, using default.");
+            TokenEntry = 49426;
+        }
     }
-    else if (!sObjectMgr)
+    else
     {
         LOG_WARN("module", "Transmogrification: sObjectMgr is not initialized, using default TokenEntry.");
         TokenEntry = 49426;
