@@ -59,6 +59,9 @@
 #include <exception>
 #include <filesystem>
 #include <iostream>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include <openssl/crypto.h>
 #include <openssl/opensslv.h>
 
@@ -307,19 +310,29 @@ int main(int argc, char** argv)
     ///- Initialize the World
     sSecretMgr->Initialize();
     
-    try
+    // Add structured exception handling for access violations
+    __try
     {
-        sWorld->SetInitialWorldSettings();
+        try
+        {
+            sWorld->SetInitialWorldSettings();
+        }
+        catch (std::exception const& e)
+        {
+            LOG_FATAL("server.worldserver", "Exception in SetInitialWorldSettings: {}", e.what());
+            World::StopNow(ERROR_EXIT_CODE);
+            return 1;
+        }
+        catch (...)
+        {
+            LOG_FATAL("server.worldserver", "Unknown exception in SetInitialWorldSettings");
+            World::StopNow(ERROR_EXIT_CODE);
+            return 1;
+        }
     }
-    catch (std::exception const& e)
+    __except(EXCEPTION_EXECUTE_HANDLER)
     {
-        LOG_FATAL("server.worldserver", "Exception in SetInitialWorldSettings: {}", e.what());
-        World::StopNow(ERROR_EXIT_CODE);
-        return 1;
-    }
-    catch (...)
-    {
-        LOG_FATAL("server.worldserver", "Unknown exception in SetInitialWorldSettings");
+        LOG_FATAL("server.worldserver", "Access violation or memory corruption in SetInitialWorldSettings. Exception code: 0x{:X}", GetExceptionCode());
         World::StopNow(ERROR_EXIT_CODE);
         return 1;
     }
