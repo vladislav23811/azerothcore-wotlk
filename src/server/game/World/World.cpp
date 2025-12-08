@@ -298,9 +298,11 @@ void World::LoadConfigSettings(bool reload)
 
     // call ScriptMgr if we're reloading the configuration
     // Add exception handling to prevent crashes during module config loading
+    LOG_INFO("server.loading", "LoadConfigSettings: About to call OnAfterConfigLoad...");
     try
     {
         sScriptMgr->OnAfterConfigLoad(reload);
+        LOG_INFO("server.loading", "LoadConfigSettings: OnAfterConfigLoad completed successfully");
     }
     catch (std::exception const& e)
     {
@@ -310,6 +312,7 @@ void World::LoadConfigSettings(bool reload)
     {
         LOG_FATAL("server.loading", "Unknown exception in OnAfterConfigLoad. Server will continue but some modules may not be configured correctly.");
     }
+    LOG_INFO("server.loading", "LoadConfigSettings: About to return (function end)");
 }
 
 /// Initialize the World
@@ -337,7 +340,7 @@ void World::SetInitialWorldSettings()
     ///- Initialize config settings
     LOG_INFO("server.loading", "SetInitialWorldSettings: Loading config settings...");
     LoadConfigSettings();
-    LOG_INFO("server.loading", "SetInitialWorldSettings: Config settings loaded");
+    LOG_INFO("server.loading", "SetInitialWorldSettings: Config settings loaded successfully - LoadConfigSettings() returned");
 
     ///- Initialize Allowed Security Level
     LOG_INFO("server.loading", "SetInitialWorldSettings: Loading allowed security level...");
