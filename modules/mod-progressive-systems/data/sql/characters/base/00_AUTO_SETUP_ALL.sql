@@ -650,6 +650,19 @@ CREATE TABLE IF NOT EXISTS `character_reforging` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Character item reforging data';
 
 -- ============================================================
+-- 22. MOD ITEM UPGRADE STATS REQ TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `mod_item_upgrade_stats_req` (
+  `itemEntry` INT UNSIGNED NOT NULL COMMENT 'Item entry ID',
+  `statType` INT UNSIGNED NOT NULL COMMENT 'Stat type (ITEM_MOD_*)',
+  `minValue` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Minimum stat value required',
+  `maxValue` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Maximum stat value required',
+  PRIMARY KEY (`itemEntry`, `statType`),
+  INDEX `idx_itemEntry` (`itemEntry`),
+  INDEX `idx_statType` (`statType`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Item upgrade stat requirements';
+
+-- ============================================================
 -- COMPLETE!
 -- ============================================================
 
