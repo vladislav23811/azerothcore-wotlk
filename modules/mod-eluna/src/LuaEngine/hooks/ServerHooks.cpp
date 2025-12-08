@@ -271,6 +271,14 @@ void ALE::OnStartup()
     // Start HttpManager worker thread now that all systems are initialized
     httpManager.StartHttpWorker();
     
+    // Start file watcher thread now that all systems are initialized
+    if (fileWatcher)
+    {
+        std::string lua_folderpath = sConfigMgr->GetOption<std::string>("ALE.ScriptPath", "lua_scripts");
+        uint32 watchInterval = sConfigMgr->GetOption<uint32>("ALE.FileWatcherInterval", 1);
+        fileWatcher->StartWatching(lua_folderpath, watchInterval);
+    }
+    
     START_HOOK(WORLD_EVENT_ON_STARTUP);
     CallAllFunctions(ServerEventBindings, key);
 }
